@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Server name="CAH">
+	<Module name="ModLoader 1.1">
+		<URL>http://cah.kicks-ass.org/downloads/Modloader.zip</URL>
+		<Required>true</Required>
+		<InJar>true</InJar>
+	</Module>
+	<Module name="ModLoaderMP 1.1v4">
+		<URL>http://cah.kicks-ass.org/downloads/ModloaderMP.zip</URL>
+		<Required>true</Required>
+		<InJar>true</InJar>
+	</Module>
+	<Module name="Minecraft Forge 1.3.3.12">
+		<URL>http://cah.kicks-ass.org/downloads/Forge.zip</URL>
+		<Required>true</Required>
+		<InJar>true</InJar>
+	</Module>
+	<Module name="Buildcraft Core 2.2.12">
+		<URL>http://cah.kicks-ass.org/downloads/buildcraft-client-A-core-2.2.12.zip</URL>
+		<Required>true</Required>
+		<InJar>false</InJar>
+	</Module>
+	<Module name="Buildcraft Transport 2.2.12">
+		<URL>http://cah.kicks-ass.org/downloads/buildcraft-client-B-transport-2.2.12.zip</URL>
+		<Required>true</Required>
+		<InJar>false</InJar>
+	</Module>
+	<Module name="Buildcraft Factory 2.2.12">
+		<URL>http://cah.kicks-ass.org/downloads/buildcraft-client-B-factory-2.2.12.zip</URL>
+		<Required>true</Required>
+		<InJar>false</InJar>
+	</Module>
+	<Module name="Buildcraft Builders 2.2.12">
+		<URL>http://cah.kicks-ass.org/downloads/buildcraft-client-B-builders-2.2.12.zip</URL>
+		<Required>true</Required>
+		<InJar>false</InJar>
+	</Module>
+	<Module name="Buildcraft Energy 2.2.12">
+		<URL>http://cah.kicks-ass.org/downloads/buildcraft-client-B-energy-2.2.12.zip</URL>
+		<Required>true</Required>
+		<InJar>false</InJar>
+	</Module>
+	<Module name="Railcraft 3.2.1">
+		<URL>http://cah.kicks-ass.org/downloads/railcraft-client-3.2.1.zip</URL>
+		<Required>true</Required>
+		<InJar>false</InJar>
+	</Module>
+	<Module name="Forestry 1.2.6.4">
+		<URL>http://cah.kicks-ass.org/downloads/forestry-1.2.6.4.zip</URL>
+		<Required>true</Required>
+		<InJar>false</InJar>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/downloads/forestry.conf</URL>
+			<Path>/config/forestry/base.conf</Path>
+		</ConfigFile>
+	</Module>
+	<Module name="CraftGuide">
+		<URL>http://cah.kicks-ass.org/downloads/CraftGuide.zip</URL>
+		<Required>false</Required>
+		<InJar>false</InJar>
+	</Module>
+	<Module name="Rei's Minimap v3.0">
+		<URL>http://cah.kicks-ass.org/downloads/[1.1]ReiMinimap_v3.0_01.zip</URL>
+		<Required>false</Required>
+		<InJar>false</InJar>
+	</Module>
+	<Module name="InvTweaks 1.37b">
+		<URL>http://cah.kicks-ass.org/downloads/InvTweaks-1.37b-1.1.zip</URL>
+		<Required>false</Required>
+		<InJar>false</InJar>
+	</Module>
+	<Module name="Ellian Detector">
+		<URL>http://cah.kicks-ass.org/downloads/EllianDetector.zip</URL>
+		<Required>false</Required>
+		<InJar>false</InJar>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/downloads/EllianDetector.materials.settings</URL>
+			<Path>EllianDetector.materials.settings</Path>
+		</ConfigFile>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/downloads/materialsColours.txt</URL>
+			<Path>materialsColours.txt</Path>
+		</ConfigFile>
+	</Module>
+	<Module name="LightMonitor v1.6">
+		<URL>http://cah.kicks-ass.org/downloads/LightMonitorv1.6.zip</URL>
+		<Required>false</Required>
+		<InJar>false</InJar>
+	</Module>
+</Server>
