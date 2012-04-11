@@ -127,7 +127,8 @@ public class MainForm extends MCUApp {
 						setProgressBar(20);
 						while(it.hasNext()) {
 							Component baseEntry = it.next();
-							if(baseEntry.getClass().toString().equals("class cah.melonar.JModuleCheckBox")) {
+							System.out.println(baseEntry.getClass().toString());
+							if(baseEntry.getClass().toString().equals("class cah.melonar.mcu.JModuleCheckBox")) {
 								JModuleCheckBox entry = (JModuleCheckBox) baseEntry;
 								if(entry.isSelected()){
 									toInstall.add(entry.getModule());
