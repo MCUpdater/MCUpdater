@@ -5,9 +5,11 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.UUID;
 import java.io.*;
 
@@ -274,25 +276,45 @@ public class MCUpdater {
 			return "Error reading file";
 		}
 		String hashString = new String(Hex.encodeHex(hash));
-		if(hashString.equalsIgnoreCase("e92302d2acdba7c97e0d8df1e10d2006")) {
-			File backupJar = new File(archiveFolder.getPath() + sep + "mc-1.1.jar");
+		String version = lookupHash(hashString);
+		if(!version.isEmpty()) {
+			File backupJar = new File(archiveFolder.getPath() + sep + "mc-" + version + ".jar");
 			if(!backupJar.exists()) {
 				backupJar.getParentFile().mkdirs();
 				copyFile(jar, backupJar);
 			}
-			return "1.1";
-		} else if(hashString.equalsIgnoreCase("12f6c4b1bdcc63f029e3c088a364b8e4")) {
-			File backupJar = new File(archiveFolder.getPath() + sep + "mc-1.2.3.jar");
-			if(!backupJar.exists()) {
-				backupJar.getParentFile().mkdirs();
-				copyFile(jar, backupJar);
-			}
-			return "1.2.3";
+			return version;
 		} else {
 			return "Unknown version";
 		}
 	}
 
+	private String lookupHash(String hash) {
+		Map<String,String> map = new HashMap<String,String>();
+		try {
+			URL md5s = new URL("https://sites.google.com/site/smbmcupdater/downloads/md5.dat");
+			InputStreamReader input = new InputStreamReader(md5s.openStream());
+			BufferedReader buffer = new BufferedReader(input);
+			String currentLine = null;
+			while(true){
+				currentLine = buffer.readLine();
+				if(currentLine != null){
+					String entry[] = currentLine.split("\\|");
+					map.put(entry[0], entry[1]);
+				} else {
+					break;
+				}
+			}
+			buffer.close();
+			input.close();
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return map.get(hash);
+	}
+	
 	private void copyFile(File jar, File backupJar) {
 		try {
 			InputStream in = new FileInputStream(jar);
