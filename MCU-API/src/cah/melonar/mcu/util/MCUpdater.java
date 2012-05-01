@@ -312,7 +312,11 @@ public class MCUpdater {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return map.get(hash);
+		String out = map.get(hash);
+		if (out == null) {
+			out = "";
+		}
+		return out;
 	}
 	
 	private void copyFile(File jar, File backupJar) {

@@ -7,7 +7,6 @@
 			<attribute name="javadoc_location" value="http://logging.apache.org/log4j/1.2/apidocs"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="resources/famfamfam_silk_icons_v013.zip"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MCU-API"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
