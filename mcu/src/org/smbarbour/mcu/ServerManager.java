@@ -60,6 +60,7 @@ public class ServerManager extends JFrame {
 		contentPane.add(gridScroller, BorderLayout.CENTER);
 		
 		table = new JTable();
+		table.setFillsViewportHeight(true);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		final SLTableModel model = new SLTableModel(mcu.loadServerList());
 		model.addTableModelListener(model);

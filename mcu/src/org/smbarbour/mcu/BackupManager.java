@@ -56,6 +56,7 @@ public class BackupManager extends JFrame {
 		contentPane.add(gridScroller, BorderLayout.CENTER);
 		
 		table = new JTable();
+		table.setFillsViewportHeight(true);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		final BLTableModel model = new BLTableModel(mcu.loadBackupList());
 		model.addTableModelListener(model);
