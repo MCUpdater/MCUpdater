@@ -1,4 +1,4 @@
-package cah.melonar.mcu.util;
+package org.smbarbour.mcu.util;
 
 import java.net.*;
 import java.security.MessageDigest;
@@ -20,11 +20,11 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.smbarbour.mcu.MCUApp;
+import org.smbarbour.mcu.util.Archive;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
 
-import cah.melonar.mcu.MCUApp;
-import cah.melonar.mcu.util.Archive;
 
 public class MCUpdater {
 	

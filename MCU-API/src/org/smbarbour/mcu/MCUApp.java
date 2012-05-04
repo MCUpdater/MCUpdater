@@ -1,4 +1,4 @@
-package cah.melonar.mcu;
+package org.smbarbour.mcu;
 
 public abstract class MCUApp {
 

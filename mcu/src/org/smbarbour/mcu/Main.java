@@ -1,4 +1,4 @@
-package cah.melonar.mcu;
+package org.smbarbour.mcu;
 
 import java.awt.EventQueue;
 

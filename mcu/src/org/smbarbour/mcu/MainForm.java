@@ -1,4 +1,4 @@
-package cah.melonar.mcu;
+package org.smbarbour.mcu;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -36,13 +36,13 @@ import java.util.Iterator;
 import java.util.List;
 import javax.swing.JRadioButtonMenuItem;
 
+import org.smbarbour.mcu.MCUApp;
+import org.smbarbour.mcu.util.MCUpdater;
+import org.smbarbour.mcu.util.Module;
+import org.smbarbour.mcu.util.ServerList;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import cah.melonar.mcu.MCUApp;
-import cah.melonar.mcu.util.MCUpdater;
-import cah.melonar.mcu.util.Module;
-import cah.melonar.mcu.util.ServerList;
 
 import javax.swing.JProgressBar;
 import java.util.ResourceBundle;

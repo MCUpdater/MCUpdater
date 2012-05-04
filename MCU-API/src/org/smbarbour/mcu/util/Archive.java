@@ -1,4 +1,4 @@
-package cah.melonar.mcu.util;
+package org.smbarbour.mcu.util;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -14,7 +14,8 @@ import java.util.List;
 import java.util.jar.*;
 import java.util.zip.*;
 
-import cah.melonar.mcu.MCUApp;
+import org.smbarbour.mcu.MCUApp;
+
 
 public class Archive {
 

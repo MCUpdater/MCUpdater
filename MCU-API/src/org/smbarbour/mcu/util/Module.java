@@ -1,4 +1,4 @@
-package cah.melonar.mcu.util;
+package org.smbarbour.mcu.util;
 
 import java.util.ArrayList;
 import java.util.List;

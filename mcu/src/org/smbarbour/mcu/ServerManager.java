@@ -1,4 +1,4 @@
-package cah.melonar.mcu;
+package org.smbarbour.mcu;
 
 import java.awt.BorderLayout;
 import javax.swing.JFrame;
@@ -19,11 +19,11 @@ import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.ListSelectionModel;
 
+import org.smbarbour.mcu.util.MCUpdater;
+import org.smbarbour.mcu.util.ServerList;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import cah.melonar.mcu.util.MCUpdater;
-import cah.melonar.mcu.util.ServerList;
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;

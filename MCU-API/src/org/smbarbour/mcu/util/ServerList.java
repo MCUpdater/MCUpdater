@@ -1,4 +1,4 @@
-package cah.melonar.mcu.util;
+package org.smbarbour.mcu.util;
 
 public class ServerList {
 	private String name;
