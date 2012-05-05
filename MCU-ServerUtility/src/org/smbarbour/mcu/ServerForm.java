@@ -14,6 +14,8 @@ import javax.swing.JMenuBar;
 import javax.swing.border.Border;
 
 import java.awt.FlowLayout;
+
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.BevelBorder;
 import javax.swing.JTextField;
@@ -42,6 +44,7 @@ public class ServerForm extends MCUApp {
 	private JTextField txtServerAddress;
 	private JTextField txtModuleName;
 	private JTextField txtUrl;
+	private JTable table;
 	
 	public ServerForm() {
 		initialize();
@@ -53,7 +56,6 @@ public class ServerForm extends MCUApp {
 	private void initialize() {
 		frmMain = new JFrame();
 		frmMain.setTitle("Minecraft Updater - ServerPack Utility");
-		frmMain.setResizable(false);
 		frmMain.setBounds(100,100,834,592);
 		frmMain.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
@@ -187,16 +189,16 @@ public class ServerForm extends MCUApp {
 		JPanel ScollBase = new JPanel();
 		ScollBase.setBackground(Color.GRAY);
 		scrollPane.setViewportView(ScollBase);
-		ScollBase.setLayout(new GridLayout(10, 1, 0, 0));
+		ScollBase.setLayout(new GridLayout(2, 1, 0, 0));
 		
 		JPanel Foo = new JPanel();
 		Foo.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
 		ScollBase.add(Foo);
 		GridBagLayout gbl_Foo = new GridBagLayout();
 		gbl_Foo.columnWidths = new int[]{0, 25, 166, 23, 246, 69, 57, 0, 0};
-		gbl_Foo.rowHeights = new int[]{0, 0, 0, 25, 76, 0};
+		gbl_Foo.rowHeights = new int[]{0, 25, 0, 0};
 		gbl_Foo.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		gbl_Foo.rowWeights = new double[]{1.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
+		gbl_Foo.rowWeights = new double[]{1.0, 0.0, 1.0, 0.0};
 		Foo.setLayout(gbl_Foo);
 		
 		Component vStrutMod1 = Box.createVerticalStrut(3);
@@ -208,52 +210,40 @@ public class ServerForm extends MCUApp {
 		
 		Component vStrutMod2 = Box.createVerticalStrut(3);
 		GridBagConstraints gbc_vStrutMod2 = new GridBagConstraints();
-		gbc_vStrutMod2.insets = new Insets(0,0,5,5);
+		gbc_vStrutMod2.insets = new Insets(0, 0, 0, 5);
 		gbc_vStrutMod2.gridx = 1;
-		gbc_vStrutMod2.gridy = 5;
+		gbc_vStrutMod2.gridy = 3;
 		Foo.add(vStrutMod2, gbc_vStrutMod2);
 		
 		Component hStrutMod2 = Box.createHorizontalStrut(3);
 		GridBagConstraints gbc_hStrutMod2 = new GridBagConstraints();
 		gbc_hStrutMod2.insets = new Insets(0, 0, 5, 0);
 		gbc_hStrutMod2.gridx = 7;
-		gbc_hStrutMod2.gridy = 1;
+		gbc_hStrutMod2.gridy = 0;
 		Foo.add(hStrutMod2, gbc_hStrutMod2);
 		
 		Component hStrutMod1 = Box.createHorizontalStrut(3);
 		GridBagConstraints gbc_hStrutMod1 = new GridBagConstraints();
 		gbc_hStrutMod1.insets = new Insets(0, 0, 5, 5);
 		gbc_hStrutMod1.gridx = 0;
-		gbc_hStrutMod1.gridy = 2;
+		gbc_hStrutMod1.gridy = 0;
 		Foo.add(hStrutMod1, gbc_hStrutMod1);
-		
-		JScrollPane subScroller = new JScrollPane();
-		subScroller.setBorder(null);
-		subScroller.setViewportBorder(new TitledBorder(null, "Additional Files", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		GridBagConstraints gbc_subScroller = new GridBagConstraints();
-		gbc_subScroller.gridwidth = 6;
-		gbc_subScroller.insets = new Insets(5, 5, 0, 5);
-		gbc_subScroller.fill = GridBagConstraints.BOTH;
-		gbc_subScroller.gridx = 1;
-		gbc_subScroller.gridy = 4;
-		Foo.add(subScroller, gbc_subScroller);
-		
+				
 		JLabel lblModuleName = new JLabel("Module Name:");
 		GridBagConstraints gbc_lblModuleName = new GridBagConstraints();
 		gbc_lblModuleName.anchor = GridBagConstraints.EAST;
 		gbc_lblModuleName.insets = new Insets(0, 0, 5, 5);
 		gbc_lblModuleName.gridx = 1;
-		gbc_lblModuleName.gridy = 3;
+		gbc_lblModuleName.gridy = 1;
 		Foo.add(lblModuleName, gbc_lblModuleName);
 		lblModuleName.setLabelFor(txtModuleName);
 		
 		txtModuleName = new JTextField();
 		GridBagConstraints gbc_txtModuleName = new GridBagConstraints();
 		gbc_txtModuleName.fill = GridBagConstraints.HORIZONTAL;
-		gbc_txtModuleName.anchor = GridBagConstraints.WEST;
 		gbc_txtModuleName.insets = new Insets(0, 0, 5, 5);
 		gbc_txtModuleName.gridx = 2;
-		gbc_txtModuleName.gridy = 3;
+		gbc_txtModuleName.gridy = 1;
 		Foo.add(txtModuleName, gbc_txtModuleName);
 		txtModuleName.setColumns(20);
 		
@@ -262,16 +252,15 @@ public class ServerForm extends MCUApp {
 		gbc_lblUrl.anchor = GridBagConstraints.WEST;
 		gbc_lblUrl.insets = new Insets(0, 0, 5, 5);
 		gbc_lblUrl.gridx = 3;
-		gbc_lblUrl.gridy = 3;
+		gbc_lblUrl.gridy = 1;
 		Foo.add(lblUrl, gbc_lblUrl);
 		
 		txtUrl = new JTextField();
 		GridBagConstraints gbc_txtUrl = new GridBagConstraints();
 		gbc_txtUrl.fill = GridBagConstraints.HORIZONTAL;
-		gbc_txtUrl.anchor = GridBagConstraints.WEST;
 		gbc_txtUrl.insets = new Insets(0, 0, 5, 5);
 		gbc_txtUrl.gridx = 4;
-		gbc_txtUrl.gridy = 3;
+		gbc_txtUrl.gridy = 1;
 		Foo.add(txtUrl, gbc_txtUrl);
 		txtUrl.setColumns(30);
 		
@@ -280,7 +269,7 @@ public class ServerForm extends MCUApp {
 		gbc_chkRequired.anchor = GridBagConstraints.WEST;
 		gbc_chkRequired.insets = new Insets(0, 0, 5, 5);
 		gbc_chkRequired.gridx = 5;
-		gbc_chkRequired.gridy = 3;
+		gbc_chkRequired.gridy = 1;
 		Foo.add(chkRequired, gbc_chkRequired);
 		
 		JCheckBox chckbxInJar = new JCheckBox("In JAR");
@@ -288,8 +277,38 @@ public class ServerForm extends MCUApp {
 		gbc_chckbxInJar.insets = new Insets(0, 0, 5, 5);
 		gbc_chckbxInJar.anchor = GridBagConstraints.WEST;
 		gbc_chckbxInJar.gridx = 6;
-		gbc_chckbxInJar.gridy = 3;
+		gbc_chckbxInJar.gridy = 1;
 		Foo.add(chckbxInJar, gbc_chckbxInJar);
+
+		JScrollPane subScroller = new JScrollPane();
+		subScroller.setBorder(new TitledBorder(null, "Additional Files", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		subScroller.setViewportBorder(null);
+		GridBagConstraints gbc_subScroller = new GridBagConstraints();
+		gbc_subScroller.fill = GridBagConstraints.BOTH;
+		gbc_subScroller.gridwidth = 6;
+		gbc_subScroller.insets = new Insets(5, 5, 5, 5);
+		gbc_subScroller.gridx = 1;
+		gbc_subScroller.gridy = 2;
+		Foo.add(subScroller, gbc_subScroller);
+		
+		table = new JTable();
+		table.setFillsViewportHeight(true);
+		table.setModel(new DefaultTableModel(
+			new Object[][] {
+				{null, null},
+			},
+			new String[] {
+				"URL", "Path"
+			}
+		) {
+			Class[] columnTypes = new Class[] {
+				String.class, String.class
+			};
+			public Class getColumnClass(int columnIndex) {
+				return columnTypes[columnIndex];
+			}
+		});
+		subScroller.setViewportView(table);
 		
 		JMenuBar menuBar = new JMenuBar();
 		frmMain.setJMenuBar(menuBar);
