@@ -1,38 +1,39 @@
 package org.smbarbour.mcu;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
 
+import org.smbarbour.mcu.util.ConfigFile;
 import org.smbarbour.mcu.util.MCUpdater;
-import javax.swing.JScrollPane;
+import org.smbarbour.mcu.util.Module;
+import org.smbarbour.mcu.util.ServerList;
+
 import javax.swing.JMenuBar;
-import javax.swing.border.Border;
-
-import java.awt.FlowLayout;
-
-import javax.swing.border.EmptyBorder;
-import javax.swing.border.EtchedBorder;
-import javax.swing.border.BevelBorder;
-import javax.swing.JTextField;
-import javax.swing.JComboBox;
-import javax.swing.DefaultComboBoxModel;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.awt.GridBagLayout;
+import javax.swing.JLabel;
 import java.awt.GridBagConstraints;
+import javax.swing.JTextField;
 import java.awt.Insets;
 import java.awt.Component;
 import javax.swing.Box;
-import java.awt.GridLayout;
-import javax.swing.JCheckBox;
-import java.awt.CardLayout;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
+import java.awt.Dimension;
+import javax.swing.border.EtchedBorder;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.border.TitledBorder;
+import javax.swing.JList;
+import javax.swing.ListSelectionModel;
+import javax.swing.AbstractListModel;
+import javax.swing.JScrollPane;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.SwingConstants;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ServerForm extends MCUApp {
 
@@ -40,11 +41,16 @@ public class ServerForm extends MCUApp {
 	private JFrame frmMain;
 	final MCUpdater mcu = new MCUpdater();
 	private JTextField txtServerName;
-	private JTextField txtNewsURL;
+	private JTextField txtNewsUrl;
 	private JTextField txtServerAddress;
-	private JTextField txtModuleName;
+	private JTextField txtModName;
 	private JTextField txtUrl;
-	private JTable table;
+	private JTextField txtConfigURL;
+	private JTextField txtConfigPath;
+	private JTextField txtVersion;
+	private List<Module> modList = new ArrayList<Module>();
+	private List<ConfigFile> configList = new ArrayList<ConfigFile>();
+	private ServerList serverInfo = new ServerList(null, null, null, null, null);
 	
 	public ServerForm() {
 		initialize();
@@ -56,262 +62,421 @@ public class ServerForm extends MCUApp {
 	private void initialize() {
 		frmMain = new JFrame();
 		frmMain.setTitle("Minecraft Updater - ServerPack Utility");
-		frmMain.setBounds(100,100,834,592);
+		frmMain.setBounds(100,100,800,600);
 		frmMain.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		JMenuBar menuBar = new JMenuBar();
+		frmMain.setJMenuBar(menuBar);
 		
-		JPanel pnlFooter = new JPanel();
-		frmMain.getContentPane().add(pnlFooter, BorderLayout.SOUTH);
-		pnlFooter.setLayout(new BorderLayout(0,0));
+		JMenu mnuFile = new JMenu("File");
+		mnuFile.setMnemonic('F');
+		menuBar.add(mnuFile);
 		
-		JPanel pnlStatus = new JPanel();
-		pnlFooter.add(pnlStatus, BorderLayout.CENTER);
-		pnlStatus.setLayout(new BorderLayout(0,0));
+		JMenuItem mnuNew = new JMenuItem("New");
+		mnuNew.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		mnuFile.add(mnuNew);
 		
-		JLabel lblStatus = new JLabel("Idle");
-		lblStatus.setHorizontalAlignment(SwingConstants.LEFT);
-		pnlStatus.add(lblStatus);
+		JMenuItem mnuOpen = new JMenuItem("Open...");
+		mnuOpen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		mnuFile.add(mnuOpen);
 		
-		JPanel pnlServerInfo = new JPanel();
-		pnlServerInfo.setBorder(null);
-		frmMain.getContentPane().add(pnlServerInfo, BorderLayout.NORTH);
-		GridBagLayout gbl_pnlServerInfo = new GridBagLayout();
-		gbl_pnlServerInfo.columnWidths = new int[]{0, 66, 7, 234, 52, 246, 0, 0};
-		gbl_pnlServerInfo.rowHeights = new int[]{0, 20, 20, 0, 0};
-		gbl_pnlServerInfo.columnWeights = new double[]{0.0, 0.0, 0.0, 1.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
-		gbl_pnlServerInfo.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		pnlServerInfo.setLayout(gbl_pnlServerInfo);
+		JMenuItem mnuSave = new JMenuItem("Save");
+		mnuSave.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		mnuFile.add(mnuSave);
 		
-		Component vStrut1 = Box.createVerticalStrut(3);
-		GridBagConstraints gbc_vStrut1 = new GridBagConstraints();
-		gbc_vStrut1.insets = new Insets(0, 0, 5, 5);
-		gbc_vStrut1.gridx = 1;
-		gbc_vStrut1.gridy = 0;
-		pnlServerInfo.add(vStrut1, gbc_vStrut1);
+		JMenuItem mnuSaveAs = new JMenuItem("Save As...");
+		mnuSaveAs.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		mnuFile.add(mnuSaveAs);
 		
-		Component vStrut2 = Box.createVerticalStrut(3);
-		GridBagConstraints gbc_vStrut2 = new GridBagConstraints();
-		gbc_vStrut2.insets = new Insets(0, 0, 0, 5);
-		gbc_vStrut2.gridx = 1;
-		gbc_vStrut2.gridy = 3;
-		pnlServerInfo.add(vStrut2, gbc_vStrut2);
+		mnuFile.addSeparator();
 		
-		Component hStrut1 = Box.createHorizontalStrut(3);
-		GridBagConstraints gbc_hStrut1 = new GridBagConstraints();
-		gbc_hStrut1.insets = new Insets(0, 0, 5, 5);
-		gbc_hStrut1.gridx = 0;
-		gbc_hStrut1.gridy = 1;
-		pnlServerInfo.add(hStrut1, gbc_hStrut1);
+		JMenuItem mnuExit = new JMenuItem("Exit");
+		mnuExit.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		mnuFile.add(mnuExit);
+		frmMain.getContentPane().setLayout(new BorderLayout(0, 0));
+				
+		JPanel serverPanel = new JPanel();
+		serverPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		frmMain.getContentPane().add(serverPanel, BorderLayout.NORTH);
+		GridBagLayout gbl_serverPanel = new GridBagLayout();
+		gbl_serverPanel.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0};
+		gbl_serverPanel.rowHeights = new int[]{0, 0, 0, 0, 0};
+		gbl_serverPanel.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
+		gbl_serverPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		serverPanel.setLayout(gbl_serverPanel);
+		
+		Component rigidArea = Box.createRigidArea(new Dimension(3, 3));
+		GridBagConstraints gbc_rigidArea = new GridBagConstraints();
+		gbc_rigidArea.insets = new Insets(0, 0, 5, 5);
+		gbc_rigidArea.gridx = 0;
+		gbc_rigidArea.gridy = 0;
+		serverPanel.add(rigidArea, gbc_rigidArea);
 		
 		JLabel lblServerName = new JLabel("Server Name:");
 		GridBagConstraints gbc_lblServerName = new GridBagConstraints();
-		gbc_lblServerName.anchor = GridBagConstraints.WEST;
 		gbc_lblServerName.insets = new Insets(0, 0, 5, 5);
+		gbc_lblServerName.anchor = GridBagConstraints.EAST;
 		gbc_lblServerName.gridx = 1;
 		gbc_lblServerName.gridy = 1;
-		pnlServerInfo.add(lblServerName, gbc_lblServerName);
+		serverPanel.add(lblServerName, gbc_lblServerName);
 		
 		txtServerName = new JTextField();
 		GridBagConstraints gbc_txtServerName = new GridBagConstraints();
-		gbc_txtServerName.fill = GridBagConstraints.HORIZONTAL;
-		gbc_txtServerName.anchor = GridBagConstraints.NORTHWEST;
 		gbc_txtServerName.insets = new Insets(0, 0, 5, 5);
-		gbc_txtServerName.gridx = 3;
+		gbc_txtServerName.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtServerName.gridx = 2;
 		gbc_txtServerName.gridy = 1;
-		pnlServerInfo.add(txtServerName, gbc_txtServerName);
-		txtServerName.setColumns(30);
-		lblServerName.setLabelFor(txtServerName);
+		serverPanel.add(txtServerName, gbc_txtServerName);
+		txtServerName.setColumns(10);
 		
-		JLabel lblNewsURL = new JLabel("News URL:");
-		GridBagConstraints gbc_lblNewsURL = new GridBagConstraints();
-		gbc_lblNewsURL.anchor = GridBagConstraints.WEST;
-		gbc_lblNewsURL.insets = new Insets(0, 0, 5, 5);
-		gbc_lblNewsURL.gridx = 4;
-		gbc_lblNewsURL.gridy = 1;
-		pnlServerInfo.add(lblNewsURL, gbc_lblNewsURL);
+		JLabel lblNewsUrl = new JLabel("News URL:");
+		GridBagConstraints gbc_lblNewsUrl = new GridBagConstraints();
+		gbc_lblNewsUrl.anchor = GridBagConstraints.EAST;
+		gbc_lblNewsUrl.insets = new Insets(0, 0, 5, 5);
+		gbc_lblNewsUrl.gridx = 3;
+		gbc_lblNewsUrl.gridy = 1;
+		serverPanel.add(lblNewsUrl, gbc_lblNewsUrl);
 		
-		txtNewsURL = new JTextField();
-		GridBagConstraints gbc_txtNewsURL = new GridBagConstraints();
-		gbc_txtNewsURL.fill = GridBagConstraints.HORIZONTAL;
-		gbc_txtNewsURL.anchor = GridBagConstraints.NORTHWEST;
-		gbc_txtNewsURL.insets = new Insets(0, 0, 5, 5);
-		gbc_txtNewsURL.gridx = 5;
-		gbc_txtNewsURL.gridy = 1;
-		pnlServerInfo.add(txtNewsURL, gbc_txtNewsURL);
-		txtNewsURL.setColumns(30);
-		lblNewsURL.setLabelFor(txtNewsURL);
-		
-		JLabel lblVersion = new JLabel("Minecraft Version:");
-		GridBagConstraints gbc_lblVersion = new GridBagConstraints();
-		gbc_lblVersion.anchor = GridBagConstraints.WEST;
-		gbc_lblVersion.insets = new Insets(0, 0, 5, 5);
-		gbc_lblVersion.gridx = 4;
-		gbc_lblVersion.gridy = 2;
-		pnlServerInfo.add(lblVersion, gbc_lblVersion);
-		
-		JComboBox optVersion = new JComboBox();
-		optVersion.setModel(new DefaultComboBoxModel(new String[] {"1.0", "1.1", "1.2.3", "1.2.4", "1.2.5"}));
-		GridBagConstraints gbc_optVersion = new GridBagConstraints();
-		gbc_optVersion.anchor = GridBagConstraints.NORTHWEST;
-		gbc_optVersion.insets = new Insets(0, 0, 5, 5);
-		gbc_optVersion.gridx = 5;
-		gbc_optVersion.gridy = 2;
-		pnlServerInfo.add(optVersion, gbc_optVersion);
-		
-		Component hStrut2 = Box.createHorizontalStrut(3);
-		GridBagConstraints gbc_hStrut2 = new GridBagConstraints();
-		gbc_hStrut2.insets = new Insets(0, 0, 5, 0);
-		gbc_hStrut2.gridx = 6;
-		gbc_hStrut2.gridy = 1;
-		pnlServerInfo.add(hStrut2, gbc_hStrut2);
+		txtNewsUrl = new JTextField();
+		GridBagConstraints gbc_txtNewsUrl = new GridBagConstraints();
+		gbc_txtNewsUrl.insets = new Insets(0, 0, 5, 5);
+		gbc_txtNewsUrl.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtNewsUrl.gridx = 4;
+		gbc_txtNewsUrl.gridy = 1;
+		serverPanel.add(txtNewsUrl, gbc_txtNewsUrl);
+		txtNewsUrl.setColumns(10);
 		
 		JLabel lblServerAddress = new JLabel("Server Address:");
 		GridBagConstraints gbc_lblServerAddress = new GridBagConstraints();
-		gbc_lblServerAddress.anchor = GridBagConstraints.WEST;
+		gbc_lblServerAddress.anchor = GridBagConstraints.EAST;
 		gbc_lblServerAddress.insets = new Insets(0, 0, 5, 5);
-		gbc_lblServerAddress.gridwidth = 2;
 		gbc_lblServerAddress.gridx = 1;
 		gbc_lblServerAddress.gridy = 2;
-		pnlServerInfo.add(lblServerAddress, gbc_lblServerAddress);
+		serverPanel.add(lblServerAddress, gbc_lblServerAddress);
 		
 		txtServerAddress = new JTextField();
 		GridBagConstraints gbc_txtServerAddress = new GridBagConstraints();
-		gbc_txtServerAddress.fill = GridBagConstraints.HORIZONTAL;
-		gbc_txtServerAddress.anchor = GridBagConstraints.NORTHWEST;
 		gbc_txtServerAddress.insets = new Insets(0, 0, 5, 5);
-		gbc_txtServerAddress.gridx = 3;
+		gbc_txtServerAddress.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtServerAddress.gridx = 2;
 		gbc_txtServerAddress.gridy = 2;
-		pnlServerInfo.add(txtServerAddress, gbc_txtServerAddress);
-		txtServerAddress.setColumns(30);
+		serverPanel.add(txtServerAddress, gbc_txtServerAddress);
+		txtServerAddress.setColumns(10);
 		
-		JScrollPane scrollPane = new JScrollPane();
-		frmMain.getContentPane().add(scrollPane, BorderLayout.CENTER);
+		JLabel lblVersion = new JLabel("Minecraft Version:");
+		GridBagConstraints gbc_lblVersion = new GridBagConstraints();
+		gbc_lblVersion.anchor = GridBagConstraints.EAST;
+		gbc_lblVersion.insets = new Insets(0, 0, 5, 5);
+		gbc_lblVersion.gridx = 3;
+		gbc_lblVersion.gridy = 2;
+		serverPanel.add(lblVersion, gbc_lblVersion);
 		
-		JPanel ScollBase = new JPanel();
-		ScollBase.setBackground(Color.GRAY);
-		scrollPane.setViewportView(ScollBase);
-		ScollBase.setLayout(new GridLayout(2, 1, 0, 0));
+		txtVersion = new JTextField();
+		GridBagConstraints gbc_txtVersion = new GridBagConstraints();
+		gbc_txtVersion.insets = new Insets(0, 0, 5, 5);
+		gbc_txtVersion.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtVersion.gridx = 4;
+		gbc_txtVersion.gridy = 2;
+		serverPanel.add(txtVersion, gbc_txtVersion);
+		txtVersion.setColumns(10);
 		
-		JPanel Foo = new JPanel();
-		Foo.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		ScollBase.add(Foo);
-		GridBagLayout gbl_Foo = new GridBagLayout();
-		gbl_Foo.columnWidths = new int[]{0, 25, 166, 23, 246, 69, 57, 0, 0};
-		gbl_Foo.rowHeights = new int[]{0, 25, 0, 0};
-		gbl_Foo.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		gbl_Foo.rowWeights = new double[]{1.0, 0.0, 1.0, 0.0};
-		Foo.setLayout(gbl_Foo);
+		Component rigidArea_1 = Box.createRigidArea(new Dimension(3, 3));
+		GridBagConstraints gbc_rigidArea_1 = new GridBagConstraints();
+		gbc_rigidArea_1.gridx = 5;
+		gbc_rigidArea_1.gridy = 3;
+		serverPanel.add(rigidArea_1, gbc_rigidArea_1);
 		
-		Component vStrutMod1 = Box.createVerticalStrut(3);
-		GridBagConstraints gbc_vStrutMod1 = new GridBagConstraints();
-		gbc_vStrutMod1.insets = new Insets(0, 0, 5, 5);
-		gbc_vStrutMod1.gridx = 1;
-		gbc_vStrutMod1.gridy = 0;
-		Foo.add(vStrutMod1, gbc_vStrutMod1);
+		JPanel detailPanel = new JPanel();
+		frmMain.getContentPane().add(detailPanel, BorderLayout.CENTER);
+		detailPanel.setLayout(new GridLayout(1, 0, 0, 0));
 		
-		Component vStrutMod2 = Box.createVerticalStrut(3);
-		GridBagConstraints gbc_vStrutMod2 = new GridBagConstraints();
-		gbc_vStrutMod2.insets = new Insets(0, 0, 0, 5);
-		gbc_vStrutMod2.gridx = 1;
-		gbc_vStrutMod2.gridy = 3;
-		Foo.add(vStrutMod2, gbc_vStrutMod2);
+		JPanel modulePanel = new JPanel();
+		modulePanel.setBorder(new TitledBorder(null, "Modules", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		detailPanel.add(modulePanel);
+		GridBagLayout gbl_modulePanel = new GridBagLayout();
+		gbl_modulePanel.columnWidths = new int[]{0, 0};
+		gbl_modulePanel.rowHeights = new int[]{0, 0, 0};
+		gbl_modulePanel.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+		gbl_modulePanel.rowWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
+		modulePanel.setLayout(gbl_modulePanel);
 		
-		Component hStrutMod2 = Box.createHorizontalStrut(3);
-		GridBagConstraints gbc_hStrutMod2 = new GridBagConstraints();
-		gbc_hStrutMod2.insets = new Insets(0, 0, 5, 0);
-		gbc_hStrutMod2.gridx = 7;
-		gbc_hStrutMod2.gridy = 0;
-		Foo.add(hStrutMod2, gbc_hStrutMod2);
+		JPanel modListPanel = new JPanel();
+		GridBagConstraints gbc_modListPanel = new GridBagConstraints();
+		gbc_modListPanel.insets = new Insets(0, 0, 5, 0);
+		gbc_modListPanel.fill = GridBagConstraints.BOTH;
+		gbc_modListPanel.gridx = 0;
+		gbc_modListPanel.gridy = 0;
+		modulePanel.add(modListPanel, gbc_modListPanel);
+		modListPanel.setLayout(new BorderLayout(0, 0));
+
+		JScrollPane modListScroll = new JScrollPane();
+		modListPanel.add(modListScroll, BorderLayout.CENTER);
+
+		JList lstModules = new JList();
+		lstModules.setModel(new ModuleListModel(modList));
+		lstModules.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		modListScroll.setViewportView(lstModules);
 		
-		Component hStrutMod1 = Box.createHorizontalStrut(3);
-		GridBagConstraints gbc_hStrutMod1 = new GridBagConstraints();
-		gbc_hStrutMod1.insets = new Insets(0, 0, 5, 5);
-		gbc_hStrutMod1.gridx = 0;
-		gbc_hStrutMod1.gridy = 0;
-		Foo.add(hStrutMod1, gbc_hStrutMod1);
-				
-		JLabel lblModuleName = new JLabel("Module Name:");
-		GridBagConstraints gbc_lblModuleName = new GridBagConstraints();
-		gbc_lblModuleName.anchor = GridBagConstraints.EAST;
-		gbc_lblModuleName.insets = new Insets(0, 0, 5, 5);
-		gbc_lblModuleName.gridx = 1;
-		gbc_lblModuleName.gridy = 1;
-		Foo.add(lblModuleName, gbc_lblModuleName);
-		lblModuleName.setLabelFor(txtModuleName);
+		JPanel modDetailPanel = new JPanel();
+		modDetailPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		GridBagConstraints gbc_modDetailPanel = new GridBagConstraints();
+		gbc_modDetailPanel.fill = GridBagConstraints.BOTH;
+		gbc_modDetailPanel.gridx = 0;
+		gbc_modDetailPanel.gridy = 1;
+		modulePanel.add(modDetailPanel, gbc_modDetailPanel);
+		GridBagLayout gbl_modDetailPanel = new GridBagLayout();
+		gbl_modDetailPanel.columnWidths = new int[]{0, 60, 86, 0, 0};
+		gbl_modDetailPanel.rowHeights = new int[]{0, 20, 0, 0, 0, 0, 0, 0, 0};
+		gbl_modDetailPanel.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
+		gbl_modDetailPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		modDetailPanel.setLayout(gbl_modDetailPanel);
 		
-		txtModuleName = new JTextField();
-		GridBagConstraints gbc_txtModuleName = new GridBagConstraints();
-		gbc_txtModuleName.fill = GridBagConstraints.HORIZONTAL;
-		gbc_txtModuleName.insets = new Insets(0, 0, 5, 5);
-		gbc_txtModuleName.gridx = 2;
-		gbc_txtModuleName.gridy = 1;
-		Foo.add(txtModuleName, gbc_txtModuleName);
-		txtModuleName.setColumns(20);
+		Component rigidArea_6 = Box.createRigidArea(new Dimension(3, 3));
+		GridBagConstraints gbc_rigidArea_6 = new GridBagConstraints();
+		gbc_rigidArea_6.anchor = GridBagConstraints.WEST;
+		gbc_rigidArea_6.insets = new Insets(0, 0, 5, 5);
+		gbc_rigidArea_6.gridx = 0;
+		gbc_rigidArea_6.gridy = 0;
+		modDetailPanel.add(rigidArea_6, gbc_rigidArea_6);
+		
+		JLabel lblModName = new JLabel("Name:");
+		lblModName.setHorizontalAlignment(SwingConstants.TRAILING);
+		GridBagConstraints gbc_lblModName = new GridBagConstraints();
+		gbc_lblModName.fill = GridBagConstraints.HORIZONTAL;
+		gbc_lblModName.insets = new Insets(0, 0, 5, 5);
+		gbc_lblModName.gridx = 1;
+		gbc_lblModName.gridy = 1;
+		modDetailPanel.add(lblModName, gbc_lblModName);
+		
+		txtModName = new JTextField();
+		GridBagConstraints gbc_txtModName = new GridBagConstraints();
+		gbc_txtModName.insets = new Insets(0, 0, 5, 5);
+		gbc_txtModName.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtModName.anchor = GridBagConstraints.NORTH;
+		gbc_txtModName.gridx = 2;
+		gbc_txtModName.gridy = 1;
+		modDetailPanel.add(txtModName, gbc_txtModName);
+		txtModName.setColumns(10);
 		
 		JLabel lblUrl = new JLabel("URL:");
+		lblUrl.setHorizontalAlignment(SwingConstants.TRAILING);
 		GridBagConstraints gbc_lblUrl = new GridBagConstraints();
-		gbc_lblUrl.anchor = GridBagConstraints.WEST;
+		gbc_lblUrl.fill = GridBagConstraints.HORIZONTAL;
 		gbc_lblUrl.insets = new Insets(0, 0, 5, 5);
-		gbc_lblUrl.gridx = 3;
-		gbc_lblUrl.gridy = 1;
-		Foo.add(lblUrl, gbc_lblUrl);
+		gbc_lblUrl.gridx = 1;
+		gbc_lblUrl.gridy = 2;
+		modDetailPanel.add(lblUrl, gbc_lblUrl);
 		
 		txtUrl = new JTextField();
 		GridBagConstraints gbc_txtUrl = new GridBagConstraints();
-		gbc_txtUrl.fill = GridBagConstraints.HORIZONTAL;
 		gbc_txtUrl.insets = new Insets(0, 0, 5, 5);
-		gbc_txtUrl.gridx = 4;
-		gbc_txtUrl.gridy = 1;
-		Foo.add(txtUrl, gbc_txtUrl);
-		txtUrl.setColumns(30);
+		gbc_txtUrl.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtUrl.gridx = 2;
+		gbc_txtUrl.gridy = 2;
+		modDetailPanel.add(txtUrl, gbc_txtUrl);
+		txtUrl.setColumns(10);
 		
-		JCheckBox chkRequired = new JCheckBox("Required");
+		JLabel lblRequired = new JLabel("Required:");
+		lblRequired.setHorizontalAlignment(SwingConstants.TRAILING);
+		GridBagConstraints gbc_lblRequired = new GridBagConstraints();
+		gbc_lblRequired.fill = GridBagConstraints.HORIZONTAL;
+		gbc_lblRequired.insets = new Insets(0, 0, 5, 5);
+		gbc_lblRequired.gridx = 1;
+		gbc_lblRequired.gridy = 3;
+		modDetailPanel.add(lblRequired, gbc_lblRequired);
+		
+		JCheckBox chkRequired = new JCheckBox("");
 		GridBagConstraints gbc_chkRequired = new GridBagConstraints();
-		gbc_chkRequired.anchor = GridBagConstraints.WEST;
 		gbc_chkRequired.insets = new Insets(0, 0, 5, 5);
-		gbc_chkRequired.gridx = 5;
-		gbc_chkRequired.gridy = 1;
-		Foo.add(chkRequired, gbc_chkRequired);
+		gbc_chkRequired.anchor = GridBagConstraints.WEST;
+		gbc_chkRequired.gridx = 2;
+		gbc_chkRequired.gridy = 3;
+		modDetailPanel.add(chkRequired, gbc_chkRequired);
 		
-		JCheckBox chckbxInJar = new JCheckBox("In JAR");
-		GridBagConstraints gbc_chckbxInJar = new GridBagConstraints();
-		gbc_chckbxInJar.insets = new Insets(0, 0, 5, 5);
-		gbc_chckbxInJar.anchor = GridBagConstraints.WEST;
-		gbc_chckbxInJar.gridx = 6;
-		gbc_chckbxInJar.gridy = 1;
-		Foo.add(chckbxInJar, gbc_chckbxInJar);
-
-		JScrollPane subScroller = new JScrollPane();
-		subScroller.setBorder(new TitledBorder(null, "Additional Files", TitledBorder.LEADING, TitledBorder.TOP, null, null));
-		subScroller.setViewportBorder(null);
-		GridBagConstraints gbc_subScroller = new GridBagConstraints();
-		gbc_subScroller.fill = GridBagConstraints.BOTH;
-		gbc_subScroller.gridwidth = 6;
-		gbc_subScroller.insets = new Insets(5, 5, 5, 5);
-		gbc_subScroller.gridx = 1;
-		gbc_subScroller.gridy = 2;
-		Foo.add(subScroller, gbc_subScroller);
+		JLabel lblInJar = new JLabel("In JAR:");
+		lblInJar.setHorizontalAlignment(SwingConstants.TRAILING);
+		GridBagConstraints gbc_lblInJar = new GridBagConstraints();
+		gbc_lblInJar.fill = GridBagConstraints.HORIZONTAL;
+		gbc_lblInJar.insets = new Insets(0, 0, 5, 5);
+		gbc_lblInJar.gridx = 1;
+		gbc_lblInJar.gridy = 4;
+		modDetailPanel.add(lblInJar, gbc_lblInJar);
 		
-		table = new JTable();
-		table.setFillsViewportHeight(true);
-		table.setModel(new DefaultTableModel(
-			new Object[][] {
-				{null, null},
-			},
-			new String[] {
-				"URL", "Path"
-			}
-		) {
-			Class[] columnTypes = new Class[] {
-				String.class, String.class
-			};
-			public Class getColumnClass(int columnIndex) {
-				return columnTypes[columnIndex];
+		JCheckBox chkInJar = new JCheckBox("");
+		GridBagConstraints gbc_chkInJar = new GridBagConstraints();
+		gbc_chkInJar.insets = new Insets(0, 0, 5, 5);
+		gbc_chkInJar.anchor = GridBagConstraints.WEST;
+		gbc_chkInJar.gridx = 2;
+		gbc_chkInJar.gridy = 4;
+		modDetailPanel.add(chkInJar, gbc_chkInJar);
+		
+		JButton btnModAdd = new JButton("Add");
+		btnModAdd.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 			}
 		});
-		subScroller.setViewportView(table);
+		GridBagConstraints gbc_btnModAdd = new GridBagConstraints();
+		gbc_btnModAdd.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnModAdd.insets = new Insets(0, 0, 5, 5);
+		gbc_btnModAdd.gridx = 1;
+		gbc_btnModAdd.gridy = 5;
+		modDetailPanel.add(btnModAdd, gbc_btnModAdd);
 		
-		JMenuBar menuBar = new JMenuBar();
-		frmMain.setJMenuBar(menuBar);
+		JButton btnModRemove = new JButton("Remove");
+		btnModRemove.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		GridBagConstraints gbc_btnModRemove = new GridBagConstraints();
+		gbc_btnModRemove.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnModRemove.insets = new Insets(0, 0, 5, 5);
+		gbc_btnModRemove.gridx = 1;
+		gbc_btnModRemove.gridy = 6;
+		modDetailPanel.add(btnModRemove, gbc_btnModRemove);
+		
+		Component rigidArea_7 = Box.createRigidArea(new Dimension(3, 3));
+		GridBagConstraints gbc_rigidArea_7 = new GridBagConstraints();
+		gbc_rigidArea_7.gridx = 3;
+		gbc_rigidArea_7.gridy = 7;
+		modDetailPanel.add(rigidArea_7, gbc_rigidArea_7);
+		
+		JPanel configFilePanel = new JPanel();
+		configFilePanel.setBorder(new TitledBorder(null, "Config Files", TitledBorder.LEADING, TitledBorder.TOP, null, null));
+		detailPanel.add(configFilePanel);
+		GridBagLayout gbl_configFilePanel = new GridBagLayout();
+		gbl_configFilePanel.columnWidths = new int[]{0, 0};
+		gbl_configFilePanel.rowHeights = new int[]{0, 0, 0};
+		gbl_configFilePanel.columnWeights = new double[]{1.0, Double.MIN_VALUE};
+		gbl_configFilePanel.rowWeights = new double[]{1.0, 0.0, Double.MIN_VALUE};
+		configFilePanel.setLayout(gbl_configFilePanel);
+		
+		JPanel configListPanel = new JPanel();
+		GridBagConstraints gbc_configListPanel = new GridBagConstraints();
+		gbc_configListPanel.insets = new Insets(0, 0, 5, 0);
+		gbc_configListPanel.fill = GridBagConstraints.BOTH;
+		gbc_configListPanel.gridx = 0;
+		gbc_configListPanel.gridy = 0;
+		configFilePanel.add(configListPanel, gbc_configListPanel);
+		configListPanel.setLayout(new BorderLayout(0, 0));
+		
+		JScrollPane configListScroll = new JScrollPane();
+		configListPanel.add(configListScroll, BorderLayout.CENTER);
+		
+		JList lstConfigFiles = new JList();
+		lstConfigFiles.setModel(new ConfigFileListModel(configList ));
+		lstConfigFiles.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		configListScroll.setViewportView(lstConfigFiles);
+		
+		JPanel configDetailPanel = new JPanel();
+		configDetailPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		GridBagConstraints gbc_configDetailPanel = new GridBagConstraints();
+		gbc_configDetailPanel.fill = GridBagConstraints.BOTH;
+		gbc_configDetailPanel.gridx = 0;
+		gbc_configDetailPanel.gridy = 1;
+		configFilePanel.add(configDetailPanel, gbc_configDetailPanel);
+		GridBagLayout gbl_configDetailPanel = new GridBagLayout();
+		gbl_configDetailPanel.columnWidths = new int[]{0, 0, 23, 0, 0};
+		gbl_configDetailPanel.rowHeights = new int[]{0, 14, 0, 0, 0, 0, 0, 0};
+		gbl_configDetailPanel.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
+		gbl_configDetailPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		configDetailPanel.setLayout(gbl_configDetailPanel);
+		
+		Component rigidArea_2 = Box.createRigidArea(new Dimension(3, 3));
+		GridBagConstraints gbc_rigidArea_2 = new GridBagConstraints();
+		gbc_rigidArea_2.insets = new Insets(0, 0, 5, 5);
+		gbc_rigidArea_2.gridx = 0;
+		gbc_rigidArea_2.gridy = 0;
+		configDetailPanel.add(rigidArea_2, gbc_rigidArea_2);
+		
+		JLabel lblConfigURL = new JLabel("URL:");
+		lblConfigURL.setHorizontalAlignment(SwingConstants.TRAILING);
+		GridBagConstraints gbc_lblConfigURL = new GridBagConstraints();
+		gbc_lblConfigURL.fill = GridBagConstraints.HORIZONTAL;
+		gbc_lblConfigURL.insets = new Insets(0, 0, 5, 5);
+		gbc_lblConfigURL.anchor = GridBagConstraints.NORTH;
+		gbc_lblConfigURL.gridx = 1;
+		gbc_lblConfigURL.gridy = 1;
+		configDetailPanel.add(lblConfigURL, gbc_lblConfigURL);
+		
+		txtConfigURL = new JTextField();
+		GridBagConstraints gbc_txtConfigURL = new GridBagConstraints();
+		gbc_txtConfigURL.insets = new Insets(0, 0, 5, 5);
+		gbc_txtConfigURL.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtConfigURL.gridx = 2;
+		gbc_txtConfigURL.gridy = 1;
+		configDetailPanel.add(txtConfigURL, gbc_txtConfigURL);
+		txtConfigURL.setColumns(10);
+		
+		JLabel lblConfigPath = new JLabel("Path:");
+		lblConfigPath.setHorizontalAlignment(SwingConstants.TRAILING);
+		GridBagConstraints gbc_lblConfigPath = new GridBagConstraints();
+		gbc_lblConfigPath.fill = GridBagConstraints.HORIZONTAL;
+		gbc_lblConfigPath.insets = new Insets(0, 0, 5, 5);
+		gbc_lblConfigPath.gridx = 1;
+		gbc_lblConfigPath.gridy = 2;
+		configDetailPanel.add(lblConfigPath, gbc_lblConfigPath);
+		
+		txtConfigPath = new JTextField();
+		GridBagConstraints gbc_txtConfigPath = new GridBagConstraints();
+		gbc_txtConfigPath.insets = new Insets(0, 0, 5, 5);
+		gbc_txtConfigPath.fill = GridBagConstraints.HORIZONTAL;
+		gbc_txtConfigPath.gridx = 2;
+		gbc_txtConfigPath.gridy = 2;
+		configDetailPanel.add(txtConfigPath, gbc_txtConfigPath);
+		txtConfigPath.setColumns(10);
+		
+		Component verticalStrut = Box.createVerticalStrut(47);
+		GridBagConstraints gbc_verticalStrut = new GridBagConstraints();
+		gbc_verticalStrut.fill = GridBagConstraints.HORIZONTAL;
+		gbc_verticalStrut.insets = new Insets(0, 0, 5, 5);
+		gbc_verticalStrut.gridx = 1;
+		gbc_verticalStrut.gridy = 3;
+		configDetailPanel.add(verticalStrut, gbc_verticalStrut);
+		
+		JButton btnAdd_1 = new JButton("Add");
+		btnAdd_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		GridBagConstraints gbc_btnAdd_1 = new GridBagConstraints();
+		gbc_btnAdd_1.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnAdd_1.insets = new Insets(0, 0, 5, 5);
+		gbc_btnAdd_1.gridx = 1;
+		gbc_btnAdd_1.gridy = 4;
+		configDetailPanel.add(btnAdd_1, gbc_btnAdd_1);
+		
+		JButton btnRemove_1 = new JButton("Remove");
+		btnRemove_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+			}
+		});
+		GridBagConstraints gbc_btnRemove_1 = new GridBagConstraints();
+		gbc_btnRemove_1.fill = GridBagConstraints.HORIZONTAL;
+		gbc_btnRemove_1.insets = new Insets(0, 0, 5, 5);
+		gbc_btnRemove_1.gridx = 1;
+		gbc_btnRemove_1.gridy = 5;
+		configDetailPanel.add(btnRemove_1, gbc_btnRemove_1);
+		
+		Component rigidArea_3 = Box.createRigidArea(new Dimension(3, 3));
+		GridBagConstraints gbc_rigidArea_3 = new GridBagConstraints();
+		gbc_rigidArea_3.gridx = 3;
+		gbc_rigidArea_3.gridy = 6;
+		configDetailPanel.add(rigidArea_3, gbc_rigidArea_3);
 	}
 
 	@Override
@@ -323,5 +488,61 @@ public class ServerForm extends MCUApp {
 	public void setProgressBar(int i) {
 		
 	}
+	
+	protected String getServerName() {
+		return txtServerName.getText();
+	}
+	protected String getNewsUrl() {
+		return txtNewsUrl.getText();
+	}
+	protected String getServerAddress() {
+		return txtServerAddress.getText();
+	}
+	protected String getVersion() {
+		return txtVersion.getText();
+	}
+}
 
+class ModuleListModel extends AbstractListModel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8669589670935830304L;
+	List<Module> modules = new ArrayList<Module>();
+	
+	public ModuleListModel(List<Module> modList) {
+		this.modules = modList;
+	}
+	
+	@Override
+	public int getSize() {
+		return modules.size();
+	}
+
+	@Override
+	public Object getElementAt(int index) {
+		return modules.get(index);
+	}
+}
+
+class ConfigFileListModel extends AbstractListModel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4310927230482995630L;
+	List<ConfigFile> configs = new ArrayList<ConfigFile>();
+	
+	public ConfigFileListModel(List<ConfigFile> configList) {
+		this.configs = configList;
+	}
+	
+	@Override
+	public int getSize() {
+		return configs.size();
+	}
+	
+	@Override
+	public Object getElementAt(int index) {
+		return configs.get(index);
+	}
 }

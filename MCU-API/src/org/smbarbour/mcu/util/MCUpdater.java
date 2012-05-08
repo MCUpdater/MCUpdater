@@ -64,6 +64,16 @@ public class MCUpdater {
 		this.parent = parent;
 	}
 
+	public List<Module> loadFromFile(File packFile) {
+		try {
+			parseDocument(readXmlFromFile(packFile));
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		return modList;
+	}
+	
 	public List<Module> loadFromURL(String serverUrl)
 	{
 		try {
@@ -175,6 +185,23 @@ public class MCUpdater {
 		{
 			x.printStackTrace();
 		}
+	}
+	
+	public static Document readXmlFromFile(File packFile) throws Exception
+	{
+		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+		
+		try {
+			DocumentBuilder db = dbf.newDocumentBuilder();
+			return db.parse(packFile);
+		} catch (ParserConfigurationException pce) {
+			pce.printStackTrace();
+		} catch (SAXException se) {
+			se.printStackTrace();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+		return null;
 	}
 	
 	public static Document readXmlFromUrl(String serverUrl) throws Exception
