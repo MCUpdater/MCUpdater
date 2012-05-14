@@ -1,90 +1,211 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Server name="CAH">
+<Server name="CAH Minecraft Server" newsUrl="http://cah.kicks-ass.org/news.html" version="1.1" serverAddress="cah.kicks-ass.org"  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation='http://cloud.github.com/downloads/smbarbour/MCUpdater/ServerPack.xsd'>
 	<Module name="ModLoader 1.1">
-		<URL>http://cah.kicks-ass.org/downloads/Modloader.zip</URL>
+		<URL>http://cah.kicks-ass.org/mods2/ModLoader.zip</URL>
 		<Required>true</Required>
 		<InJar>true</InJar>
+		<MD5>4d61f9897d0d88004aa6e06d66d7a547</MD5>
 	</Module>
 	<Module name="ModLoaderMP 1.1v4">
-		<URL>http://cah.kicks-ass.org/downloads/ModloaderMP.zip</URL>
+		<URL>http://cah.kicks-ass.org/mods2/MLMP-1.1-v4.zip</URL>
 		<Required>true</Required>
 		<InJar>true</InJar>
+		<MD5>cc149ef6d45612ffb194ce3a28ac1a02</MD5>
 	</Module>
 	<Module name="Minecraft Forge 1.3.3.12">
-		<URL>http://cah.kicks-ass.org/downloads/Forge.zip</URL>
+		<URL>http://cah.kicks-ass.org/mods2/minecraftforge-client-1.3.3.12.zip</URL>
 		<Required>true</Required>
 		<InJar>true</InJar>
+		<MD5>0b6e5571cca47de68ae0fd5080bf2f2b</MD5>
 	</Module>
-	<Module name="Buildcraft Core 2.2.12">
-		<URL>http://cah.kicks-ass.org/downloads/buildcraft-client-A-core-2.2.12.zip</URL>
+	<Module name="Buildcraft 2.2.12">
+		<URL>http://cah.kicks-ass.org/mods2/buildcraft-client-A-core-2.2.12.zip</URL>
 		<Required>true</Required>
 		<InJar>false</InJar>
-	</Module>
-	<Module name="Buildcraft Transport 2.2.12">
-		<URL>http://cah.kicks-ass.org/downloads/buildcraft-client-B-transport-2.2.12.zip</URL>
-		<Required>true</Required>
-		<InJar>false</InJar>
-	</Module>
-	<Module name="Buildcraft Factory 2.2.12">
-		<URL>http://cah.kicks-ass.org/downloads/buildcraft-client-B-factory-2.2.12.zip</URL>
-		<Required>true</Required>
-		<InJar>false</InJar>
-	</Module>
-	<Module name="Buildcraft Builders 2.2.12">
-		<URL>http://cah.kicks-ass.org/downloads/buildcraft-client-B-builders-2.2.12.zip</URL>
-		<Required>true</Required>
-		<InJar>false</InJar>
-	</Module>
-	<Module name="Buildcraft Energy 2.2.12">
-		<URL>http://cah.kicks-ass.org/downloads/buildcraft-client-B-energy-2.2.12.zip</URL>
-		<Required>true</Required>
-		<InJar>false</InJar>
-	</Module>
-	<Module name="Railcraft 3.2.1">
-		<URL>http://cah.kicks-ass.org/downloads/railcraft-client-3.2.1.zip</URL>
-		<Required>true</Required>
-		<InJar>false</InJar>
-	</Module>
-	<Module name="Forestry 1.2.6.4">
-		<URL>http://cah.kicks-ass.org/downloads/forestry-1.2.6.4.zip</URL>
-		<Required>true</Required>
-		<InJar>false</InJar>
+		<MD5>dd933a2a11514c06889c977dc303d7de</MD5>
 		<ConfigFile>
-			<URL>http://cah.kicks-ass.org/downloads/forestry.conf</URL>
-			<Path>/config/forestry/base.conf</Path>
+			<URL>http://cah.kicks-ass.org/mods2/buildcraft/config/buildcraft.cfg</URL>
+			<Path>/buildcraft/config/buildcraft.config</Path>
+			<MD5/>
+		</ConfigFile>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/mods2/buildcraft-client-B-transport-2.2.12.zip</URL>
+			<Path>mods/buildcraft-client-B-transport-2.2.12.zip</Path>
+			<MD5>d935869de6787ff5bc1df9f2a1165b1c</MD5>
+		</ConfigFile>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/mods2/buildcraft-client-B-factory-2.2.12.zip</URL>
+			<Path>mods/buildcraft-client-B-factory-2.2.12.zip</Path>
+			<MD5>66310b45eb0d7a156874bd7ee7a9c149</MD5>
+		</ConfigFile>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/mods2/buildcraft-client-B-builders-2.2.12.zip</URL>
+			<Path>mods/buildcraft-client-B-builders-2.2.12.zip</Path>
+			<MD5>da920c5d2892c9f07814b7bcb40b5820</MD5>
+		</ConfigFile>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/mods2/buildcraft-client-B-energy-2.2.12.zip</URL>
+			<Path>mods/buildcraft-client-B-energy-2.2.12.zip</Path>
+			<MD5>e6a4fb1df2e9c271959cc5656a99cd4c</MD5>
+		</ConfigFile>
+	</Module>
+	<Module name="Buildcraft Additional Pipes 32.3">
+		<URL>http://cah.kicks-ass.org/mods2/buildcraft-client-DA-additionalpipes-32-3.zip</URL>
+		<Required>true</Required>
+		<InJar>false</InJar>
+		<MD5>dd933a2a11514c06889c977dc303d7de</MD5>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/mods2/buildcraft/config/AdditionalPipes.cfg</URL>
+			<Path>/buildcraft/config/AdditionalPipes.config</Path>
+			<MD5/>
+		</ConfigFile>
+	</Module>
+	<Module name="Buildcraft Additional Objects - CAH specific">
+		<URL>http://cah.kicks-ass.org/mods2/buildcraft-client-C-additionalbuildcraftobjects-CAH.zip</URL>
+		<Required>true</Required>
+		<InJar>false</InJar>
+		<MD5>e6a4fb1df2e9c271959cc5656a99cd4c</MD5>
+	</Module>
+	<Module name="Railcraft 3.4.2">
+		<URL>http://cah.kicks-ass.org/mods2/Railcraft_Client_3.4.2.zip</URL>
+		<Required>true</Required>
+		<InJar>false</InJar>
+		<MD5/>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/mods2/config/railcraft/railcraft.cfg</URL>
+			<Path>config/railcraft/railcraft.cfg</Path>
+			<MD5/>
+		</ConfigFile>
+	</Module>
+	<Module name="Forestry 1.2.6.6">
+		<URL>http://cah.kicks-ass.org/mods2/forestry-client-A-1.2.6.6.jar</URL>
+		<Required>true</Required>
+		<InJar>false</InJar>
+		<MD5/>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/mods2/config/forestry/base.conf</URL>
+			<Path>config/forestry/base.conf</Path>
+			<MD5/>
+		</ConfigFile>
+	</Module>
+	<Module name="IndustrialCraft2 v1.71">
+		<URL>http://cah.kicks-ass.org/mods2/industrialcraft-2-client_1.71.jar</URL>
+		<Required>true</Required>
+		<InJar>false</InJar>
+		<MD5/>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/mods2/config/IC2.cfg</URL>
+			<Path>config/IC2.cfg</Path>
+			<MD5/>
+		</ConfigFile>
+	</Module>
+	<Module name="IC2 CompactSolars 1.2">
+		<URL>http://cah.kicks-ass.org/mods2/mod_compactsolars-client-1.2.zip</URL>
+		<Required>true</Required>
+		<InJar>false</InJar>
+		<MD5/>
+	</Module>
+	<Module name="BC-IC2 Crossover v.24b">
+		<URL>http://cah.kicks-ass.org/mods2/zzBCIC2crossover_client_v1.24b.zip</URL>
+		<Required>true</Required>
+		<InJar>false</InJar>
+		<MD5/>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/mods2/config/BCIC2Crossover.cfg</URL>
+			<Path>config/BCIC2Crossover.cfg</Path>
+			<MD5/>
+		</ConfigFile>
+	</Module>
+	<Module name="RedPower2 pr4d">
+		<URL>http://cah.kicks-ass.org/mods2/RedPowerCore-2.0pr4d.zip</URL>
+		<Required>true</Required>
+		<InJar>false</InJar>
+		<MD5/>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/mods2/redpower/redpower.cfg</URL>
+			<Path>redpower/redpower.cfg</Path>
+			<MD5/>
+		</ConfigFile>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/mods2/RedPowerArray-2.0pr4d.zip</URL>
+			<Path>mods/RedPowerArray-2.0pr4d.zip</Path>
+			<MD5/>
+		</ConfigFile>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/mods2/RedPowerLighting-2.0pr4d.zip</URL>
+			<Path>mods/RedPowerLighting-2.0pr4d.zip</Path>
+			<MD5/>
+		</ConfigFile>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/mods2/RedPowerLogic-2.0pr4d.zip</URL>
+			<Path>mods/RedPowerLogic-2.0pr4d.zip</Path>
+			<MD5/>
+		</ConfigFile>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/mods2/RedPowerMachine-2.0pr4d.zip</URL>
+			<Path>mods/RedPowerMachine-2.0pr4d.zip</Path>
+			<MD5/>
+		</ConfigFile>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/mods2/RedPowerWiring-2.0pr4d.zip</URL>
+			<Path>mods/RedPowerWiring-2.0pr4d.zip</Path>
+			<MD5/>
+		</ConfigFile>
+		<ConfigFile>
+			<URL>http://cah.kicks-ass.org/mods2/RedPowerWorld-2.0pr4d.zip</URL>
+			<Path>mods/RedPowerWorld-2.0pr4d.zip</Path>
+			<MD5/>
+		</ConfigFile>
+	</Module>
+	<Module name="More Storage 1.4.1">
+		<URL>http://cah.kicks-ass.org/mods2/MoreStorageClientV1.4.1.zip</URL>
+		<Required>true</Required>
+		<InJar>false</InJar>
+		<MD5/>
+	</Module>
+	<Module name="OptiFine HD /w Sphax Textures">
+		<URL>http://cah.kicks-ass.org/mods2/OptiFine_1.1_HD_MT_D6.zip</URL>
+		<Required>false</Required>
+		<InJar>true</InJar>
+		<MD5/>
+		<ConfigFile>
+			<URL>https://sites.google.com/site/smbarbour2/sphax-cah.zip</URL>
+			<Path>texturepacks/sphax-cah.zip</Path>
+			<MD5/>
 		</ConfigFile>
 	</Module>
 	<Module name="CraftGuide">
-		<URL>http://cah.kicks-ass.org/downloads/CraftGuide.zip</URL>
+		<URL>http://cah.kicks-ass.org/mods2/CraftGuide.zip</URL>
 		<Required>false</Required>
 		<InJar>false</InJar>
-	</Module>
-	<Module name="Rei's Minimap v3.0">
-		<URL>http://cah.kicks-ass.org/downloads/[1.1]ReiMinimap_v3.0_01.zip</URL>
-		<Required>false</Required>
-		<InJar>false</InJar>
+		<MD5/>
 	</Module>
 	<Module name="InvTweaks 1.37b">
-		<URL>http://cah.kicks-ass.org/downloads/InvTweaks-1.37b-1.1.zip</URL>
+		<URL>http://cah.kicks-ass.org/mods2/InvTweaks-1.37b-1.1.zip</URL>
 		<Required>false</Required>
 		<InJar>false</InJar>
+		<MD5/>
 	</Module>
 	<Module name="Ellian Detector">
-		<URL>http://cah.kicks-ass.org/downloads/EllianDetector.zip</URL>
+		<URL>http://cah.kicks-ass.org/mods2/EllianDetector.zip</URL>
 		<Required>false</Required>
 		<InJar>false</InJar>
+		<MD5/>
 		<ConfigFile>
-			<URL>http://cah.kicks-ass.org/downloads/EllianDetector.materials.settings</URL>
+			<URL>http://cah.kicks-ass.org/mods2/EllianDetector.materials.settings</URL>
 			<Path>EllianDetector.materials.settings</Path>
+			<MD5/>
 		</ConfigFile>
 		<ConfigFile>
-			<URL>http://cah.kicks-ass.org/downloads/materialsColours.txt</URL>
+			<URL>http://cah.kicks-ass.org/mods2/materialsColours.txt</URL>
 			<Path>materialsColours.txt</Path>
+			<MD5/>
 		</ConfigFile>
 	</Module>
 	<Module name="LightMonitor v1.6">
-		<URL>http://cah.kicks-ass.org/downloads/LightMonitorv1.6.zip</URL>
+		<URL>http://cah.kicks-ass.org/mods2/LightMonitorv1.6.zip</URL>
 		<Required>false</Required>
 		<InJar>false</InJar>
+		<MD5/>
 	</Module>
 </Server>

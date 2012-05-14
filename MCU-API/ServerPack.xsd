@@ -5,28 +5,28 @@
         <xs:element name="Module" maxOccurs="unbounded" minOccurs="0">
           <xs:complexType>
             <xs:sequence>
-              <xs:element type="xs:anyURI" name="URL"/>
-              <xs:element type="xs:boolean" name="Required"/>
-              <xs:element type="xs:boolean" name="InJar"/>
-              <xs:element type="xs:string" name="MD5"/>
+              <xs:element type="xs:anyURI" name="URL" default="http://www.example.org/samplemod.zip"/>
+              <xs:element type="xs:boolean" name="Required" default="false"/>
+              <xs:element type="xs:boolean" name="InJar" default="false"/>
+              <xs:element type="xs:string" name="MD5" default=""/>
               <xs:element name="ConfigFile" maxOccurs="unbounded" minOccurs="0">
                 <xs:complexType>
                   <xs:sequence>
-                    <xs:element type="xs:anyURI" name="URL"/>
-                    <xs:element type="xs:string" name="Path"/>
-                    <xs:element type="xs:string" name="MD5"/>
+                    <xs:element type="xs:anyURI" name="URL" default="http://www.example.org/sample.cfg"/>
+                    <xs:element type="xs:string" name="Path" default="/config/sample.cfg"/>
+                    <xs:element type="xs:string" name="MD5" default=""/>
                   </xs:sequence>
                 </xs:complexType>
               </xs:element>
             </xs:sequence>
-            <xs:attribute type="xs:string" name="name" use="required"/>
+            <xs:attribute type="xs:string" name="name" use="required" default="Sample Mod"/>
           </xs:complexType>
         </xs:element>
       </xs:sequence>
-      <xs:attribute type="xs:string" name="name" use="required"/>
-      <xs:attribute type="xs:anyURI" name="newsUrl" use="required"/>
-      <xs:attribute type="xs:string" name="version" use="required"/>
-      <xs:attribute type="xs:string" name="serverAddress" use="required"/>
+      <xs:attribute type="xs:string" name="name" use="required" default="Server Name"/>
+      <xs:attribute type="xs:anyURI" name="newsUrl" use="required" default="http://www.example.org/news.html"/>
+      <xs:attribute type="xs:string" name="version" use="required" default="1.2.5"/>
+      <xs:attribute type="xs:string" name="serverAddress" use="required" default="mcserver.example.org:12345"/>
     </xs:complexType>
   </xs:element>
 </xs:schema>
