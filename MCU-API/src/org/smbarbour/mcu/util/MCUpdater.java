@@ -47,7 +47,7 @@ public class MCUpdater {
 			MCFolder = System.getenv("APPDATA") + sep + ".minecraft"; 
 		} else if(System.getProperty("os.name").startsWith("Mac"))
 		{
-			MCFolder = System.getProperty("user.home") + sep + "Library" + sep + "Application Support" + sep + ".minecraft";
+			MCFolder = System.getProperty("user.home") + sep + "Library" + sep + "Application Support" + sep + "minecraft";
 		}
 		else
 		{
