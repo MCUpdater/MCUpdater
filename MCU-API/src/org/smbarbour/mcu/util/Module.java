@@ -8,14 +8,16 @@ public class Module {
 	private String url;
 	private Boolean required;
 	private Boolean inJar;
+	private Boolean extract;
 	private List<ConfigFile> configs;
 	
-	public Module(String name, String url, Boolean required, Boolean inJar, List<ConfigFile> configs)
+	public Module(String name, String url, Boolean required, Boolean inJar, Boolean extract, List<ConfigFile> configs)
 	{
 		this.name=name;
 		this.url=url;
 		this.required=required;
 		this.inJar=inJar;
+		this.setExtract(extract);
 		if(configs != null)
 		{
 			this.configs = configs;
@@ -63,10 +65,23 @@ public class Module {
 	{
 		this.inJar=inJar;
 	}
-		
+
+	public Boolean getExtract() {
+		return extract;
+	}
+
+	public void setExtract(Boolean extract) {
+		this.extract = extract;
+	}
+	
 	public List<ConfigFile> getConfigs()
 	{
 		return configs;
+	}
+	
+	public void setConfigs(List<ConfigFile> configs)
+	{
+		this.configs = configs;
 	}
 }
 

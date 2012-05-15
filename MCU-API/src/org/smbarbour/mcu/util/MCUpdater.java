@@ -244,6 +244,7 @@ public class MCUpdater {
 		String url = getTextValue(modEl,"URL");
 		Boolean required = getBooleanValue(modEl,"Required");
 		Boolean inJar = getBooleanValue(modEl,"InJar");
+		Boolean extract = getBooleanValue(modEl,"Extract");
 		List<ConfigFile> configs = new ArrayList<ConfigFile>();
 		NodeList nl = modEl.getElementsByTagName("ConfigFile");
 //		System.out.println("NodeList[getLength]: " + nl.getLength());
@@ -253,7 +254,7 @@ public class MCUpdater {
 			ConfigFile cf = getConfigFile(el);
 			configs.add(cf);
 		}
-		Module m = new Module(name, url, required, inJar, configs);
+		Module m = new Module(name, url, required, inJar, extract, configs);
 		return m;
 	}
 	
@@ -518,6 +519,13 @@ public class MCUpdater {
 					System.out.println(modPath.getPath());
 					FileUtils.copyURLToFile(modURL, modPath);
 					Archive.extractZip(modPath, tmpFolder);
+					modPath.delete();
+				} else if (entry.getExtract()) {
+					modPath = new File(tmpFolder.getPath() + sep + modFilename);
+					modPath.getParentFile().mkdirs();
+					System.out.println(modPath.getPath());
+					FileUtils.copyURLToFile(modURL, modPath);
+					Archive.extractZip(modPath, new File(MCFolder + sep + "mods" + sep));
 					modPath.delete();
 				} else {
 					modPath = new File(MCFolder + sep + "mods" + sep + modFilename);
