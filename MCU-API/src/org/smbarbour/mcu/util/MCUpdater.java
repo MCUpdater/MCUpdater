@@ -403,6 +403,9 @@ public class MCUpdater {
 		if(path.contains("saves")) {
 			return true;
 		}
+		if(path.contains("screenshots")) {
+			return true;
+		}
 		if(path.contains("stats")) {
 			return true;
 		}
