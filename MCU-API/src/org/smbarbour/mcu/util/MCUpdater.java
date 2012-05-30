@@ -246,6 +246,7 @@ public class MCUpdater {
 		Boolean inJar = getBooleanValue(modEl,"InJar");
 		Boolean extract = getBooleanValue(modEl,"Extract");
 		Boolean inRoot = getBooleanValue(modEl,"InRoot");
+		String md5 = getTextValue(modEl,"MD5");
 		List<ConfigFile> configs = new ArrayList<ConfigFile>();
 		NodeList nl = modEl.getElementsByTagName("ConfigFile");
 //		System.out.println("NodeList[getLength]: " + nl.getLength());
@@ -255,7 +256,7 @@ public class MCUpdater {
 			ConfigFile cf = getConfigFile(el);
 			configs.add(cf);
 		}
-		Module m = new Module(name, url, required, inJar, extract, inRoot, configs);
+		Module m = new Module(name, url, required, inJar, extract, inRoot, md5, configs);
 		return m;
 	}
 	
@@ -263,7 +264,8 @@ public class MCUpdater {
 	{
 		String url = getTextValue(cfEl,"URL");
 		String path = getTextValue(cfEl,"Path");
-		ConfigFile cf = new ConfigFile(url,path);
+		String md5 = getTextValue(cfEl,"MD5");
+		ConfigFile cf = new ConfigFile(url,path,md5);
 		return cf;
 	}
 	
