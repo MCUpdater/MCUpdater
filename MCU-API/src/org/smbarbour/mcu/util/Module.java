@@ -9,15 +9,19 @@ public class Module {
 	private Boolean required;
 	private Boolean inJar;
 	private Boolean extract;
+	private Boolean inRoot;
+	private String md5;
 	private List<ConfigFile> configs;
 	
-	public Module(String name, String url, Boolean required, Boolean inJar, Boolean extract, List<ConfigFile> configs)
+	public Module(String name, String url, Boolean required, Boolean inJar, Boolean extract, Boolean inRoot, String md5, List<ConfigFile> configs)
 	{
 		this.name=name;
 		this.url=url;
 		this.required=required;
 		this.inJar=inJar;
 		this.setExtract(extract);
+		this.setInRoot(inRoot);
+		this.setMD5(md5);
 		if(configs != null)
 		{
 			this.configs = configs;
@@ -73,7 +77,23 @@ public class Module {
 	public void setExtract(Boolean extract) {
 		this.extract = extract;
 	}
+
+	public Boolean getInRoot() {
+		return inRoot;
+	}
+
+	public void setInRoot(Boolean inRoot) {
+		this.inRoot = inRoot;
+	}
 	
+	public String getMD5() {
+		return md5;
+	}
+	
+	public void setMD5(String md5) {
+		this.md5 = md5;
+	}
+
 	public List<ConfigFile> getConfigs()
 	{
 		return configs;
