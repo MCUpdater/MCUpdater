@@ -50,7 +50,9 @@
         </javac>
     </target>
     <target depends="build-project" name="package">
-	<jar destfile="dist/MCUpdater.jar" basedir="bin">
+	<jar destfile="dist/MCUpdater.jar">
+		<fileset dir="bin"/>
+		<fileset dir="../MCU-API/bin"/>
 		<manifest>
 			<attribute name="Main-Class" value="org.smbarbour.mcu.Main" />
 		</manifest>
