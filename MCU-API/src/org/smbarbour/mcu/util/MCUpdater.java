@@ -402,6 +402,9 @@ public class MCUpdater {
 		if(path.contains("saves")) {
 			return true;
 		}
+		if(path.contains("screenshots")) {
+			return true;
+		}
 		if(path.contains("stats")) {
 			return true;
 		}
@@ -471,6 +474,11 @@ public class MCUpdater {
 			entry.delete();
 		}
 		Archive.extractZip(archive, new File(MCFolder));
+	}
+
+	public boolean checkForBackup(ServerList server) {
+		File jar = new File(archiveFolder.getPath() + sep + "mc-" + server.getVersion() + ".jar");
+		return jar.exists();
 	}
 	
 	public void installMods(ServerList server, List<Module> toInstall) throws FileNotFoundException {
