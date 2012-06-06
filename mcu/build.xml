@@ -49,6 +49,13 @@
             <classpath refid="MCUpdater.classpath"/>
         </javac>
     </target>
+	<target depends="build-project" name="package">
+		<jar destfile="dist/MCUpdater.jar" basedir="bin">
+			<manifest>
+				<attribute name="Main-Class" value="org.smbarbour.mcu.Main" />
+			</manifest>
+		</jar>
+	</target>
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
     <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
         <copy todir="${ant.library.dir}">
