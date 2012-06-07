@@ -284,8 +284,16 @@ public class MainForm extends MCUApp {
 		JMenu mnInfo = new JMenu("Info");
 		menuBar.add(mnInfo);
 
-		JMenuItem mntmMinecraftjarVersion = new JMenuItem("minecraft.jar version: " + mcu.getMCVersion());
+		final JMenuItem mntmMinecraftjarVersion = new JMenuItem("minecraft.jar version: " + mcu.getMCVersion());
 		mnInfo.add(mntmMinecraftjarVersion);
+		
+		JMenuItem mntmRecheckVersion = new JMenuItem("Recheck Version");
+		mntmRecheckVersion.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				mntmMinecraftjarVersion.setText("minecraft.jar version: " + mcu.getMCVersion());
+			}
+		});
+		mnInfo.add(mntmRecheckVersion);
 	}
 
 	public void updateServerList()
