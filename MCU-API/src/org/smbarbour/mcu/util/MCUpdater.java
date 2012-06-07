@@ -487,6 +487,10 @@ public class MCUpdater {
 	public void installMods(ServerList server, List<Module> toInstall) throws FileNotFoundException {
 		File folder = new File(MCFolder);
 		List<File> contents = recurseFolder(folder, true);
+		File jar = new File(archiveFolder.getPath() + sep + "mc-" + server.getVersion() + ".jar");
+		if(!jar.exists()) {
+			throw new FileNotFoundException("A backup copy of minecraft.jar for version " + server.getVersion() + " was not found.");
+		}
 		parent.setLblStatus("Clearing existing configuration");
 		Iterator<File> it = new ArrayList<File>(contents).iterator();
 		while(it.hasNext()) {
@@ -506,10 +510,6 @@ public class MCUpdater {
 		File buildJar = new File(archiveFolder.getPath() + sep + "build.jar");
 		if(buildJar.exists()) {
 			buildJar.delete();
-		}
-		File jar = new File(archiveFolder.getPath() + sep + "mc-" + server.getVersion() + ".jar");
-		if(!jar.exists()) {
-			throw new FileNotFoundException("A backup copy of minecraft.jar for version " + server.getVersion() + " was not found.");
 		}
 		Archive.extractZip(jar, tmpFolder);
 		
