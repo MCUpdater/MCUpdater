@@ -403,7 +403,7 @@ class JModuleCheckBox extends JCheckBox
 	}
 }
 
-class JServerMenuItem extends JRadioButtonMenuItem
+class JServerMenuItem extends JMenuItem
 {
 	private ServerList entry;
 	/**
