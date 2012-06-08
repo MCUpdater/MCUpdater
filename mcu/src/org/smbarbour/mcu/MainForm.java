@@ -109,6 +109,7 @@ public class MainForm extends MCUApp {
 			public void actionPerformed(ActionEvent e) {
 				new Thread() {
 					public void run() {
+						 mcu.getMCVersion();
 						int saveConfig = JOptionPane.showConfirmDialog(null, "Do you want to save a backup of your existing configuration?", "MCUpdater", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 						if(saveConfig == JOptionPane.YES_OPTION){
 							setLblStatus("Creating backup");
