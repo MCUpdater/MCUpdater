@@ -20,10 +20,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JTextPane;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -175,7 +177,13 @@ public class MainForm extends MCUApp {
 				ProcessBuilder pb = new ProcessBuilder("java","-jar",launcher.getPath());
 				pb.redirectErrorStream(true);
 				try {
-					pb.start();
+					Process task = pb.start();
+					BufferedReader buffRead = new BufferedReader(new InputStreamReader(task.getInputStream()));
+					String line;
+					while ((line = buffRead.readLine()) != null)
+					{
+						System.out.println(line);
+					}
 				} catch (IOException ioe) {
 					ioe.printStackTrace();
 				}
