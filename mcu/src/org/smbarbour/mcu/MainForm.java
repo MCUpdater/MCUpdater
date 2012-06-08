@@ -36,8 +36,6 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
-import javax.swing.JRadioButtonMenuItem;
-
 import org.smbarbour.mcu.MCUApp;
 import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.Module;
