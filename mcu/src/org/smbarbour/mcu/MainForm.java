@@ -142,9 +142,11 @@ public class MainForm extends MCUApp {
 							setLblStatus("Installing mods");
 							setProgressBar(25);
 							mcu.installMods(selected, toInstall);
-							setLblStatus("Writing servers.dat");
-							setProgressBar(90);
-							mcu.writeMCServerFile(selected.getName(), selected.getAddress());
+							if (selected.isGenerateList()) {
+								setLblStatus("Writing servers.dat");
+								setProgressBar(90);
+								mcu.writeMCServerFile(selected.getName(), selected.getAddress());
+							}
 							setLblStatus("Finished");
 							setProgressBar(100);
 						} catch (FileNotFoundException fnf) {
@@ -268,7 +270,7 @@ public class MainForm extends MCUApp {
 			try {
 				Document serverHeader = MCUpdater.readXmlFromUrl(packUrl);
 				Element docEle = serverHeader.getDocumentElement();
-				ServerList sl = new ServerList(docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"));
+				ServerList sl = new ServerList(docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), mcu.parseBoolean(docEle.getAttribute("generateList")));
 				List<ServerList> servers = new ArrayList<ServerList>();
 				servers.add(sl);
 				mcu.writeServerList(servers);

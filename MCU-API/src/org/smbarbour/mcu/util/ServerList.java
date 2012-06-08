@@ -6,14 +6,16 @@ public class ServerList {
 	private String newsUrl;
 	private String version;
 	private String address;
+	private boolean generateList = true;
 	
-	public ServerList(String name, String packUrl, String newsUrl, String version, String address)
+	public ServerList(String name, String packUrl, String newsUrl, String version, String address, boolean generateList)
 	{
 		this.name = name;
 		this.packUrl = packUrl;
 		this.newsUrl = newsUrl;
 		this.version = version;
 		this.address = address;
+		this.generateList = generateList;
 	}
 	
 	public String getName()
@@ -58,5 +60,13 @@ public class ServerList {
 
 	public void setAddress(String address) {
 		this.address = address;
+	}
+
+	public boolean isGenerateList() {
+		return generateList;
+	}
+
+	public void setGenerateList(boolean generateList) {
+		this.generateList = generateList;
 	}
 }

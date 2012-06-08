@@ -138,7 +138,7 @@ public class MCUpdater {
 				try {
 					Document serverHeader = readXmlFromUrl(entry);
 					Element docEle = serverHeader.getDocumentElement();
-					slList.add(new ServerList(docEle.getAttribute("name"), entry, docEle.getAttribute("newsUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress")));
+					slList.add(new ServerList(docEle.getAttribute("name"), entry, docEle.getAttribute("newsUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), parseBoolean(docEle.getAttribute("generateList"))));
 					
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -163,6 +163,14 @@ public class MCUpdater {
 		return slList;
 	}
 	
+	public boolean parseBoolean(String attribute) {
+		if (attribute.equalsIgnoreCase("false")) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+
 	public void writeServerList(List<ServerList> serverlist)
 	{
 		try
