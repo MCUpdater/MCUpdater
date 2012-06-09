@@ -347,7 +347,11 @@ public class MainForm extends MCUApp {
 									chkModule.setSelected(true);
 									chkModule.setEnabled(false);
 								}
-								pnlModList.add(chkModule);	
+								if(modEntry.getIsDefault())
+								{
+									chkModule.setSelected(true);
+								}
+								pnlModList.add(chkModule);
 							}
 							pnlModList.setVisible(true);
 						} catch (IOException ioe) {
