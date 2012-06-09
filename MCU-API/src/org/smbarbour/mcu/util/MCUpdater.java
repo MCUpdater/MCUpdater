@@ -282,7 +282,10 @@ public class MCUpdater {
 		NodeList nl = ele.getElementsByTagName(tagName);
 		if(nl != null && nl.getLength() > 0) {
 			Element el = (Element)nl.item(0);
-			textVal = el.getFirstChild().getNodeValue();
+			if(el != null) {
+				Node node = el.getFirstChild();
+				if(node != null) textVal = node.getNodeValue();
+			}
 		}
 		return textVal;
 	}
