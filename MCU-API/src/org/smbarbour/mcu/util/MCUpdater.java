@@ -251,6 +251,7 @@ public class MCUpdater {
 		String name = modEl.getAttribute("name");
 		String url = getTextValue(modEl,"URL");
 		Boolean required = getBooleanValue(modEl,"Required");
+		Boolean isDefault = getBooleanValue(modEl,"IsDefault");
 		Boolean inJar = getBooleanValue(modEl,"InJar");
 		Boolean extract = getBooleanValue(modEl,"Extract");
 		Boolean inRoot = getBooleanValue(modEl,"InRoot");
@@ -264,7 +265,7 @@ public class MCUpdater {
 			ConfigFile cf = getConfigFile(el);
 			configs.add(cf);
 		}
-		Module m = new Module(name, url, required, inJar, extract, inRoot, md5, configs);
+		Module m = new Module(name, url, required, inJar, extract, inRoot, isDefault, md5, configs);
 		return m;
 	}
 	
@@ -282,7 +283,10 @@ public class MCUpdater {
 		NodeList nl = ele.getElementsByTagName(tagName);
 		if(nl != null && nl.getLength() > 0) {
 			Element el = (Element)nl.item(0);
-			textVal = el.getFirstChild().getNodeValue();
+			if(el != null) {
+				Node node = el.getFirstChild();
+				if(node != null) textVal = node.getNodeValue();
+			}
 		}
 		return textVal;
 	}
