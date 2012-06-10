@@ -20,12 +20,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JTextPane;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
@@ -47,9 +45,6 @@ import org.w3c.dom.Element;
 import javax.swing.JProgressBar;
 import java.util.ResourceBundle;
 
-//import org.lobobrowser.gui.FramePanel;
-//import org.lobobrowser.main.PlatformInit;
-
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
 	private static MainForm window;
@@ -58,14 +53,6 @@ public class MainForm extends MCUApp {
 	private JMenu mnList = new JMenu("List");
 	private final JTextPane browser = new JTextPane();
 	private ServerList selected;
-	/*	private URL packURL;
-	private URLConnection con;
-	private InputStream is;
-	private DOMSource parser;
-	private Document doc;
-	private DOMAnalyzer da;
-	private BrowserCanvas browser;
-	 */	
 	private final JPanel pnlModList = new JPanel();
 	private JLabel lblStatus;
 	private JProgressBar progressBar;
@@ -84,13 +71,6 @@ public class MainForm extends MCUApp {
 	 * Initialize the contents of the frame.
 	 */
 	void initialize() {
-		/*		try {
-			PlatformInit.getInstance().initLogging(false);
-			PlatformInit.getInstance().init(false,false);
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		 */		
 		frmMain = new JFrame();
 		frmMain.setTitle("[No Server Selected] - Minecraft Updater");
 		frmMain.setResizable(false);
@@ -174,19 +154,7 @@ public class MainForm extends MCUApp {
 						ioe.printStackTrace();
 					}
 				}
-				ProcessBuilder pb = new ProcessBuilder("java","-jar",launcher.getPath());
-				pb.redirectErrorStream(true);
-				try {
-					Process task = pb.start();
-					BufferedReader buffRead = new BufferedReader(new InputStreamReader(task.getInputStream()));
-					String line;
-					while ((line = buffRead.readLine()) != null)
-					{
-						System.out.println(line);
-					}
-				} catch (IOException ioe) {
-					ioe.printStackTrace();
-				}
+				LauncherThread.launch(launcher);
 			}
 		});
 		pnlButtons.add(btnLaunchMinecraft);
@@ -231,7 +199,6 @@ public class MainForm extends MCUApp {
 		browser.setEditable(false);
 		browser.setContentType("text/html");
 
-		//final FramePanel browser = new FramePanel();
 		browser.setText("<HTML><BODY>There are no servers currently defined.</BODY></HTML>");
 		JScrollPane scrollPane = new JScrollPane(browser);
 		scrollPane.setViewportBorder(null);
@@ -255,10 +222,6 @@ public class MainForm extends MCUApp {
 
 		mnServers.add(mnList);
 
-		// Sample entry
-		//		JRadioButtonMenuItem mnuServerEntry = new JRadioButtonMenuItem("New radio item");
-		//		mnList.add(mnuServerEntry);
-		//
 		File serverList = new File(mcu.getArchiveFolder() + MCUpdater.sep + "mcuServers.dat");
 		while(!serverList.exists()){
 			String packUrl = (String) JOptionPane.showInputDialog(null, "No servers defined.\nPlease enter URL to ServerPack.xml: ", "MCUpdater", JOptionPane.INFORMATION_MESSAGE, null, null, Customization.getString("InitialServer.text"));
@@ -325,7 +288,6 @@ public class MainForm extends MCUApp {
 					@Override
 					public void actionPerformed(ActionEvent arg0) {
 						try {
-							//browser.navigate(mnuServerEntry.getServerEntry().getNewsUrl());
 							selected = mnuServerEntry.getServerEntry();
 							browser.setPage(mnuServerEntry.getServerEntry().getNewsUrl());
 							frmMain.setTitle(mnuServerEntry.getServerEntry().getName() + " - Minecraft Updater");

@@ -7,6 +7,7 @@
             <xs:sequence>
               <xs:element type="xs:anyURI" name="URL"/>
               <xs:element type="xs:boolean" name="Required"/>
+              <xs:element type="xs:boolean" name="IsDefault"/>
               <xs:element type="xs:boolean" name="InJar"/>
               <xs:element type="xs:boolean" name="Extract"/>
               <xs:element type="xs:boolean" name="InRoot"/>
