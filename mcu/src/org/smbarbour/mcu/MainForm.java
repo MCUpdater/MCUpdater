@@ -43,10 +43,14 @@ import org.w3c.dom.Element;
 
 
 import javax.swing.JProgressBar;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+
 import java.util.ResourceBundle;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
+	private static final String VERSION = "v1.00";
 	private static MainForm window;
 	private JFrame frmMain;
 	final MCUpdater mcu = new MCUpdater();
@@ -72,7 +76,7 @@ public class MainForm extends MCUApp {
 	 */
 	void initialize() {
 		frmMain = new JFrame();
-		frmMain.setTitle("[No Server Selected] - Minecraft Updater");
+		frmMain.setTitle("[No Server Selected] - Minecraft Updater " + MainForm.VERSION);
 		frmMain.setResizable(false);
 		frmMain.setBounds(100, 100, 834, 592);
 		frmMain.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -198,6 +202,20 @@ public class MainForm extends MCUApp {
 		pnlModList.setLayout(new BoxLayout(pnlModList, BoxLayout.Y_AXIS));
 		browser.setEditable(false);
 		browser.setContentType("text/html");
+		browser.addHyperlinkListener(new HyperlinkListener(){
+
+			@Override
+			public void hyperlinkUpdate(HyperlinkEvent he) {
+				if (he.getEventType() == HyperlinkEvent.EventType.ACTIVATED){
+					try {
+						MCUpdater.openLink(he.getURL().toURI());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			
+		});
 
 		browser.setText("<HTML><BODY>There are no servers currently defined.</BODY></HTML>");
 		JScrollPane scrollPane = new JScrollPane(browser);
@@ -290,7 +308,7 @@ public class MainForm extends MCUApp {
 						try {
 							selected = mnuServerEntry.getServerEntry();
 							browser.setPage(mnuServerEntry.getServerEntry().getNewsUrl());
-							frmMain.setTitle(mnuServerEntry.getServerEntry().getName() + " - Minecraft Updater");
+							frmMain.setTitle(mnuServerEntry.getServerEntry().getName() + " - Minecraft Updater " + MainForm.VERSION);
 							List<Module> modules = mcu.loadFromURL(mnuServerEntry.getServerEntry().getPackUrl());
 							Iterator<Module> itMods = modules.iterator();
 							pnlModList.setVisible(false);
