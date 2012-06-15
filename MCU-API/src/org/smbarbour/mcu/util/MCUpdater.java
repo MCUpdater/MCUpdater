@@ -42,18 +42,37 @@ public class MCUpdater {
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
-		if(System.getProperty("os.name").startsWith("Windows"))
-		{
-			MCFolder = System.getenv("APPDATA") + sep + ".minecraft"; 
-		} else if(System.getProperty("os.name").startsWith("Mac"))
-		{
-			MCFolder = System.getProperty("user.home") + sep + "Library" + sep + "Application Support" + sep + "minecraft";
-		}
-		else
-		{
-			MCFolder = System.getProperty("user.home") + sep + ".minecraft";
-		}
+	}
+	
+	public void setWorkingPath(String args) {				//implement setter for working path
+		System.out.println("args: " + args);
+		if(args.equals("CURRENT")) {						//argument CURRENT to set working path to folder the jar is in
+			MCFolder = System.getProperty("user.dir");
+		} else if(args.equals("STANDARD")) {				//argument STANDARD (or none) to use standard .minecraft foler
+			if(System.getProperty("os.name").startsWith("Windows"))
+			{
+				MCFolder = System.getenv("APPDATA") + sep + ".minecraft"; 
+			} else if(System.getProperty("os.name").startsWith("Mac"))
+			{
+				MCFolder = System.getProperty("user.home") + sep + "Library" + sep + "Application Support" + sep + "minecraft";
+			}
+			else
+			{
+				MCFolder = System.getProperty("user.home") + sep + ".minecraft";
+			}
+		} else {											//assuming that there's a folder in the argument
+			File directory = new File(args);
+			if(!(directory.exists())) {						//check if directory is existent
+				System.out.println("directory is inexistent, aborting!");
+				System.exit(0);
+			} else {
+				System.out.println("directory exists, continuing!");
+				MCFolder = args;
+			}
+		}		
+		
 		archiveFolder = new File(MCFolder + sep + "mcu");
+		System.out.println("Working Path: " + MCFolder);	//Working Path debug message
 	}
 	
 	public MCUApp getParent() {
