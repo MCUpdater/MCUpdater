@@ -60,11 +60,18 @@ public class MainForm extends MCUApp {
 	private final JPanel pnlModList = new JPanel();
 	private JLabel lblStatus;
 	private JProgressBar progressBar;
+	private String args;				//create cmdline argument string
 
 	/**
 	 * Create the application.
 	 */
-	public MainForm() {
+	public MainForm(String[] args) {	//changed MainForm to take argument string array
+        if (args.length > 0) {			//simple formatting of cmdline arguments
+            this.args = args[0];
+        } else {
+            this.args = "CURRENT";		//define standard directory when started without commandline
+        }
+		mcu.setWorkingPath(this.args);	//call working path setter
 		initialize();
 		window = this;
 		window.frmMain.setVisible(true);
