@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.io.*;
 
+import javax.swing.ImageIcon;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -34,6 +35,7 @@ public class MCUpdater {
 	private MCUApp parent;
 	public final static String sep = System.getProperty("file.separator");
 	public MessageDigest md5;
+	public ImageIcon defaultIcon;
 
 	public MCUpdater()
 	{
@@ -54,6 +56,11 @@ public class MCUpdater {
 			MCFolder = System.getProperty("user.home") + sep + ".minecraft";
 		}
 		archiveFolder = new File(MCFolder + sep + "mcu");
+		try {
+			defaultIcon = new ImageIcon(new URL("http://www.minecraft.net/favicon.png"));
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public MCUApp getParent() {
@@ -138,8 +145,7 @@ public class MCUpdater {
 				try {
 					Document serverHeader = readXmlFromUrl(entry);
 					Element docEle = serverHeader.getDocumentElement();
-					slList.add(new ServerList(docEle.getAttribute("name"), entry, docEle.getAttribute("newsUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), parseBoolean(docEle.getAttribute("generateList"))));
-					
+					slList.add(new ServerList(docEle.getAttribute("name"), entry, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision")));
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

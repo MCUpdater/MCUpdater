@@ -4,18 +4,22 @@ public class ServerList {
 	private String name;
 	private String packUrl;
 	private String newsUrl;
+	private String iconUrl;
 	private String version;
 	private String address;
 	private boolean generateList = true;
+	private String revision;
 	
-	public ServerList(String name, String packUrl, String newsUrl, String version, String address, boolean generateList)
+	public ServerList(String name, String packUrl, String newsUrl, String iconUrl, String version, String address, boolean generateList, String revision)
 	{
 		this.name = name;
 		this.packUrl = packUrl;
 		this.newsUrl = newsUrl;
+		this.iconUrl = iconUrl;
 		this.version = version;
 		this.address = address;
 		this.generateList = generateList;
+		this.revision = revision;
 	}
 	
 	public String getName()
@@ -68,5 +72,21 @@ public class ServerList {
 
 	public void setGenerateList(boolean generateList) {
 		this.generateList = generateList;
+	}
+
+	public String getIconUrl() {
+		return iconUrl;
+	}
+
+	public void setIconUrl(String iconUrl) {
+		this.iconUrl = iconUrl;
+	}
+
+	public String getRevision() {
+		return revision;
+	}
+
+	public void setRevision(String revision) {
+		this.revision = revision;
 	}
 }

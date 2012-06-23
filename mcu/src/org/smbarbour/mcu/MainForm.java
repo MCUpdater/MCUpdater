@@ -14,7 +14,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JCheckBox;
 import javax.swing.BoxLayout;
-import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JTextPane;
@@ -38,6 +37,7 @@ import org.smbarbour.mcu.MCUApp;
 import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.Module;
 import org.smbarbour.mcu.util.ServerList;
+import org.smbarbour.mcu.util.ServerListPacket;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -45,8 +45,14 @@ import org.w3c.dom.Element;
 import javax.swing.JProgressBar;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import java.util.ResourceBundle;
+import javax.swing.JList;
+import javax.swing.AbstractListModel;
+import javax.swing.JToolBar;
+import javax.swing.ImageIcon;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
@@ -57,10 +63,14 @@ public class MainForm extends MCUApp {
 	private JMenu mnList = new JMenu("List");
 	private final JTextPane browser = new JTextPane();
 	private ServerList selected;
+	//private final JPanel pnlServerList = new JPanel();
 	private final JPanel pnlModList = new JPanel();
 	private JLabel lblStatus;
 	private JProgressBar progressBar;
 
+	private JList serverList;
+	private SLListModel slModel;
+	
 	/**
 	 * Create the application.
 	 */
@@ -78,7 +88,7 @@ public class MainForm extends MCUApp {
 		frmMain = new JFrame();
 		frmMain.setTitle("[No Server Selected] - Minecraft Updater " + MainForm.VERSION);
 		frmMain.setResizable(false);
-		frmMain.setBounds(100, 100, 834, 592);
+		frmMain.setBounds(100, 100, 1175, 592);
 		frmMain.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		JPanel pnlFooter = new JPanel();
@@ -187,15 +197,52 @@ public class MainForm extends MCUApp {
 
 		Component horizontalStrut = Box.createHorizontalStrut(5);
 		pnlFooter.add(horizontalStrut, BorderLayout.WEST);
+		
+		JPanel pnlLeft = new JPanel();
+		frmMain.getContentPane().add(pnlLeft, BorderLayout.WEST);
+		pnlLeft.setLayout(new BorderLayout(0, 0));
+		
+		JLabel lblServers = new JLabel("Servers");
+		lblServers.setHorizontalAlignment(SwingConstants.CENTER);
+		lblServers.setFont(new Font("Dialog", Font.BOLD, 14));
+		pnlLeft.add(lblServers, BorderLayout.NORTH);
+		
+		slModel = new SLListModel();
+		serverList = new JList();
+		serverList.setModel(slModel);
+		serverList.setCellRenderer(new ServerListCellRenderer());
+		serverList.addListSelectionListener(new ListSelectionListener() {
 
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				if (!e.getValueIsAdjusting())
+				{
+					changeSelectedServer(((ServerListPacket)serverList.getSelectedValue()).getEntry());
+				}
+			}
+			
+		});
+				
+		JScrollPane serverScroller = new JScrollPane(serverList);
+		pnlLeft.add(serverScroller, BorderLayout.CENTER);
+						
 		JPanel pnlRight = new JPanel();
 		frmMain.getContentPane().add(pnlRight, BorderLayout.EAST);
 		pnlRight.setLayout(new BorderLayout(0, 0));
 
-		JLabel lblChanges = new JLabel("Changes");
+		JPanel pnlChangesTitle = new JPanel();
+		pnlChangesTitle.setLayout(new BorderLayout(0,0));
+		JLabel lblChanges = new JLabel("Modules");
 		lblChanges.setHorizontalAlignment(SwingConstants.CENTER);
 		lblChanges.setFont(new Font("Dialog", Font.BOLD, 14));
-		pnlRight.add(lblChanges, BorderLayout.NORTH);
+		pnlChangesTitle.add(lblChanges, BorderLayout.CENTER);
+		pnlRight.add(pnlChangesTitle, BorderLayout.NORTH);
+		
+		Component hstrut_ChangesLeft = Box.createHorizontalStrut(75);
+		pnlChangesTitle.add(hstrut_ChangesLeft, BorderLayout.WEST);
+		
+		Component hstrut_ChangesRight = Box.createHorizontalStrut(75);
+		pnlChangesTitle.add(hstrut_ChangesRight, BorderLayout.EAST);
 
 		JScrollPane modScroller = new JScrollPane(pnlModList);
 		pnlRight.add(modScroller, BorderLayout.CENTER);
@@ -222,9 +269,69 @@ public class MainForm extends MCUApp {
 		scrollPane.setViewportBorder(null);
 		browser.setBorder(null);
 		frmMain.getContentPane().add(scrollPane, BorderLayout.CENTER);
+		
+		JToolBar toolBar = new JToolBar();
+		toolBar.setFloatable(false);
+		frmMain.getContentPane().add(toolBar, BorderLayout.NORTH);
+		
+		JButton btnManageServers = new JButton("");
+		btnManageServers.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				ServerManager sm = new ServerManager(window);
+				sm.setVisible(true);
+			}
+		});
+		btnManageServers.setToolTipText("Manage Servers");
+		btnManageServers.setIcon(new ImageIcon(MainForm.class.getResource("/icons/server_database.png")));
+		toolBar.add(btnManageServers);
+		
+		JButton btnOptions = new JButton("");
+		btnOptions.setToolTipText("Options");
+		btnOptions.setIcon(new ImageIcon(MainForm.class.getResource("/icons/application_edit.png")));
+		toolBar.add(btnOptions);
+		
+		JButton btnBackups = new JButton("");
+		btnBackups.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				BackupManager bm = new BackupManager(window);
+				bm.setVisible(true);
+			}
+		});
+		btnBackups.setIcon(new ImageIcon(MainForm.class.getResource("/icons/folder_database.png")));
+		btnBackups.setToolTipText("Backups");
+		toolBar.add(btnBackups);
+		
+		Component horizontalGlue = Box.createHorizontalGlue();
+		toolBar.add(horizontalGlue);
+		
+		JLabel lblNewLabel = new JLabel("minecraft.jar version: " + mcu.getMCVersion());
+		toolBar.add(lblNewLabel);
+		
+		Component horizontalStrut_1 = Box.createHorizontalStrut(5);
+		toolBar.add(horizontalStrut_1);
 
+		File serverFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "mcuServers.dat");
+		while(!serverFile.exists() && !(serverFile.length() > 0)){
+			String packUrl = (String) JOptionPane.showInputDialog(null, "No servers defined.\nPlease enter URL to ServerPack.xml: ", "MCUpdater", JOptionPane.INFORMATION_MESSAGE, null, null, Customization.getString("InitialServer.text"));
+			if(packUrl.isEmpty()) {
+				System.exit(0);
+			}
+			try {
+				Document serverHeader = MCUpdater.readXmlFromUrl(packUrl);
+				Element docEle = serverHeader.getDocumentElement();
+				ServerList sl = new ServerList(docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), mcu.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
+				List<ServerList> servers = new ArrayList<ServerList>();
+				servers.add(sl);
+				mcu.writeServerList(servers);
+			} catch (Exception x) {
+				x.printStackTrace();
+			}
+		}
+
+		updateServerList();
+		/*
 		JMenuBar menuBar = new JMenuBar();
-		frmMain.setJMenuBar(menuBar);
+		//frmMain.setJMenuBar(menuBar);
 
 		JMenu mnServers = new JMenu("Servers");
 		menuBar.add(mnServers);
@@ -239,25 +346,6 @@ public class MainForm extends MCUApp {
 		mnServers.add(mntmManage);
 
 		mnServers.add(mnList);
-
-		File serverList = new File(mcu.getArchiveFolder() + MCUpdater.sep + "mcuServers.dat");
-		while(!serverList.exists()){
-			String packUrl = (String) JOptionPane.showInputDialog(null, "No servers defined.\nPlease enter URL to ServerPack.xml: ", "MCUpdater", JOptionPane.INFORMATION_MESSAGE, null, null, Customization.getString("InitialServer.text"));
-			if(packUrl.isEmpty()) {
-				System.exit(0);
-			}
-			try {
-				Document serverHeader = MCUpdater.readXmlFromUrl(packUrl);
-				Element docEle = serverHeader.getDocumentElement();
-				ServerList sl = new ServerList(docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), mcu.parseBoolean(docEle.getAttribute("generateList")));
-				List<ServerList> servers = new ArrayList<ServerList>();
-				servers.add(sl);
-				mcu.writeServerList(servers);
-			} catch (Exception x) {
-				x.printStackTrace();
-			}
-		}
-		updateServerList();
 
 		JMenu mnBackups = new JMenu("Backups");
 		menuBar.add(mnBackups);
@@ -284,9 +372,65 @@ public class MainForm extends MCUApp {
 			}
 		});
 		mnInfo.add(mntmRecheckVersion);
+		*/
+	}
+
+	protected void changeSelectedServer(ServerList entry) {
+		try {
+			browser.setPage(entry.getNewsUrl());
+			frmMain.setTitle(entry.getName() + " - Minecraft Updater " + MainForm.VERSION);
+			List<Module> modules = mcu.loadFromURL(entry.getPackUrl());
+			Iterator<Module> itMods = modules.iterator();
+			pnlModList.setVisible(false);
+			pnlModList.removeAll();
+			while(itMods.hasNext())
+			{
+				Module modEntry = itMods.next();
+				JModuleCheckBox chkModule = new JModuleCheckBox(modEntry.getName());
+				if(modEntry.getInJar())
+				{
+					chkModule.setFont(chkModule.getFont().deriveFont(Font.BOLD));
+				}
+				chkModule.setModule(modEntry);
+				if(modEntry.getRequired())
+				{
+					chkModule.setSelected(true);
+					chkModule.setEnabled(false);
+				}
+				if(modEntry.getIsDefault())
+				{
+					chkModule.setSelected(true);
+				}
+				pnlModList.add(chkModule);
+			}
+			pnlModList.setVisible(true);
+			this.frmMain.repaint();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		}
+
 	}
 
 	public void updateServerList()
+	{
+		serverList.setVisible(false);
+		slModel.clear();
+		List<ServerList> servers = mcu.loadServerList();
+		if (servers != null)
+		{
+			Iterator<ServerList> it = servers.iterator();
+			
+			//boolean flag = false;
+			while(it.hasNext())
+			{
+				ServerList entry = it.next();
+				slModel.add(new ServerListPacket(entry, mcu));
+			}
+		}
+		serverList.setVisible(true);
+	}
+	
+	public void updateServerList_old()
 	{
 		mnList.removeAll();
 		List<ServerList> servers = mcu.loadServerList();
@@ -406,4 +550,55 @@ class JServerMenuItem extends JMenuItem
 	{
 		return entry;
 	}
+}
+
+class SLListModel extends AbstractListModel
+{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -6829288390151952427L;
+	List<ServerListPacket> model;
+	
+	public SLListModel()
+	{
+		model = new ArrayList<ServerListPacket>();
+	}
+	
+	@Override
+	public int getSize() {
+		return model.size();
+	}
+
+	@Override
+	public Object getElementAt(int index) {
+		return model.toArray()[index];
+	}
+
+	public void add(ServerListPacket element)
+	{
+		model.add(element);
+		fireContentsChanged(this, 0, getSize());
+	}
+	
+	public Iterator<ServerListPacket> iterator()
+	{
+		return model.iterator();
+	}
+	
+	public boolean removeElement(ServerListPacket element)
+	{
+		boolean removed = model.remove(element);
+		if (removed) {
+			fireContentsChanged(this, 0, getSize());
+		}
+		return removed;
+	}
+	
+	public void clear()
+	{
+		model.clear();
+		fireContentsChanged(this, 0, getSize());
+	}
+
 }
