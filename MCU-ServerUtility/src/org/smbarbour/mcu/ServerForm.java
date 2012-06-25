@@ -50,7 +50,7 @@ public class ServerForm extends MCUApp {
 	private JTextField txtVersion;
 	private List<Module> modList = new ArrayList<Module>();
 	private List<ConfigFile> configList = new ArrayList<ConfigFile>();
-	private ServerList serverInfo = new ServerList(null, null, null, null, null);
+	private ServerList serverInfo = new ServerList(null, null, null, null, null, null, false, null);
 	
 	public ServerForm() {
 		initialize();

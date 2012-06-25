@@ -14,12 +14,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JCheckBox;
 import javax.swing.BoxLayout;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JTextPane;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -33,6 +32,8 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
+
 import org.smbarbour.mcu.MCUApp;
 import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.Module;
@@ -56,14 +57,13 @@ import javax.swing.ImageIcon;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
-	private static final String VERSION = "v1.00";
+	private static final String VERSION = "v1.10";
 	private static MainForm window;
+	private Properties config = new Properties();
 	private JFrame frmMain;
 	final MCUpdater mcu = new MCUpdater();
-	private JMenu mnList = new JMenu("List");
 	private final JTextPane browser = new JTextPane();
 	private ServerList selected;
-	//private final JPanel pnlServerList = new JPanel();
 	private final JPanel pnlModList = new JPanel();
 	private JLabel lblStatus;
 	private JProgressBar progressBar;
@@ -81,12 +81,43 @@ public class MainForm extends MCUApp {
 		mcu.setParent(window);
 	}
 
+	public Properties getConfig()
+	{
+		return config;
+	}
+	
+	public void writeConfig(Properties newConfig)
+	{
+		File configFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "config.properties");
+		try {
+			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+	}
+	
 	/**
 	 * Initialize the contents of the frame.
 	 */
 	void initialize() {
+		File configFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "config.properties");
+		if (!configFile.exists())
+		{
+			writeDefaultConfig(configFile);
+		}
+		try {
+			config.load(new FileInputStream(configFile));
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 		frmMain = new JFrame();
-		frmMain.setTitle("[No Server Selected] - Minecraft Updater " + MainForm.VERSION);
+		frmMain.setTitle("[No Server Selected] - MCUpdater " + MainForm.VERSION);
 		frmMain.setResizable(false);
 		frmMain.setBounds(100, 100, 1175, 592);
 		frmMain.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -168,7 +199,9 @@ public class MainForm extends MCUApp {
 						ioe.printStackTrace();
 					}
 				}
-				LauncherThread.launch(launcher);
+				File outFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "client-log.txt");
+				outFile.delete();
+				LauncherThread.launch(launcher, config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), outFile);
 			}
 		});
 		pnlButtons.add(btnLaunchMinecraft);
@@ -329,54 +362,25 @@ public class MainForm extends MCUApp {
 		}
 
 		updateServerList();
-		/*
-		JMenuBar menuBar = new JMenuBar();
-		//frmMain.setJMenuBar(menuBar);
+	}
 
-		JMenu mnServers = new JMenu("Servers");
-		menuBar.add(mnServers);
-
-		JMenuItem mntmManage = new JMenuItem("Manage");
-		mntmManage.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				ServerManager sm = new ServerManager(window);
-				sm.setVisible(true);
-			}
-		});
-		mnServers.add(mntmManage);
-
-		mnServers.add(mnList);
-
-		JMenu mnBackups = new JMenu("Backups");
-		menuBar.add(mnBackups);
-
-		JMenuItem mntmManageBackups = new JMenuItem("Manage");
-		mntmManageBackups.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				BackupManager bm = new BackupManager(window);
-				bm.setVisible(true);
-			}
-		});
-		mnBackups.add(mntmManageBackups);
-
-		JMenu mnInfo = new JMenu("Info");
-		menuBar.add(mnInfo);
-
-		final JMenuItem mntmMinecraftjarVersion = new JMenuItem("minecraft.jar version: " + mcu.getMCVersion());
-		mnInfo.add(mntmMinecraftjarVersion);
-		
-		JMenuItem mntmRecheckVersion = new JMenuItem("Recheck Version");
-		mntmRecheckVersion.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				mntmMinecraftjarVersion.setText("minecraft.jar version: " + mcu.getMCVersion());
-			}
-		});
-		mnInfo.add(mntmRecheckVersion);
-		*/
+	private void writeDefaultConfig(File configFile) {
+		Properties newConfig = new Properties();
+		newConfig.setProperty("minimumMemory", "512M");
+		newConfig.setProperty("maximumMemory", "1G");
+		newConfig.setProperty("currentConfig", "");
+		try {
+			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	protected void changeSelectedServer(ServerList entry) {
 		try {
+			selected = entry;
 			browser.setPage(entry.getNewsUrl());
 			frmMain.setTitle(entry.getName() + " - Minecraft Updater " + MainForm.VERSION);
 			List<Module> modules = mcu.loadFromURL(entry.getPackUrl());
@@ -429,72 +433,7 @@ public class MainForm extends MCUApp {
 		}
 		serverList.setVisible(true);
 	}
-	
-	public void updateServerList_old()
-	{
-		mnList.removeAll();
-		List<ServerList> servers = mcu.loadServerList();
-		if(servers != null)
-		{
-			Iterator<ServerList> it = servers.iterator();
-
-			boolean flag = false;
-			while(it.hasNext())
-			{
-				ServerList entry = it.next();
-				final JServerMenuItem mnuServerEntry = new JServerMenuItem(entry.getName());
-				mnuServerEntry.setServerEntry(entry);
-				mnList.add(mnuServerEntry);
-				mnuServerEntry.addActionListener(new ActionListener() {
-
-					@Override
-					public void actionPerformed(ActionEvent arg0) {
-						try {
-							selected = mnuServerEntry.getServerEntry();
-							browser.setPage(mnuServerEntry.getServerEntry().getNewsUrl());
-							frmMain.setTitle(mnuServerEntry.getServerEntry().getName() + " - Minecraft Updater " + MainForm.VERSION);
-							List<Module> modules = mcu.loadFromURL(mnuServerEntry.getServerEntry().getPackUrl());
-							Iterator<Module> itMods = modules.iterator();
-							pnlModList.setVisible(false);
-							pnlModList.removeAll();
-							while(itMods.hasNext())
-							{
-								Module modEntry = itMods.next();
-								JModuleCheckBox chkModule = new JModuleCheckBox(modEntry.getName());
-								if(modEntry.getInJar())
-								{
-									chkModule.setFont(chkModule.getFont().deriveFont(Font.BOLD));
-								}
-								chkModule.setModule(modEntry);
-								if(modEntry.getRequired())
-								{
-									chkModule.setSelected(true);
-									chkModule.setEnabled(false);
-								}
-								if(modEntry.getIsDefault())
-								{
-									chkModule.setSelected(true);
-								}
-								pnlModList.add(chkModule);
-							}
-							pnlModList.setVisible(true);
-						} catch (IOException ioe) {
-							ioe.printStackTrace();
-						}
-
-					}
-
-				});
-				if(flag==false)
-				{
-					mnuServerEntry.doClick();
-					flag=true;
-				}
-			}
-		}
-
-	}
-	
+		
 	@Override
 	public void setLblStatus(String text) {
 		lblStatus.setText(text);
@@ -524,29 +463,6 @@ class JModuleCheckBox extends JCheckBox
 	}
 
 	public Module getModule()
-	{
-		return entry;
-	}
-}
-
-class JServerMenuItem extends JMenuItem
-{
-	private ServerList entry;
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -6374548651338922992L;
-
-	public JServerMenuItem(String name) {
-		super(name);
-	}
-
-	public void setServerEntry(ServerList entry)
-	{
-		this.entry = entry;
-	}
-
-	public ServerList getServerEntry()
 	{
 		return entry;
 	}
