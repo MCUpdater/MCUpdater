@@ -28,7 +28,8 @@
             <zipfileset excludes="META-INF/*.SF" src="C:/Users/Scott.Scott-PC/workspace-minecraft/MCUpdater/mcu/log4j-1.2.16.jar"/>
             <fileset dir="C:/Users/Scott.Scott-PC/workspace-minecraft/MCUpdater/MCU-API/bin"/>
             <zipfileset excludes="META-INF/*.SF" src="C:/Users/Scott.Scott-PC/workspace-minecraft/MCUpdater/MCU-API/commons-codec-1.6.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="C:/Users/Scott.Scott-PC/workspace-minecraft/MCUpdater/MCU-API/commons-io-2.1.jar"/>
+	    <zipfileset excludes="META-INF/*.SF" src="C:/Users/Scott.Scott-PC/workspace-minecraft/MCUpdater/MCU-API/commons-io-2.1.jar"/>
+	    <zipfileset src="c:/Users/Scott.Scott-PC/workspace-minecraft/MCUpdater/mcu/resources/famfamfam_silk_icons_v013.zip"/>
         </jar>
     </target>
 </project>
