@@ -344,10 +344,10 @@ public class MainForm extends MCUApp {
 		toolBar.add(horizontalStrut_1);
 
 		File serverFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "mcuServers.dat");
+		String packUrl = Customization.getString("InitialServer.text");
 		while(!serverFile.exists() && !(serverFile.length() > 0)){
-			String packUrl = (String) JOptionPane.showInputDialog(null, "No servers defined.\nPlease enter URL to ServerPack.xml: ", "MCUpdater", JOptionPane.INFORMATION_MESSAGE, null, null, Customization.getString("InitialServer.text"));
 			if(packUrl.isEmpty()) {
-				System.exit(0);
+				packUrl = (String) JOptionPane.showInputDialog(null, "No default server defined.\nPlease enter URL to ServerPack.xml: ", "MCUpdater", JOptionPane.INFORMATION_MESSAGE, null, null, "http://www.example.com/ServerPack.xml");
 			}
 			try {
 				Document serverHeader = MCUpdater.readXmlFromUrl(packUrl);
@@ -358,10 +358,13 @@ public class MainForm extends MCUApp {
 				mcu.writeServerList(servers);
 			} catch (Exception x) {
 				x.printStackTrace();
+				packUrl = "";
 			}
 		}
 
 		updateServerList();
+		//TODO: Add code to automatically select the most recently used server.
+		serverList.setSelectedIndex(0);
 	}
 
 	private void writeDefaultConfig(File configFile) {
