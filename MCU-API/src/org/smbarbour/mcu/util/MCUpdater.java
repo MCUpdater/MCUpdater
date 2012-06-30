@@ -71,9 +71,9 @@ public class MCUpdater {
 		this.parent = parent;
 	}
 
-	public List<Module> loadFromFile(File packFile) {
+	public List<Module> loadFromFile(File packFile, String serverId) {
 		try {
-			parseDocument(readXmlFromFile(packFile));
+			parseDocument(readXmlFromFile(packFile), serverId);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -81,10 +81,10 @@ public class MCUpdater {
 		return modList;
 	}
 	
-	public List<Module> loadFromURL(String serverUrl)
+	public List<Module> loadFromURL(String serverUrl, String serverId)
 	{
 		try {
-			parseDocument(readXmlFromUrl(serverUrl));
+			parseDocument(readXmlFromUrl(serverUrl), serverId);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -144,8 +144,13 @@ public class MCUpdater {
 			{
 				try {
 					Document serverHeader = readXmlFromUrl(entry);
-					Element docEle = serverHeader.getDocumentElement();
-					slList.add(new ServerList(docEle.getAttribute("name"), entry, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision")));
+					Element parent = serverHeader.getDocumentElement();
+					NodeList servers = parent.getElementsByTagName("Server");
+					Element docEle = null;
+					for (int i = 0; i < servers.getLength(); i++){
+						docEle = (Element)servers.item(i);
+						slList.add(new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), entry, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision")));
+					}					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -236,10 +241,16 @@ public class MCUpdater {
 		return null;
 	}
 	
-	private void parseDocument(Document dom)
+	private void parseDocument(Document dom, String serverId)
 	{
 		modList.clear();
-		Element docEle = dom.getDocumentElement();
+		Element parent = dom.getDocumentElement();
+		NodeList servers = parent.getElementsByTagName("Server");
+		Element docEle = null;
+		for (int i = 0; i < servers.getLength(); i++){
+			docEle = (Element)servers.item(i);
+			if (docEle.getAttribute("id").equals(serverId)) { break; }
+		}
 		NodeList nl = docEle.getElementsByTagName("Module");
 		if(nl != null && nl.getLength() > 0)
 		{

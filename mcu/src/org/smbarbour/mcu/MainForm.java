@@ -146,6 +146,9 @@ public class MainForm extends MCUApp {
 						} else if(saveConfig == JOptionPane.CANCEL_OPTION){
 							return;
 						}
+						config.setProperty("currentConfig", selected.getServerId());
+						config.setProperty("packRevision", selected.getVersion());
+						writeConfig(config);
 						List<Module> toInstall = new ArrayList<Module>();
 						List<Component> selects = new ArrayList<Component>(Arrays.asList(pnlModList.getComponents()));
 						Iterator<Component> it = selects.iterator();
@@ -352,7 +355,7 @@ public class MainForm extends MCUApp {
 			try {
 				Document serverHeader = MCUpdater.readXmlFromUrl(packUrl);
 				Element docEle = serverHeader.getDocumentElement();
-				ServerList sl = new ServerList(docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), mcu.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
+				ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), mcu.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
 				List<ServerList> servers = new ArrayList<ServerList>();
 				servers.add(sl);
 				mcu.writeServerList(servers);
@@ -363,8 +366,8 @@ public class MainForm extends MCUApp {
 		}
 
 		updateServerList();
-		//TODO: Add code to automatically select the most recently used server.
-		serverList.setSelectedIndex(0);
+		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(config.getProperty("currentConfig"));
+		serverList.setSelectedIndex(selectIndex);
 	}
 
 	private void writeDefaultConfig(File configFile) {
@@ -386,7 +389,7 @@ public class MainForm extends MCUApp {
 			selected = entry;
 			browser.setPage(entry.getNewsUrl());
 			frmMain.setTitle(entry.getName() + " - Minecraft Updater " + MainForm.VERSION);
-			List<Module> modules = mcu.loadFromURL(entry.getPackUrl());
+			List<Module> modules = mcu.loadFromURL(entry.getPackUrl(), entry.getServerId());
 			Iterator<Module> itMods = modules.iterator();
 			pnlModList.setVisible(false);
 			pnlModList.removeAll();
@@ -484,6 +487,21 @@ class SLListModel extends AbstractListModel
 		model = new ArrayList<ServerListPacket>();
 	}
 	
+	public int getEntryIdByTag(String tag) {
+		int foundId = 0;
+		Iterator<ServerListPacket> it = model.iterator();
+		int searchId = 0;
+		while (it.hasNext()) {
+			ServerListPacket entry = it.next();
+			if (tag.equals(entry.getEntry().getServerId())) {
+				foundId = searchId;
+				break;
+			}
+			searchId++;
+		}
+		return foundId;
+	}
+
 	@Override
 	public int getSize() {
 		return model.size();

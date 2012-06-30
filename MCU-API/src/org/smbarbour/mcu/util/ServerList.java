@@ -9,9 +9,11 @@ public class ServerList {
 	private String address;
 	private boolean generateList = true;
 	private String revision;
+	private String serverId;
 	
-	public ServerList(String name, String packUrl, String newsUrl, String iconUrl, String version, String address, boolean generateList, String revision)
+	public ServerList(String serverId, String name, String packUrl, String newsUrl, String iconUrl, String version, String address, boolean generateList, String revision)
 	{
+		this.serverId = serverId;
 		this.name = name;
 		this.packUrl = packUrl;
 		this.newsUrl = newsUrl;
@@ -88,5 +90,13 @@ public class ServerList {
 
 	public void setRevision(String revision) {
 		this.revision = revision;
+	}
+
+	public String getServerId() {
+		return serverId;
+	}
+
+	public void setServerId(String serverId) {
+		this.serverId = serverId;
 	}
 }
