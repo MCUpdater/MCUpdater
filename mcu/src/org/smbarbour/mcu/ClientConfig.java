@@ -7,8 +7,6 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import java.awt.Dialog.ModalityType;
-import java.awt.GridLayout;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import java.awt.GridBagLayout;
@@ -17,6 +15,9 @@ import java.awt.Insets;
 import java.awt.Component;
 import javax.swing.Box;
 import java.awt.Dimension;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
+import java.util.Properties;
 
 public class ClientConfig extends JDialog {
 
@@ -31,7 +32,7 @@ public class ClientConfig extends JDialog {
 	/**
 	 * Create the dialog.
 	 */
-	public ClientConfig(MainForm parent) {
+	public ClientConfig(final MainForm parent) {
 		setModalityType(ModalityType.APPLICATION_MODAL);
 		setModal(true);
 		setTitle("Client Configuration");
@@ -65,6 +66,7 @@ public class ClientConfig extends JDialog {
 		}
 		{
 			txtMinimum = new JTextField();
+			txtMinimum.setText(parent.getConfig().getProperty("minimumMemory"));
 			GridBagConstraints gbc_txtMinimum = new GridBagConstraints();
 			gbc_txtMinimum.insets = new Insets(0, 0, 5, 5);
 			gbc_txtMinimum.anchor = GridBagConstraints.WEST;
@@ -93,6 +95,7 @@ public class ClientConfig extends JDialog {
 		}
 		{
 			txtMaximum = new JTextField();
+			txtMaximum.setText(parent.getConfig().getProperty("maximumMemory"));
 			GridBagConstraints gbc_txtMaximum = new GridBagConstraints();
 			gbc_txtMaximum.anchor = GridBagConstraints.WEST;
 			gbc_txtMaximum.insets = new Insets(0, 0, 5, 5);
@@ -125,12 +128,28 @@ public class ClientConfig extends JDialog {
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
 				JButton okButton = new JButton("OK");
+				okButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						Properties newConfig = parent.getConfig();
+						newConfig.setProperty("minimumMemory", txtMinimum.getText());
+						newConfig.setProperty("maximumMemory", txtMaximum.getText());
+						parent.writeConfig(newConfig);
+						dispose();
+					}
+				});
 				okButton.setActionCommand("OK");
 				buttonPane.add(okButton);
 				getRootPane().setDefaultButton(okButton);
 			}
 			{
 				JButton cancelButton = new JButton("Cancel");
+				cancelButton.addActionListener(new ActionListener() {
+					
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						dispose();
+					}
+				});
 				cancelButton.setActionCommand("Cancel");
 				buttonPane.add(cancelButton);
 			}

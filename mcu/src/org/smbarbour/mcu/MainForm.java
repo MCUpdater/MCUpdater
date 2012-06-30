@@ -57,7 +57,7 @@ import javax.swing.ImageIcon;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
-	private static final String VERSION = "v1.20";
+	private static final String VERSION = "v1.21";
 	private static MainForm window;
 	private Properties config = new Properties();
 	private JFrame frmMain;
@@ -91,6 +91,7 @@ public class MainForm extends MCUApp {
 		File configFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "config.properties");
 		try {
 			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
+			config = newConfig;
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -322,6 +323,14 @@ public class MainForm extends MCUApp {
 		toolBar.add(btnManageServers);
 		
 		JButton btnOptions = new JButton("");
+		btnOptions.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				ClientConfig cc = new ClientConfig(window);
+				cc.setVisible(true);
+			}
+		});
 		btnOptions.setToolTipText("Options");
 		btnOptions.setIcon(new ImageIcon(MainForm.class.getResource("/icons/application_edit.png")));
 		toolBar.add(btnOptions);
