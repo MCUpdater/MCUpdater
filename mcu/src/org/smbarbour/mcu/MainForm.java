@@ -57,7 +57,7 @@ import javax.swing.ImageIcon;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
-	private static final String VERSION = "v1.21";
+	private static final String VERSION = "v1.22";
 	private static MainForm window;
 	private Properties config = new Properties();
 	private JFrame frmMain;
@@ -90,6 +90,7 @@ public class MainForm extends MCUApp {
 	{
 		File configFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "config.properties");
 		try {
+			configFile.mkdirs();
 			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
 			config = newConfig;
 		} catch (FileNotFoundException e) {
@@ -148,7 +149,7 @@ public class MainForm extends MCUApp {
 							return;
 						}
 						config.setProperty("currentConfig", selected.getServerId());
-						config.setProperty("packRevision", selected.getVersion());
+						config.setProperty("packRevision", selected.getRevision());
 						writeConfig(config);
 						List<Module> toInstall = new ArrayList<Module>();
 						List<Component> selects = new ArrayList<Component>(Arrays.asList(pnlModList.getComponents()));
@@ -377,6 +378,9 @@ public class MainForm extends MCUApp {
 		updateServerList();
 		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(config.getProperty("currentConfig"));
 		serverList.setSelectedIndex(selectIndex);
+		if (!selected.getRevision().equals(config.getProperty("packRevision"))) {
+			JOptionPane.showMessageDialog(null, "Your configuration is out of sync with the server. Updating is necessary.", "MCUpdater", JOptionPane.WARNING_MESSAGE);
+		}
 	}
 
 	private void writeDefaultConfig(File configFile) {
