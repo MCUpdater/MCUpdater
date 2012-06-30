@@ -57,7 +57,7 @@ import javax.swing.ImageIcon;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
-	private static final String VERSION = "v1.22";
+	private static final String VERSION = "v1.23";
 	private static MainForm window;
 	private Properties config = new Properties();
 	private JFrame frmMain;
@@ -388,6 +388,7 @@ public class MainForm extends MCUApp {
 		newConfig.setProperty("minimumMemory", "512M");
 		newConfig.setProperty("maximumMemory", "1G");
 		newConfig.setProperty("currentConfig", "");
+		newConfig.setProperty("packRevision","");
 		try {
 			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
 		} catch (FileNotFoundException e) {
