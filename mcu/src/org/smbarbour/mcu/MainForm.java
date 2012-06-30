@@ -57,7 +57,7 @@ import javax.swing.ImageIcon;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
-	private static final String VERSION = "v1.23";
+	private static final String VERSION = "v1.24";
 	private static MainForm window;
 	private Properties config = new Properties();
 	private JFrame frmMain;
@@ -94,14 +94,37 @@ public class MainForm extends MCUApp {
 			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
 			config = newConfig;
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}		
 	}
-	
+
+	private void createDefaultConfig(File configFile) {
+		Properties newConfig = new Properties();
+		newConfig.setProperty("minimumMemory", "512M");
+		newConfig.setProperty("maximumMemory", "1G");
+		newConfig.setProperty("currentConfig", "");
+		newConfig.setProperty("packRevision","");
+		try {
+			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public boolean validateConfig(Properties current)
+	{
+		boolean hasChanged = false;
+		if (current.getProperty("minimumMemory") == null) {	current.setProperty("minimumMemory", "512M"); hasChanged = true; }
+		if (current.getProperty("maximumMemory") == null) {	current.setProperty("maximumMemory", "1G"); hasChanged = true; }
+		if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; }
+		if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; }
+		return hasChanged;
+	}
+
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -109,10 +132,14 @@ public class MainForm extends MCUApp {
 		File configFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "config.properties");
 		if (!configFile.exists())
 		{
-			writeDefaultConfig(configFile);
+			createDefaultConfig(configFile);
 		}
 		try {
 			config.load(new FileInputStream(configFile));
+			if (!validateConfig(config))
+			{
+				writeConfig(config);
+			}
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		} catch (IOException e1) {
@@ -380,21 +407,6 @@ public class MainForm extends MCUApp {
 		serverList.setSelectedIndex(selectIndex);
 		if (!selected.getRevision().equals(config.getProperty("packRevision"))) {
 			JOptionPane.showMessageDialog(null, "Your configuration is out of sync with the server. Updating is necessary.", "MCUpdater", JOptionPane.WARNING_MESSAGE);
-		}
-	}
-
-	private void writeDefaultConfig(File configFile) {
-		Properties newConfig = new Properties();
-		newConfig.setProperty("minimumMemory", "512M");
-		newConfig.setProperty("maximumMemory", "1G");
-		newConfig.setProperty("currentConfig", "");
-		newConfig.setProperty("packRevision","");
-		try {
-			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 
