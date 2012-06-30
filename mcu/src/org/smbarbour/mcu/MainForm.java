@@ -388,7 +388,7 @@ public class MainForm extends MCUApp {
 		try {
 			selected = entry;
 			browser.setPage(entry.getNewsUrl());
-			frmMain.setTitle(entry.getName() + " - Minecraft Updater " + MainForm.VERSION);
+			frmMain.setTitle(entry.getName() + " - MCUpdater " + MainForm.VERSION);
 			List<Module> modules = mcu.loadFromURL(entry.getPackUrl(), entry.getServerId());
 			Iterator<Module> itMods = modules.iterator();
 			pnlModList.setVisible(false);
