@@ -24,12 +24,12 @@
                 <attribute name="Main-Class" value="org.smbarbour.mcu.Main"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
-            <fileset dir="C:/Users/Scott.Scott-PC/workspace-minecraft/MCUpdater/mcu/bin"/>
-            <zipfileset excludes="META-INF/*.SF" src="C:/Users/Scott.Scott-PC/workspace-minecraft/MCUpdater/mcu/log4j-1.2.16.jar"/>
-            <fileset dir="C:/Users/Scott.Scott-PC/workspace-minecraft/MCUpdater/MCU-API/bin"/>
-            <zipfileset excludes="META-INF/*.SF" src="C:/Users/Scott.Scott-PC/workspace-minecraft/MCUpdater/MCU-API/commons-codec-1.6.jar"/>
-	    <zipfileset excludes="META-INF/*.SF" src="C:/Users/Scott.Scott-PC/workspace-minecraft/MCUpdater/MCU-API/commons-io-2.1.jar"/>
-	    <zipfileset src="c:/Users/Scott.Scott-PC/workspace-minecraft/MCUpdater/mcu/resources/famfamfam_silk_icons_v013.zip"/>
+            <fileset dir="${MCUpdater.location}/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="${MCUpdater.location}/log4j-1.2.16.jar"/>
+            <fileset dir="${MCU-API.location}/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/commons-codec-1.6.jar"/>
+	    <zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/commons-io-2.1.jar"/>
+	    <zipfileset src="${MCUpdater.location}/resources/famfamfam_silk_icons_v013.zip"/>
         </jar>
     </target>
 </project>
