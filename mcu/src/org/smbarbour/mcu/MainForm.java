@@ -57,7 +57,7 @@ import javax.swing.ImageIcon;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
-	private static final String VERSION = "v1.24";
+	private static final String VERSION = "v1.25";
 	private static MainForm window;
 	private Properties config = new Properties();
 	private JFrame frmMain;
@@ -90,7 +90,7 @@ public class MainForm extends MCUApp {
 	{
 		File configFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "config.properties");
 		try {
-			configFile.mkdirs();
+			configFile.getParentFile().mkdirs();
 			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
 			config = newConfig;
 		} catch (FileNotFoundException e) {
@@ -107,6 +107,7 @@ public class MainForm extends MCUApp {
 		newConfig.setProperty("currentConfig", "");
 		newConfig.setProperty("packRevision","");
 		try {
+			configFile.getParentFile().mkdirs();
 			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
