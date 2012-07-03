@@ -287,6 +287,9 @@ public class MainForm extends MCUApp {
 				if (!e.getValueIsAdjusting())
 				{
 					changeSelectedServer(((ServerListPacket)serverList.getSelectedValue()).getEntry());
+					if (selected.getServerId().equals(config.getProperty("currentConfig")) && !(selected.getRevision().equals(config.getProperty("packRevision")))) {
+						JOptionPane.showMessageDialog(null, "Your configuration is out of sync with the server. Updating is necessary.", "MCUpdater", JOptionPane.WARNING_MESSAGE);
+					}
 				}
 			}
 			
@@ -409,11 +412,6 @@ public class MainForm extends MCUApp {
 		updateServerList();
 		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(config.getProperty("currentConfig"));
 		serverList.setSelectedIndex(selectIndex);
-		if (selected != null){
-			if (!selected.getRevision().equals(config.getProperty("packRevision"))) {
-				JOptionPane.showMessageDialog(null, "Your configuration is out of sync with the server. Updating is necessary.", "MCUpdater", JOptionPane.WARNING_MESSAGE);
-			}
-		}
 	}
 
 	protected void changeSelectedServer(ServerList entry) {

@@ -352,7 +352,7 @@ public class MCUpdater {
 			hash = DigestUtils.md5(is);
 			is.close();		
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			//e.printStackTrace();
 			return "Not found";
 		} catch (IOException e) {
 			e.printStackTrace();
