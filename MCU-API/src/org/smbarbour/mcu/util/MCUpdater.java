@@ -6,10 +6,12 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.io.*;
 
@@ -195,10 +197,16 @@ public class MCUpdater {
 			
 			Iterator<ServerList> it = serverlist.iterator();
 			
+			Set<String> urls = new HashSet<String>();
 			while(it.hasNext())
 			{
 				ServerList entry = it.next();
-				writer.write(entry.getPackUrl());
+				urls.add(entry.getPackUrl());
+			}
+			Iterator<String> urlIterator = urls.iterator();
+			while (urlIterator.hasNext())
+			{
+				writer.write(urlIterator.next());
 				writer.newLine();
 			}
 			

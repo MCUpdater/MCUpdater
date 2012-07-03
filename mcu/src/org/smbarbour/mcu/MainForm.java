@@ -57,7 +57,7 @@ import javax.swing.ImageIcon;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
-	private static final String VERSION = "v1.25";
+	private static final String VERSION = "v1.26";
 	private static MainForm window;
 	private Properties config = new Properties();
 	private JFrame frmMain;
