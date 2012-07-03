@@ -406,8 +406,10 @@ public class MainForm extends MCUApp {
 		updateServerList();
 		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(config.getProperty("currentConfig"));
 		serverList.setSelectedIndex(selectIndex);
-		if (!selected.getRevision().equals(config.getProperty("packRevision"))) {
-			JOptionPane.showMessageDialog(null, "Your configuration is out of sync with the server. Updating is necessary.", "MCUpdater", JOptionPane.WARNING_MESSAGE);
+		if (selected != null){
+			if (!selected.getRevision().equals(config.getProperty("packRevision"))) {
+				JOptionPane.showMessageDialog(null, "Your configuration is out of sync with the server. Updating is necessary.", "MCUpdater", JOptionPane.WARNING_MESSAGE);
+			}
 		}
 	}
 

@@ -143,14 +143,18 @@ public class MCUpdater {
 			while(entry != null)
 			{
 				try {
+					Element docEle = null;
 					Document serverHeader = readXmlFromUrl(entry);
 					Element parent = serverHeader.getDocumentElement();
+					if (parent.getNodeName().equals("ServerPack")){
 					NodeList servers = parent.getElementsByTagName("Server");
-					Element docEle = null;
 					for (int i = 0; i < servers.getLength(); i++){
 						docEle = (Element)servers.item(i);
 						slList.add(new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), entry, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision")));
 					}					
+					} else {
+						slList.add(new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), entry, parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), parseBoolean(parent.getAttribute("generateList")), parent.getAttribute("revision")));
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -245,11 +249,15 @@ public class MCUpdater {
 	{
 		modList.clear();
 		Element parent = dom.getDocumentElement();
-		NodeList servers = parent.getElementsByTagName("Server");
 		Element docEle = null;
-		for (int i = 0; i < servers.getLength(); i++){
-			docEle = (Element)servers.item(i);
-			if (docEle.getAttribute("id").equals(serverId)) { break; }
+		if (parent.getNodeName().equals("ServerPack")){
+			NodeList servers = parent.getElementsByTagName("Server");
+			for (int i = 0; i < servers.getLength(); i++){
+				docEle = (Element)servers.item(i);
+				if (docEle.getAttribute("id").equals(serverId)) { break; }
+			}
+		} else {
+			docEle = parent;
 		}
 		NodeList nl = docEle.getElementsByTagName("Module");
 		if(nl != null && nl.getLength() > 0)
