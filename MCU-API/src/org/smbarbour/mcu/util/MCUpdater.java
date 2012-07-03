@@ -134,40 +134,47 @@ public class MCUpdater {
 		}
 	}
 	
-	public List<ServerList> loadServerList()
+	public List<ServerList> loadServerList(String defaultUrl)
 	{
 		List<ServerList> slList = new ArrayList<ServerList>();
 		try
 		{
+			Set<String> urls = new HashSet<String>();
+			urls.add(defaultUrl);
 			BufferedReader reader = new BufferedReader(new FileReader(archiveFolder.getPath() + sep + "mcuServers.dat"));
-			
+
 			String entry = reader.readLine();
 			while(entry != null)
 			{
+				urls.add(entry);
+				entry = reader.readLine();
+			}
+			reader.close();
+			Iterator<String> it = urls.iterator();
+			while (it.hasNext()){
+				String serverUrl = it.next();
 				try {
 					Element docEle = null;
-					Document serverHeader = readXmlFromUrl(entry);
+					Document serverHeader = readXmlFromUrl(serverUrl);
 					Element parent = serverHeader.getDocumentElement();
 					if (parent.getNodeName().equals("ServerPack")){
-					NodeList servers = parent.getElementsByTagName("Server");
-					for (int i = 0; i < servers.getLength(); i++){
-						docEle = (Element)servers.item(i);
-						slList.add(new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), entry, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision")));
-					}					
+						NodeList servers = parent.getElementsByTagName("Server");
+						for (int i = 0; i < servers.getLength(); i++){
+							docEle = (Element)servers.item(i);
+							slList.add(new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), serverUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision")));
+						}					
 					} else {
-						slList.add(new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), entry, parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), parseBoolean(parent.getAttribute("generateList")), parent.getAttribute("revision")));
+						slList.add(new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), serverUrl, parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), parseBoolean(parent.getAttribute("generateList")), parent.getAttribute("revision")));
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-//		String[] arrString = entry.split("\\|");
-//		slList.add(new ServerList(arrString[0], arrString[1], arrString[2]));
-				entry = reader.readLine();
 			}
-			
-			reader.close();
+			//	String[] arrString = entry.split("\\|");
+			//	slList.add(new ServerList(arrString[0], arrString[1], arrString[2]));
+
 			return slList;
-			
+
 		}
 		catch( FileNotFoundException notfound)
 		{

@@ -62,7 +62,7 @@ public class ServerManager extends JFrame {
 		table = new JTable();
 		table.setFillsViewportHeight(true);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		final SLTableModel model = new SLTableModel(mcu.loadServerList());
+		final SLTableModel model = new SLTableModel(mcu.loadServerList(parent.getCustomization().getString("InitialServer.text")));
 		model.addTableModelListener(model);
 		table.setModel(model);
 		table.getColumnModel().getColumn(0).setPreferredWidth(200);

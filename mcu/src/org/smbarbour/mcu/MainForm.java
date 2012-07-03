@@ -57,7 +57,7 @@ import javax.swing.ImageIcon;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
-	private static final String VERSION = "v1.26";
+	private static final String VERSION = "v1.27";
 	private static MainForm window;
 	private Properties config = new Properties();
 	private JFrame frmMain;
@@ -71,6 +71,9 @@ public class MainForm extends MCUApp {
 	private JList serverList;
 	private SLListModel slModel;
 	
+	public ResourceBundle getCustomization(){
+		return Customization;
+	}
 	/**
 	 * Create the application.
 	 */
@@ -454,7 +457,7 @@ public class MainForm extends MCUApp {
 	{
 		serverList.setVisible(false);
 		slModel.clear();
-		List<ServerList> servers = mcu.loadServerList();
+		List<ServerList> servers = mcu.loadServerList(Customization.getString("InitialServer.text"));
 		if (servers != null)
 		{
 			Iterator<ServerList> it = servers.iterator();
