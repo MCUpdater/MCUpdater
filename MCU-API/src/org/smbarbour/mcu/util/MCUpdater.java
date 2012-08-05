@@ -451,7 +451,7 @@ public class MCUpdater {
 		if(path.contains("bin" + sep)) {
 			return true;
 		}
-		if(path.contains("resources")) {
+		if(path.contains("resources") && !path.contains("mods")) {
 			return true;
 		}
 		if(path.contains("saves")) {
@@ -566,7 +566,6 @@ public class MCUpdater {
 		}
 		Archive.extractZip(jar, tmpFolder);
 		
-		int loadOrder = 0;
 		int modCount = toInstall.size();
 		int modsLoaded = 0;
 		while(itMods.hasNext()) {
@@ -575,29 +574,52 @@ public class MCUpdater {
 			try {
 				System.out.println(entry.getUrl());
 				URL modURL = new URL(entry.getUrl());
-				String modFilename = modURL.getFile().substring(modURL.getFile().lastIndexOf('/'));
+				//String modFilename = modURL.getFile().substring(modURL.getFile().lastIndexOf('/'));
 				File modPath;
 				if(entry.getInJar()) {
-					modPath = new File(tmpFolder.getPath() + sep + loadOrder + ".zip");
-					loadOrder++;
-					System.out.println(modPath.getPath());
-					FileUtils.copyURLToFile(modURL, modPath);
-					Archive.extractZip(modPath, tmpFolder);
-					modPath.delete();
+					//modPath = new File(tmpFolder.getPath() + sep + loadOrder + ".zip");
+					//loadOrder++;
+					//System.out.println(modPath.getPath());
+					ModDownload jarMod;
+					try {
+						jarMod = new ModDownload(modURL, tmpFolder, entry.getMD5());
+						System.out.println(jarMod.getRemoteFilename() + " -> " + jarMod.getDestFile().getPath());
+						//FileUtils.copyURLToFile(modURL, modPath);
+						Archive.extractZip(jarMod.getDestFile(), tmpFolder);
+						jarMod.getDestFile().delete();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				} else if (entry.getExtract()) {
-					modPath = new File(tmpFolder.getPath() + sep + modFilename);
-					modPath.getParentFile().mkdirs();
-					System.out.println(modPath.getPath());
-					FileUtils.copyURLToFile(modURL, modPath);
-					String outPath = MCFolder + sep;
-					if(!entry.getInRoot()) outPath += "mods" + sep;
-					Archive.extractZip(modPath, new File(outPath));
-					modPath.delete();
+					//modPath = new File(tmpFolder.getPath() + sep + modFilename);
+					//modPath.getParentFile().mkdirs();
+					//System.out.println(modPath.getPath());
+					ModDownload extractMod;
+					try {
+						extractMod = new ModDownload(modURL, tmpFolder, entry.getMD5());
+						System.out.println(extractMod.getRemoteFilename() + " -> " + extractMod.getDestFile().getPath());
+						//FileUtils.copyURLToFile(modURL, modPath);
+						String outPath = MCFolder + sep;
+						if(!entry.getInRoot()) outPath += "mods" + sep;
+						Archive.extractZip(extractMod.getDestFile(), new File(outPath));
+						extractMod.getDestFile().delete();
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				} else {
-					modPath = new File(MCFolder + sep + "mods" + sep + modFilename);
-					modPath.getParentFile().mkdirs();
-					System.out.println(modPath.getPath());
-					FileUtils.copyURLToFile(modURL, modPath);
+					modPath = new File(MCFolder + sep + "mods");
+					modPath.mkdirs();
+					//System.out.println(modPath.getPath());
+					try {
+						ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
+						System.out.println(normalMod.getRemoteFilename() + " -> " + normalMod.getDestFile().getPath());
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					//FileUtils.copyURLToFile(modURL, modPath);
 				}
 				Iterator<ConfigFile> itConfigs = entry.getConfigs().iterator();
 				while(itConfigs.hasNext()) {
