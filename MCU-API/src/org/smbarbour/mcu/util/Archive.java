@@ -21,31 +21,34 @@ public class Archive {
 
 	public static void extractZip(File archive, File destination) {
 		try{
-		ZipInputStream zis = new ZipInputStream(new FileInputStream(archive));
-		ZipEntry entry;
-		
-		entry = zis.getNextEntry();
-		while(entry != null) {
-			String entryName = entry.getName();
+			ZipInputStream zis = new ZipInputStream(new FileInputStream(archive));
+			ZipEntry entry;
 
-			if(entry.isDirectory()) {
-				File newDir = new File(destination.getPath() + MCUpdater.sep + entryName);
-				newDir.mkdirs();
-				System.out.println("   Directory: " + newDir.getPath());
-			} else {
-				File outFile = new File(destination.getPath() + MCUpdater.sep + entryName);
-				outFile.getParentFile().mkdirs();
-				System.out.println("   Extract: " + outFile.getPath());
-				FileOutputStream fos = new FileOutputStream(outFile);
+			entry = zis.getNextEntry();
+			while(entry != null) {
+				String entryName = entry.getName();
 
-				int len;
-				byte[] buf = new byte[1024];
-				while((len = zis.read(buf, 0, 1024)) > -1) {
-					fos.write(buf, 0, len);
+				if(entry.isDirectory()) {
+					File newDir = new File(destination.getPath() + MCUpdater.sep + entryName);
+					newDir.mkdirs();
+					System.out.println("   Directory: " + newDir.getPath());
+				} else {
+					if (entryName.contains("aux.class")) {
+						entryName = "mojangDerpyClass1.class";
+					}
+					File outFile = new File(destination.getPath() + MCUpdater.sep + entryName);
+					outFile.getParentFile().mkdirs();
+					System.out.println("   Extract: " + outFile.getPath());
+					FileOutputStream fos = new FileOutputStream(outFile);
+
+					int len;
+					byte[] buf = new byte[1024];
+					while((len = zis.read(buf, 0, 1024)) > -1) {
+						fos.write(buf, 0, len);
+					}
+
+					fos.close();
 				}
-
-				fos.close();
-			}
 				zis.closeEntry();
 				entry = zis.getNextEntry();
 			}
@@ -56,7 +59,7 @@ public class Archive {
 			ioe.printStackTrace();
 		}
 	}
-	
+
 	public static void createZip(File archive, List<File> files, String basePath, MCUApp parent) throws IOException
 	{
 		if(!archive.getParentFile().exists()){
@@ -91,7 +94,7 @@ public class Archive {
 		out.close();
 		parent.setLblStatus("Backup written");
 	}
-	
+
 	public static void addToZip(File archive, List<File> files, File basePath) throws IOException
 	{
 		File tempFile = File.createTempFile(archive.getName(), null);
@@ -182,17 +185,20 @@ public class Archive {
 						jos.closeEntry();
 					}
 				} else {
-						JarEntry jEntry = new JarEntry(path);
-						jEntry.setTime(entry.lastModified());
-						jos.putNextEntry(jEntry);
-						in = new BufferedInputStream(new FileInputStream(entry));
-						byte[] buffer = new byte[1024];
-						int count;
-						while((count = in.read(buffer)) > -1) {
-							jos.write(buffer, 0, count);
-						}
-						jos.closeEntry();
-						in.close();
+					if (path.contains("mojangDerpyClass1.class")) {
+						path.replace("mojangDerpyClass1.class","aux.class");
+					}
+					JarEntry jEntry = new JarEntry(path);
+					jEntry.setTime(entry.lastModified());
+					jos.putNextEntry(jEntry);
+					in = new BufferedInputStream(new FileInputStream(entry));
+					byte[] buffer = new byte[1024];
+					int count;
+					while((count = in.read(buffer)) > -1) {
+						jos.write(buffer, 0, count);
+					}
+					jos.closeEntry();
+					in.close();
 				}
 			}
 			jos.close();
@@ -203,9 +209,9 @@ public class Archive {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
+
 	public static void patchJar(final File jar, final File outputFile, final ArrayList<File> inputFiles)
 	{
 		if(jar == null) {
