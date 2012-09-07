@@ -30,7 +30,7 @@ public class LauncherThread implements Runnable {
 	
 	@Override
 	public void run() {
-		ProcessBuilder pb = new ProcessBuilder("java","-Xms"+minMem, "-Xmx"+maxMem, "-jar", launcher.getPath());
+		ProcessBuilder pb = new ProcessBuilder("java","-Xms"+minMem, "-Xmx"+maxMem, "-jar", launcher.getPath(), "--noupdate");
 		pb.redirectErrorStream(true);
 		BufferedWriter buffWrite = null;
 		try {
