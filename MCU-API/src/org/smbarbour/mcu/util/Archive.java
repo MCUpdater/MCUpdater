@@ -186,7 +186,7 @@ public class Archive {
 					}
 				} else {
 					if (path.contains("mojangDerpyClass1.class")) {
-						path.replace("mojangDerpyClass1.class","aux.class");
+						path = path.replace("mojangDerpyClass1.class","aux.class");
 					}
 					JarEntry jEntry = new JarEntry(path);
 					jEntry.setTime(entry.lastModified());
