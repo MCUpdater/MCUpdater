@@ -16,23 +16,29 @@ public class LauncherThread implements Runnable {
 	String minMem;
 	String maxMem;
 	File output;
+	boolean suppressUpdates;
 
-	public LauncherThread(File launcher, String minMem, String maxMem, File output)
+	public LauncherThread(File launcher, String minMem, String maxMem, boolean suppressUpdates, File output)
 	{
 		this.launcher = launcher;
 		this.minMem = minMem;
 		this.maxMem = maxMem;
 		this.output = output;
+		this.suppressUpdates = suppressUpdates;
 	}
 	
-	public static void launch(File launcher, String minMem, String maxMem, File output)
+	public static void launch(File launcher, String minMem, String maxMem, boolean suppressUpdates, File output)
 	{
-		(new Thread(new LauncherThread(launcher, minMem, maxMem, output))).start();
+		(new Thread(new LauncherThread(launcher, minMem, maxMem, suppressUpdates, output))).start();
 	}
 	
 	@Override
 	public void run() {
-		ProcessBuilder pb = new ProcessBuilder("java","-Xms"+minMem, "-Xmx"+maxMem, "-jar", launcher.getPath(), "--noupdate");
+		String suppress = "";
+		if (this.suppressUpdates) {
+			suppress = "--noupdate";
+		}
+		ProcessBuilder pb = new ProcessBuilder("java","-Xms"+minMem, "-Xmx"+maxMem, "-jar", launcher.getPath(), suppress);
 		pb.redirectErrorStream(true);
 		BufferedWriter buffWrite = null;
 		try {

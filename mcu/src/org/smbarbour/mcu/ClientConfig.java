@@ -18,6 +18,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.util.Properties;
+import javax.swing.JCheckBox;
 
 public class ClientConfig extends JDialog {
 
@@ -28,6 +29,7 @@ public class ClientConfig extends JDialog {
 	private final JPanel contentPanel = new JPanel();
 	private JTextField txtMinimum;
 	private JTextField txtMaximum;
+	private JCheckBox chckbxSuppressVanillaUpdate;
 
 	/**
 	 * Create the dialog.
@@ -37,15 +39,15 @@ public class ClientConfig extends JDialog {
 		setModal(true);
 		setTitle("Client Configuration");
 		setResizable(false);
-		setBounds(100, 100, 354, 152);
+		setBounds(100, 100, 354, 213);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		GridBagLayout gbl_contentPanel = new GridBagLayout();
 		gbl_contentPanel.columnWidths = new int[]{0, 20, 217, 0, 0};
-		gbl_contentPanel.rowHeights = new int[]{0, 20, 0, 0, 0, 0};
+		gbl_contentPanel.rowHeights = new int[]{0, 20, 0, 0, 0, 0, 0, 0, 0};
 		gbl_contentPanel.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
-		gbl_contentPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_contentPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		contentPanel.setLayout(gbl_contentPanel);
 		{
 			Component rigidArea = Box.createRigidArea(new Dimension(5, 5));
@@ -106,21 +108,32 @@ public class ClientConfig extends JDialog {
 			txtMaximum.setColumns(10);
 		}
 		{
+			JLabel lblMemoryCanBe = new JLabel("Memory can be specified in MB or GB (i.e. 512M or 1G)");
+			GridBagConstraints gbc_lblMemoryCanBe = new GridBagConstraints();
+			gbc_lblMemoryCanBe.gridwidth = 2;
+			gbc_lblMemoryCanBe.insets = new Insets(0, 0, 5, 5);
+			gbc_lblMemoryCanBe.gridx = 1;
+			gbc_lblMemoryCanBe.gridy = 3;
+			contentPanel.add(lblMemoryCanBe, gbc_lblMemoryCanBe);
+		}
+		{
 			Component verticalStrut = Box.createVerticalStrut(5);
 			GridBagConstraints gbc_verticalStrut = new GridBagConstraints();
 			gbc_verticalStrut.insets = new Insets(0, 0, 5, 5);
 			gbc_verticalStrut.gridx = 1;
-			gbc_verticalStrut.gridy = 3;
+			gbc_verticalStrut.gridy = 4;
 			contentPanel.add(verticalStrut, gbc_verticalStrut);
 		}
 		{
-			JLabel lblMemoryCanBe = new JLabel("Memory can be specified in MB or GB (i.e. 512M or 1G)");
-			GridBagConstraints gbc_lblMemoryCanBe = new GridBagConstraints();
-			gbc_lblMemoryCanBe.gridwidth = 2;
-			gbc_lblMemoryCanBe.insets = new Insets(0, 0, 0, 5);
-			gbc_lblMemoryCanBe.gridx = 1;
-			gbc_lblMemoryCanBe.gridy = 4;
-			contentPanel.add(lblMemoryCanBe, gbc_lblMemoryCanBe);
+			chckbxSuppressVanillaUpdate = new JCheckBox("Suppress vanilla update check");
+			GridBagConstraints gbc_chckbxSuppressVanillaUpdate = new GridBagConstraints();
+			gbc_chckbxSuppressVanillaUpdate.anchor = GridBagConstraints.WEST;
+			gbc_chckbxSuppressVanillaUpdate.gridwidth = 2;
+			gbc_chckbxSuppressVanillaUpdate.insets = new Insets(0, 0, 5, 5);
+			gbc_chckbxSuppressVanillaUpdate.gridx = 1;
+			gbc_chckbxSuppressVanillaUpdate.gridy = 5;
+			chckbxSuppressVanillaUpdate.setSelected(Boolean.parseBoolean(parent.getConfig().getProperty("suppressUpdates")));
+			contentPanel.add(chckbxSuppressVanillaUpdate, gbc_chckbxSuppressVanillaUpdate);
 		}
 		{
 			JPanel buttonPane = new JPanel();
@@ -133,6 +146,7 @@ public class ClientConfig extends JDialog {
 						Properties newConfig = parent.getConfig();
 						newConfig.setProperty("minimumMemory", txtMinimum.getText());
 						newConfig.setProperty("maximumMemory", txtMaximum.getText());
+						newConfig.setProperty("suppressUpdates", Boolean.toString(chckbxSuppressVanillaUpdate.isSelected()));
 						parent.writeConfig(newConfig);
 						dispose();
 					}

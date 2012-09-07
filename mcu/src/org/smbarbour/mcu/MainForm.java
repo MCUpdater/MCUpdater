@@ -57,7 +57,7 @@ import javax.swing.ImageIcon;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
-	private static final String VERSION = "v1.28";
+	private static final String VERSION = "v1.29";
 	private static MainForm window;
 	private Properties config = new Properties();
 	private JFrame frmMain;
@@ -109,6 +109,7 @@ public class MainForm extends MCUApp {
 		newConfig.setProperty("maximumMemory", "1G");
 		newConfig.setProperty("currentConfig", "");
 		newConfig.setProperty("packRevision","");
+		newConfig.setProperty("suppressUpdates", "true");
 		try {
 			configFile.getParentFile().mkdirs();
 			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
@@ -126,6 +127,7 @@ public class MainForm extends MCUApp {
 		if (current.getProperty("maximumMemory") == null) {	current.setProperty("maximumMemory", "1G"); hasChanged = true; }
 		if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; }
 		if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; }
+		if (current.getProperty("suppressUpdates") == null) { current.setProperty("suppressUpdates", "true"); hasChanged = true; }
 		return hasChanged;
 	}
 
@@ -237,7 +239,7 @@ public class MainForm extends MCUApp {
 				}
 				File outFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "client-log.txt");
 				outFile.delete();
-				LauncherThread.launch(launcher, config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), outFile);
+				LauncherThread.launch(launcher, config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), Boolean.parseBoolean(config.getProperty("suppressUpdates")), outFile);
 			}
 		});
 		pnlButtons.add(btnLaunchMinecraft);
