@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
+import javax.swing.JOptionPane;
+
 public class LauncherThread implements Runnable {
 	File launcher;
 	String minMem;
@@ -42,20 +44,37 @@ public class LauncherThread implements Runnable {
 			Process task = pb.start();
 			BufferedReader buffRead = new BufferedReader(new InputStreamReader(task.getInputStream()));
 			String line;
-			int counter = 0;
-			while ((line = buffRead.readLine()) != null)
-			{
-				if (buffWrite != null) {
-					buffWrite.write(line);
-					buffWrite.newLine();
-					counter++;
-					if (counter >= 20)
-					{
-						buffWrite.flush();
-						counter = 0;
+			buffRead.mark(1024);
+			final String firstLine = buffRead.readLine();
+			if (firstLine == null ||
+					firstLine.startsWith("Error occurred during initialization of VM") ||
+					firstLine.startsWith("Could not create the Java virtual machine.")) {
+				//System.out.println("Failure to launch detected.");
+				// fetch the whole error message
+				StringBuilder err = new StringBuilder(firstLine);
+				while ((line = buffRead.readLine()) != null) {
+					err.append('\n');
+					err.append(line);
+				}
+				JOptionPane.showMessageDialog(null, err);
+			} else {
+				buffRead.reset();
+				//System.out.println("Launching client...");
+				int counter = 0;
+				while ((line = buffRead.readLine()) != null)
+				{
+					if (buffWrite != null) {
+						buffWrite.write(line);
+						buffWrite.newLine();
+						counter++;
+						if (counter >= 20)
+						{
+							buffWrite.flush();
+							counter = 0;
+						}
+					} else {
+						System.out.println(line);
 					}
-				} else {
-					System.out.println(line);
 				}
 			}
 			buffWrite.flush();
