@@ -295,6 +295,7 @@ public class MCUpdater {
 		Boolean inJar = getBooleanValue(modEl,"InJar");
 		Boolean extract = getBooleanValue(modEl,"Extract");
 		Boolean inRoot = getBooleanValue(modEl,"InRoot");
+		Boolean coreMod = getBooleanValue(modEl,"CoreMod");
 		String md5 = getTextValue(modEl,"MD5");
 		List<ConfigFile> configs = new ArrayList<ConfigFile>();
 		NodeList nl = modEl.getElementsByTagName("ConfigFile");
@@ -305,7 +306,7 @@ public class MCUpdater {
 			ConfigFile cf = getConfigFile(el);
 			configs.add(cf);
 		}
-		Module m = new Module(name, url, required, inJar, extract, inRoot, isDefault, md5, configs);
+		Module m = new Module(name, url, required, inJar, extract, inRoot, isDefault, coreMod, md5, configs);
 		return m;
 	}
 	
@@ -608,6 +609,15 @@ public class MCUpdater {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+				} else if (entry.getCoreMod()) {
+					modPath = new File(MCFolder + sep + "coremods");
+					modPath.mkdirs();
+					try {
+						ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
+						System.out.println(normalMod.getRemoteFilename() + " -> " + normalMod.getDestFile().getPath());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}					
 				} else {
 					modPath = new File(MCFolder + sep + "mods");
 					modPath.mkdirs();
