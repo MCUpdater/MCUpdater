@@ -109,7 +109,7 @@ public class MainForm extends MCUApp {
 		newConfig.setProperty("maximumMemory", "1G");
 		newConfig.setProperty("currentConfig", "");
 		newConfig.setProperty("packRevision","");
-		newConfig.setProperty("suppressUpdates", "true");
+		newConfig.setProperty("suppressUpdates", "false");
 		try {
 			configFile.getParentFile().mkdirs();
 			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
@@ -127,7 +127,7 @@ public class MainForm extends MCUApp {
 		if (current.getProperty("maximumMemory") == null) {	current.setProperty("maximumMemory", "1G"); hasChanged = true; }
 		if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; }
 		if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; }
-		if (current.getProperty("suppressUpdates") == null) { current.setProperty("suppressUpdates", "true"); hasChanged = true; }
+		if (current.getProperty("suppressUpdates") == null) { current.setProperty("suppressUpdates", "false"); hasChanged = true; }
 		return hasChanged;
 	}
 
