@@ -14,6 +14,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JCheckBox;
 import javax.swing.BoxLayout;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -63,6 +65,7 @@ public class MainForm extends MCUApp {
 	private JFrame frmMain;
 	final MCUpdater mcu = new MCUpdater();
 	private final JTextPane browser = new JTextPane();
+	private final JTextArea console = new JTextArea();
 	private ServerList selected;
 	private final JPanel pnlModList = new JPanel();
 	private JLabel lblStatus;
@@ -239,7 +242,7 @@ public class MainForm extends MCUApp {
 				}
 				File outFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "client-log.txt");
 				outFile.delete();
-				LauncherThread.launch(launcher, config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), Boolean.parseBoolean(config.getProperty("suppressUpdates")), outFile);
+				LauncherThread.launch(launcher, config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), Boolean.parseBoolean(config.getProperty("suppressUpdates")), outFile, console);
 			}
 		});
 		pnlButtons.add(btnLaunchMinecraft);
@@ -337,12 +340,26 @@ public class MainForm extends MCUApp {
 			}
 			
 		});
+		
+		JTabbedPane tabs = new JTabbedPane();
 
 		browser.setText("<HTML><BODY>There are no servers currently defined.</BODY></HTML>");
-		JScrollPane scrollPane = new JScrollPane(browser);
-		scrollPane.setViewportBorder(null);
+		JScrollPane browserScrollPane = new JScrollPane(browser);
+		browserScrollPane.setViewportBorder(null);
 		browser.setBorder(null);
-		frmMain.getContentPane().add(scrollPane, BorderLayout.CENTER);
+		tabs.add("News",browserScrollPane);
+		
+		console.setText("MCUpdater starting...");
+		console.setEditable(false);
+		Font f = new Font("Monospaced",Font.PLAIN,11);
+		console.setFont(f);
+		JScrollPane consoleScrollPane = new JScrollPane(console);
+		consoleScrollPane.setViewportBorder(null);
+		consoleScrollPane.setAutoscrolls(true);
+		console.setBorder(null);
+		tabs.add("Console",consoleScrollPane);
+		
+		frmMain.getContentPane().add(tabs, BorderLayout.CENTER);
 		
 		JToolBar toolBar = new JToolBar();
 		toolBar.setFloatable(false);
