@@ -350,13 +350,16 @@ public class MainForm extends MCUApp {
 		tabs.add("News",browserScrollPane);
 		
 		console.setText("MCUpdater starting...");
+		console.setBorder(null);
+		console.setLineWrap(true);
 		console.setEditable(false);
 		Font f = new Font("Monospaced",Font.PLAIN,11);
 		console.setFont(f);
 		JScrollPane consoleScrollPane = new JScrollPane(console);
 		consoleScrollPane.setViewportBorder(null);
 		consoleScrollPane.setAutoscrolls(true);
-		console.setBorder(null);
+		consoleScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		consoleScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		tabs.add("Console",consoleScrollPane);
 		
 		frmMain.getContentPane().add(tabs, BorderLayout.CENTER);

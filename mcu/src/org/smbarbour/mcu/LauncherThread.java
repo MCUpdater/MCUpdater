@@ -42,6 +42,7 @@ public class LauncherThread implements Runnable {
 	private void log(String msg) {
 		if( console == null ) return;
 		console.append(msg);
+		console.setCaretPosition(console.getCaretPosition()+msg.length());
 	}
 	
 	@Override
