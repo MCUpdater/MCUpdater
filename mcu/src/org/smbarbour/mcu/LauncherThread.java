@@ -1,5 +1,6 @@
 package org.smbarbour.mcu;
 
+import java.awt.SystemTray;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -24,6 +25,7 @@ public class LauncherThread implements Runnable {
 	private boolean ready;
 	private JTextArea console;
 	private JButton launchButton;
+	private MainForm form;
 
 	public LauncherThread(File launcher, String minMem, String maxMem, boolean suppressUpdates, File output)
 	{
@@ -32,7 +34,7 @@ public class LauncherThread implements Runnable {
 		this.maxMem = maxMem;
 		this.output = output;
 		this.suppressUpdates = suppressUpdates;
-		ready = false; 
+		ready = false;
 	}
 	
 	public static LauncherThread launch(File launcher, String minMem, String maxMem, boolean suppressUpdates, File output, JTextArea console)
@@ -89,6 +91,7 @@ public class LauncherThread implements Runnable {
 				JOptionPane.showMessageDialog(null, err);
 			} else {
 				buffRead.reset();
+				minimizeFrame();
 				log("Launching client...\n");
 				int counter = 0;
 				while ((line = buffRead.readLine()) != null)
@@ -110,6 +113,7 @@ public class LauncherThread implements Runnable {
 			}
 			buffWrite.flush();
 			buffWrite.close();
+			restoreFrame();
 			
 			log("!!! Exiting Minecraft\n");
 
@@ -118,6 +122,14 @@ public class LauncherThread implements Runnable {
 		}
 	}
 	
+	private void restoreFrame() {
+		form.restore();
+	}
+
+	private void minimizeFrame() {
+		form.minimize(true);
+	}
+
 	private void setReady() {
 		ready = true;
 		if(launchButton != null) {
@@ -125,8 +137,9 @@ public class LauncherThread implements Runnable {
 		}
 	}
 
-	public void setButton(JButton btnLaunchMinecraft) {
+	public void register(MainForm form, JButton btnLaunchMinecraft) {
 		launchButton = btnLaunchMinecraft;
+		this.form = form;
 		if( ready ) {
 			setReady();
 		}
