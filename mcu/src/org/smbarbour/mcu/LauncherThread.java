@@ -9,18 +9,21 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
 import javax.swing.JTextArea;
 import javax.swing.text.JTextComponent;
 
 public class LauncherThread implements Runnable {
-	File launcher;
-	String minMem;
-	String maxMem;
-	File output;
-	boolean suppressUpdates;
+	private File launcher;
+	private String minMem;
+	private String maxMem;
+	private File output;
+	private boolean suppressUpdates;
 	
-	JTextArea console;
+	private boolean ready;
+	private JTextArea console;
+	private JButton launchButton;
 
 	public LauncherThread(File launcher, String minMem, String maxMem, boolean suppressUpdates, File output)
 	{
@@ -29,14 +32,19 @@ public class LauncherThread implements Runnable {
 		this.maxMem = maxMem;
 		this.output = output;
 		this.suppressUpdates = suppressUpdates;
+		ready = false; 
 	}
 	
-	public static void launch(File launcher, String minMem, String maxMem, boolean suppressUpdates, File output, JTextArea console)
+	public static LauncherThread launch(File launcher, String minMem, String maxMem, boolean suppressUpdates, File output, JTextArea console)
 	{
 		LauncherThread me = new LauncherThread(launcher, minMem, maxMem, suppressUpdates, output);
 		me.console = console;
 		console.setText("");
-		(new Thread(me)).start();
+		return me;
+	}
+	
+	public void start() {
+		(new Thread(this)).start();
 	}
 	
 	private void log(String msg) {
@@ -66,6 +74,7 @@ public class LauncherThread implements Runnable {
 			String line;
 			buffRead.mark(1024);
 			final String firstLine = buffRead.readLine();
+			setReady();
 			if (firstLine == null ||
 					firstLine.startsWith("Error occurred during initialization of VM") ||
 					firstLine.startsWith("Could not create the Java virtual machine.")) {
@@ -106,6 +115,20 @@ public class LauncherThread implements Runnable {
 
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
+		}
+	}
+	
+	private void setReady() {
+		ready = true;
+		if(launchButton != null) {
+			launchButton.setEnabled(true);
+		}
+	}
+
+	public void setButton(JButton btnLaunchMinecraft) {
+		launchButton = btnLaunchMinecraft;
+		if( ready ) {
+			setReady();
 		}
 	}
 }

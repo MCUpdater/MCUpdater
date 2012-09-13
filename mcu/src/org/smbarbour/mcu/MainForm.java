@@ -73,6 +73,7 @@ public class MainForm extends MCUApp {
 
 	private JList serverList;
 	private SLListModel slModel;
+	private JButton btnLaunchMinecraft;
 	
 	public ResourceBundle getCustomization(){
 		return Customization;
@@ -222,7 +223,7 @@ public class MainForm extends MCUApp {
 		});
 		pnlButtons.add(btnUpdate);
 
-		JButton btnLaunchMinecraft = new JButton("Launch Minecraft");
+		btnLaunchMinecraft = new JButton("Launch Minecraft");
 		btnLaunchMinecraft.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				File launcher = new File(mcu.getMCFolder() + MCUpdater.sep + "minecraft.jar");
@@ -242,7 +243,10 @@ public class MainForm extends MCUApp {
 				}
 				File outFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "client-log.txt");
 				outFile.delete();
-				LauncherThread.launch(launcher, config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), Boolean.parseBoolean(config.getProperty("suppressUpdates")), outFile, console);
+				btnLaunchMinecraft.setEnabled(false);
+				LauncherThread thread = LauncherThread.launch(launcher, config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), Boolean.parseBoolean(config.getProperty("suppressUpdates")), outFile, console);
+				thread.setButton( btnLaunchMinecraft );
+				thread.start();
 			}
 		});
 		pnlButtons.add(btnLaunchMinecraft);
