@@ -1,5 +1,6 @@
 package org.smbarbour.mcu;
 
+import java.awt.SystemTray;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -9,14 +10,22 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 
+import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import javax.swing.JTextArea;
+import javax.swing.text.JTextComponent;
 
 public class LauncherThread implements Runnable {
-	File launcher;
-	String minMem;
-	String maxMem;
-	File output;
-	boolean suppressUpdates;
+	private File launcher;
+	private String minMem;
+	private String maxMem;
+	private File output;
+	private boolean suppressUpdates;
+	
+	private boolean ready;
+	private JTextArea console;
+	private JButton launchButton;
+	private MainForm form;
 
 	public LauncherThread(File launcher, String minMem, String maxMem, boolean suppressUpdates, File output)
 	{
@@ -25,11 +34,25 @@ public class LauncherThread implements Runnable {
 		this.maxMem = maxMem;
 		this.output = output;
 		this.suppressUpdates = suppressUpdates;
+		ready = false;
 	}
 	
-	public static void launch(File launcher, String minMem, String maxMem, boolean suppressUpdates, File output)
+	public static LauncherThread launch(File launcher, String minMem, String maxMem, boolean suppressUpdates, File output, JTextArea console)
 	{
-		(new Thread(new LauncherThread(launcher, minMem, maxMem, suppressUpdates, output))).start();
+		LauncherThread me = new LauncherThread(launcher, minMem, maxMem, suppressUpdates, output);
+		me.console = console;
+		console.setText("");
+		return me;
+	}
+	
+	public void start() {
+		(new Thread(this)).start();
+	}
+	
+	private void log(String msg) {
+		if( console == null ) return;
+		console.append(msg);
+		console.setCaretPosition(console.getCaretPosition()+msg.length());
 	}
 	
 	@Override
@@ -44,6 +67,7 @@ public class LauncherThread implements Runnable {
 		try {
 			buffWrite = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(output)));
 		} catch (FileNotFoundException e) {
+			log(e.getMessage()+"\n");
 			e.printStackTrace();
 		}
 		try {
@@ -52,20 +76,23 @@ public class LauncherThread implements Runnable {
 			String line;
 			buffRead.mark(1024);
 			final String firstLine = buffRead.readLine();
+			setReady();
 			if (firstLine == null ||
 					firstLine.startsWith("Error occurred during initialization of VM") ||
 					firstLine.startsWith("Could not create the Java virtual machine.")) {
-				//System.out.println("Failure to launch detected.");
+				log("Failure to launch detected.\n");
 				// fetch the whole error message
 				StringBuilder err = new StringBuilder(firstLine);
 				while ((line = buffRead.readLine()) != null) {
 					err.append('\n');
 					err.append(line);
 				}
+				log(err+"\n");
 				JOptionPane.showMessageDialog(null, err);
 			} else {
 				buffRead.reset();
-				//System.out.println("Launching client...");
+				minimizeFrame();
+				log("Launching client...\n");
 				int counter = 0;
 				while ((line = buffRead.readLine()) != null)
 				{
@@ -81,13 +108,40 @@ public class LauncherThread implements Runnable {
 					} else {
 						System.out.println(line);
 					}
+					log(line+"\n");
 				}
 			}
 			buffWrite.flush();
 			buffWrite.close();
+			restoreFrame();
+			
+			log("!!! Exiting Minecraft\n");
 
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
+		}
+	}
+	
+	private void restoreFrame() {
+		form.restore();
+	}
+
+	private void minimizeFrame() {
+		form.minimize(true);
+	}
+
+	private void setReady() {
+		ready = true;
+		if(launchButton != null) {
+			launchButton.setEnabled(true);
+		}
+	}
+
+	public void register(MainForm form, JButton btnLaunchMinecraft) {
+		launchButton = btnLaunchMinecraft;
+		this.form = form;
+		if( ready ) {
+			setReady();
 		}
 	}
 }

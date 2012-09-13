@@ -2,7 +2,14 @@ package org.smbarbour.mcu;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+
+import java.awt.AWTException;
 import java.awt.BorderLayout;
+import java.awt.MenuItem;
+import java.awt.PopupMenu;
+import java.awt.SystemTray;
+import java.awt.TrayIcon;
+
 import javax.swing.JLabel;
 import javax.swing.JButton;
 import javax.swing.SwingConstants;
@@ -10,10 +17,14 @@ import java.awt.Component;
 import javax.swing.Box;
 import java.awt.Font;
 
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JCheckBox;
 import javax.swing.BoxLayout;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -63,6 +74,7 @@ public class MainForm extends MCUApp {
 	private JFrame frmMain;
 	final MCUpdater mcu = new MCUpdater();
 	private final JTextPane browser = new JTextPane();
+	private final JTextArea console = new JTextArea();
 	private ServerList selected;
 	private final JPanel pnlModList = new JPanel();
 	private JLabel lblStatus;
@@ -70,6 +82,9 @@ public class MainForm extends MCUApp {
 
 	private JList serverList;
 	private SLListModel slModel;
+	private JButton btnLaunchMinecraft;
+	private boolean minimized;
+	private TrayIcon trayIcon;
 	
 	public ResourceBundle getCustomization(){
 		return Customization;
@@ -78,8 +93,8 @@ public class MainForm extends MCUApp {
 	 * Create the application.
 	 */
 	public MainForm() {
-		initialize();
 		window = this;
+		initialize();
 		window.frmMain.setVisible(true);
 		mcu.setParent(window);
 	}
@@ -219,7 +234,7 @@ public class MainForm extends MCUApp {
 		});
 		pnlButtons.add(btnUpdate);
 
-		JButton btnLaunchMinecraft = new JButton("Launch Minecraft");
+		btnLaunchMinecraft = new JButton("Launch Minecraft");
 		btnLaunchMinecraft.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				File launcher = new File(mcu.getMCFolder() + MCUpdater.sep + "minecraft.jar");
@@ -239,7 +254,10 @@ public class MainForm extends MCUApp {
 				}
 				File outFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "client-log.txt");
 				outFile.delete();
-				LauncherThread.launch(launcher, config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), Boolean.parseBoolean(config.getProperty("suppressUpdates")), outFile);
+				btnLaunchMinecraft.setEnabled(false);
+				LauncherThread thread = LauncherThread.launch(launcher, config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), Boolean.parseBoolean(config.getProperty("suppressUpdates")), outFile, console);
+				thread.register( window, btnLaunchMinecraft );
+				thread.start();
 			}
 		});
 		pnlButtons.add(btnLaunchMinecraft);
@@ -337,12 +355,29 @@ public class MainForm extends MCUApp {
 			}
 			
 		});
+		
+		JTabbedPane tabs = new JTabbedPane();
 
 		browser.setText("<HTML><BODY>There are no servers currently defined.</BODY></HTML>");
-		JScrollPane scrollPane = new JScrollPane(browser);
-		scrollPane.setViewportBorder(null);
+		JScrollPane browserScrollPane = new JScrollPane(browser);
+		browserScrollPane.setViewportBorder(null);
 		browser.setBorder(null);
-		frmMain.getContentPane().add(scrollPane, BorderLayout.CENTER);
+		tabs.add("News",browserScrollPane);
+		
+		console.setText("MCUpdater starting...");
+		console.setBorder(null);
+		console.setLineWrap(true);
+		console.setEditable(false);
+		Font f = new Font("Monospaced",Font.PLAIN,11);
+		console.setFont(f);
+		JScrollPane consoleScrollPane = new JScrollPane(console);
+		consoleScrollPane.setViewportBorder(null);
+		consoleScrollPane.setAutoscrolls(true);
+		consoleScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+		consoleScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		tabs.add("Console",consoleScrollPane);
+		
+		frmMain.getContentPane().add(tabs, BorderLayout.CENTER);
 		
 		JToolBar toolBar = new JToolBar();
 		toolBar.setFloatable(false);
@@ -414,6 +449,8 @@ public class MainForm extends MCUApp {
 		updateServerList();
 		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(config.getProperty("currentConfig"));
 		serverList.setSelectedIndex(selectIndex);
+		
+		initTray();
 	}
 
 	protected void changeSelectedServer(ServerList entry) {
@@ -480,6 +517,56 @@ public class MainForm extends MCUApp {
 	@Override
 	public void setProgressBar(int value) {
 		progressBar.setValue(value);
+	}
+	
+	private void initTray() {
+		if( !SystemTray.isSupported() ) {
+			System.out.println("System tray is NOT supported :(");
+			return;
+		}
+		
+		final String label = "MCUpdater "+VERSION;
+		
+		trayIcon = new TrayIcon(new ImageIcon(MainForm.class.getResource("/icons/briefcase.png")).getImage(),label);
+		final SystemTray tray = SystemTray.getSystemTray();
+		final PopupMenu menu = new PopupMenu();
+		
+		final MenuItem restoreItem = new MenuItem("Restore MCU");
+		restoreItem.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				restore();
+			}
+		});
+		final MenuItem killItem = new MenuItem("Kill Minecraft");
+		killItem.setEnabled(false);
+		
+		menu.add(restoreItem);
+		menu.add(killItem);
+		
+		trayIcon.setPopupMenu(menu);
+		
+		try {
+			tray.add(trayIcon);
+		} catch (AWTException e) {
+			trayIcon = null;
+			e.printStackTrace();
+		}		
+	}
+	public void minimize(boolean auto) {
+		if( trayIcon == null ) {
+			// only minimize if we have a way to come back
+			return;
+		}
+		// TODO: add preference whether to autohide or not
+		frmMain.setVisible(false);
+		minimized = true;
+	}
+	public void restore() {
+		if( !minimized ) {
+			return;
+		}
+		frmMain.setVisible(true);
 	}
 }
 
