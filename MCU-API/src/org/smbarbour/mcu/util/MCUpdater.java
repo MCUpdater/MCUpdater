@@ -485,6 +485,17 @@ public class MCUpdater {
 		if(path.contains("META-INF" + sep)) {
 			return true;
 		}
+		// Temporary hardcoding of client specific mod configs (i.e. Don't clobber on update)
+		if(path.contains("rei_minimap" + sep)) {
+			return true;
+		}
+		if(path.contains("macros" + sep)) {
+			return true;
+		}
+		if(path.contains("InvTweaks")) {
+			return true;
+		}
+		//
 		return false;
 	}
 
