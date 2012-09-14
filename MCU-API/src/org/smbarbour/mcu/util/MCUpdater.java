@@ -495,6 +495,9 @@ public class MCUpdater {
 		if(path.contains("InvTweaks")) {
 			return true;
 		}
+		if(path.contains("optionsof.txt")){
+			return true;
+		}
 		//
 		return false;
 	}
