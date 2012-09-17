@@ -446,19 +446,32 @@ public class MCUpdater {
 	}
 
 	private boolean getExcludedNames(String path, boolean forDelete) {
+		if(path.contains("mcu" + sep)) {
+			// never delete from the mcu folder
+			return true;
+		}
+		if (path.contains("mods") && (path.contains(".zip") || path.contains(".jar"))) {
+			// always delete mods in archive form
+			return false;
+		}
 		if(path.contains("bin" + sep + "minecraft.jar")) {
+			// always delete bin/minecraft.jar
 			return false;
 		}
 		if(path.contains("bin" + sep)) {
+			// never delete anything else in bin/
 			return true;
 		}
 		if(path.contains("resources") && !path.contains("mods")) {
+			// never delete resources unless it is under the mods directory
 			return true;
 		}
 		if(path.contains("saves")) {
+			// never delete saves
 			return true;
 		}
 		if(path.contains("screenshots")) {
+			// never delete screenshots
 			return true;
 		}
 		if(path.contains("stats")) {
@@ -478,9 +491,6 @@ public class MCUpdater {
 		}
 		if(path.contains("options.txt")) {
 			return forDelete;
-		}
-		if(path.contains("mcu" + sep)) {
-			return true;
 		}
 		if(path.contains("META-INF" + sep)) {
 			return true;
