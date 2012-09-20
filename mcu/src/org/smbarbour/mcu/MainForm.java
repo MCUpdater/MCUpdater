@@ -68,7 +68,7 @@ import javax.swing.ImageIcon;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
-	private static final String VERSION = "v1.32";
+	private static final String VERSION = "v1.33";
 	private static MainForm window;
 	private Properties config = new Properties();
 	private JFrame frmMain;
@@ -106,6 +106,7 @@ public class MainForm extends MCUApp {
 	
 	public void writeConfig(Properties newConfig)
 	{
+		System.out.println("Writing configuration file");
 		File configFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "config.properties");
 		try {
 			configFile.getParentFile().mkdirs();
@@ -119,6 +120,7 @@ public class MainForm extends MCUApp {
 	}
 
 	private void createDefaultConfig(File configFile) {
+		System.out.println("Creating default configuration file");
 		Properties newConfig = new Properties();
 		newConfig.setProperty("minimumMemory", "512M");
 		newConfig.setProperty("maximumMemory", "1G");
@@ -157,7 +159,7 @@ public class MainForm extends MCUApp {
 		}
 		try {
 			config.load(new FileInputStream(configFile));
-			if (!validateConfig(config))
+			if (validateConfig(config))
 			{
 				writeConfig(config);
 			}
@@ -353,7 +355,6 @@ public class MainForm extends MCUApp {
 					}
 				}
 			}
-			
 		});
 		
 		JTabbedPane tabs = new JTabbedPane();

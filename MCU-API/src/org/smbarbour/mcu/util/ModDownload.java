@@ -20,6 +20,8 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTML.Tag;
 
+import org.apache.commons.io.FileUtils;
+
 public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallback {
 
 	private boolean isAdfly = false, isMediafire = false, isOptifined = false, readingScript = false;
@@ -42,6 +44,11 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 	public ModDownload(URL url, File destination, ModDownload referer) throws Exception {
 		this.url = url;
 		this.remoteFilename = url.getFile().substring(url.getFile().lastIndexOf('/')+1);
+		if (url.getProtocol().equals("file")){
+			this.destFile = new File(destination, this.remoteFilename);
+			FileUtils.copyURLToFile(url, this.destFile);
+			return;
+		}
 		isOptifined = url.getHost().endsWith("optifined.net");
 		HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 		if (referer != null)
