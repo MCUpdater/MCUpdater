@@ -262,8 +262,17 @@ public class MainForm extends MCUApp {
 				File outFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "client-log.txt");
 				outFile.delete();
 				btnLaunchMinecraft.setEnabled(false);
+				final PopupMenu menu = trayIcon.getPopupMenu();
+				MenuItem killItem = null;
+				for( int k = 0; k < menu.getItemCount(); ++k ) {
+					final MenuItem item = menu.getItem(k);
+					if( item.getLabel().equals("Kill Minecraft") ) {
+						killItem = item;
+						break;
+					}
+				}
 				LauncherThread thread = LauncherThread.launch(launcher, config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), Boolean.parseBoolean(config.getProperty("suppressUpdates")), outFile, console);
-				thread.register( window, btnLaunchMinecraft );
+				thread.register( window, btnLaunchMinecraft, killItem );
 				thread.start();
 			}
 		});
