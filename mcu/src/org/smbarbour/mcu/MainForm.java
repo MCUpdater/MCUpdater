@@ -5,6 +5,7 @@ import javax.swing.JPanel;
 
 import java.awt.AWTException;
 import java.awt.BorderLayout;
+import java.awt.Frame;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
@@ -28,6 +29,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -85,6 +88,7 @@ public class MainForm extends MCUApp {
 	private JButton btnLaunchMinecraft;
 	private boolean minimized;
 	private TrayIcon trayIcon;
+	private ImageIcon mcuIcon;
 	
 	public ResourceBundle getCustomization(){
 		return Customization;
@@ -171,6 +175,9 @@ public class MainForm extends MCUApp {
 		frmMain.setResizable(false);
 		frmMain.setBounds(100, 100, 1175, 592);
 		frmMain.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		
+		mcuIcon = new ImageIcon(MainForm.class.getResource("/art/mcu-icon.png"));	// was "/icons/briefcase.png"
+		frmMain.setIconImage(mcuIcon.getImage());
 
 		JPanel pnlFooter = new JPanel();
 		frmMain.getContentPane().add(pnlFooter, BorderLayout.SOUTH);
@@ -525,9 +532,17 @@ public class MainForm extends MCUApp {
 			return;
 		}
 		
+		// change minimize behavior to go to tray
+		frmMain.addWindowListener(new WindowAdapter() {
+			public void windowIconified(WindowEvent e) {
+				minimize(false);	// this is a manual minimize event
+			}
+		});
+		
 		final String label = "MCUpdater "+VERSION;
 		
-		trayIcon = new TrayIcon(new ImageIcon(MainForm.class.getResource("/icons/briefcase.png")).getImage(),label);
+		trayIcon = new TrayIcon(mcuIcon.getImage(),label);
+		trayIcon.setImageAutoSize(true);
 		final SystemTray tray = SystemTray.getSystemTray();
 		final PopupMenu menu = new PopupMenu();
 		
@@ -560,6 +575,7 @@ public class MainForm extends MCUApp {
 		}
 		// TODO: add preference whether to autohide or not
 		frmMain.setVisible(false);
+		frmMain.setState(Frame.ICONIFIED);
 		minimized = true;
 	}
 	public void restore() {
@@ -567,6 +583,7 @@ public class MainForm extends MCUApp {
 			return;
 		}
 		frmMain.setVisible(true);
+		frmMain.setState(Frame.NORMAL);
 	}
 }
 
