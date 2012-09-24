@@ -1,6 +1,9 @@
 package org.smbarbour.mcu;
 
+import java.awt.MenuItem;
 import java.awt.SystemTray;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -26,6 +29,10 @@ public class LauncherThread implements Runnable {
 	private JTextArea console;
 	private JButton launchButton;
 	private MainForm form;
+	private Thread thread;
+	private Process task;
+	private MenuItem killItem;
+	private boolean forceKilled = false;
 
 	public LauncherThread(File launcher, String minMem, String maxMem, boolean suppressUpdates, File output)
 	{
@@ -46,7 +53,28 @@ public class LauncherThread implements Runnable {
 	}
 	
 	public void start() {
-		(new Thread(this)).start();
+		thread = new Thread(this);
+		thread.start();
+	}
+	
+	public void stop() {
+		if( task != null ) {
+			final int confirm = JOptionPane.showConfirmDialog(null,
+				"Are you sure you want to kill Minecraft?\nThis could result in corrupted world save data.",
+				"Kill Minecraft",
+				JOptionPane.YES_NO_OPTION,
+				JOptionPane.WARNING_MESSAGE
+			);
+			if( confirm == JOptionPane.YES_OPTION ) {
+				forceKilled  = true;
+				try {
+					task.destroy();
+				} catch( Exception e ) {
+					// maximum paranoia here
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 	
 	private void log(String msg) {
@@ -71,7 +99,7 @@ public class LauncherThread implements Runnable {
 			e.printStackTrace();
 		}
 		try {
-			Process task = pb.start();
+			task = pb.start();
 			BufferedReader buffRead = new BufferedReader(new InputStreamReader(task.getInputStream()));
 			String line;
 			buffRead.mark(1024);
@@ -80,7 +108,7 @@ public class LauncherThread implements Runnable {
 			if (firstLine == null ||
 					firstLine.startsWith("Error occurred during initialization of VM") ||
 					firstLine.startsWith("Could not create the Java virtual machine.")) {
-				log("Failure to launch detected.\n");
+				log("!!! Failure to launch detected.\n");
 				// fetch the whole error message
 				StringBuilder err = new StringBuilder(firstLine);
 				while ((line = buffRead.readLine()) != null) {
@@ -92,7 +120,7 @@ public class LauncherThread implements Runnable {
 			} else {
 				buffRead.reset();
 				minimizeFrame();
-				log("Launching client...\n");
+				log("* Launching client...\n");
 				int counter = 0;
 				while ((line = buffRead.readLine()) != null)
 				{
@@ -108,14 +136,16 @@ public class LauncherThread implements Runnable {
 					} else {
 						System.out.println(line);
 					}
-					log(line+"\n");
+					if( line.length() > 0) {
+						log(line+"\n");
+					}
 				}
 			}
 			buffWrite.flush();
 			buffWrite.close();
 			restoreFrame();
 			
-			log("!!! Exiting Minecraft\n");
+			log("* Exiting Minecraft"+(forceKilled?" (killed)":"")+"\n");
 
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
@@ -124,10 +154,12 @@ public class LauncherThread implements Runnable {
 	
 	private void restoreFrame() {
 		form.restore();
+		toggleKillable(false);
 	}
 
 	private void minimizeFrame() {
 		form.minimize(true);
+		toggleKillable(true);
 	}
 
 	private void setReady() {
@@ -137,11 +169,31 @@ public class LauncherThread implements Runnable {
 		}
 	}
 
-	public void register(MainForm form, JButton btnLaunchMinecraft) {
+	public void register(MainForm form, JButton btnLaunchMinecraft, MenuItem killItem) {
 		launchButton = btnLaunchMinecraft;
+		this.killItem = killItem;
 		this.form = form;
 		if( ready ) {
 			setReady();
+		}
+	}
+	
+	private void toggleKillable(boolean enabled) {
+		if( killItem == null ) return;
+		killItem.setEnabled(enabled);
+		if( enabled ) {
+			final LauncherThread thread = this;
+			killItem.addActionListener(new ActionListener(){
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					thread.stop();
+				}
+			});
+		} else {
+			for( ActionListener listener : killItem.getActionListeners() ) {
+				killItem.removeActionListener(listener);
+			}
+			killItem = null;
 		}
 	}
 }
