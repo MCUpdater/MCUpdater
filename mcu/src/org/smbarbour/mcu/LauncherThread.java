@@ -26,7 +26,7 @@ public class LauncherThread implements Runnable {
 	private boolean suppressUpdates;
 	
 	private boolean ready;
-	private JTextArea console;
+	private ConsoleArea console;
 	private JButton launchButton;
 	private MainForm form;
 	private Thread thread;
@@ -44,7 +44,7 @@ public class LauncherThread implements Runnable {
 		ready = false;
 	}
 	
-	public static LauncherThread launch(File launcher, String minMem, String maxMem, boolean suppressUpdates, File output, JTextArea console)
+	public static LauncherThread launch(File launcher, String minMem, String maxMem, boolean suppressUpdates, File output, ConsoleArea console)
 	{
 		LauncherThread me = new LauncherThread(launcher, minMem, maxMem, suppressUpdates, output);
 		me.console = console;
@@ -79,8 +79,7 @@ public class LauncherThread implements Runnable {
 	
 	private void log(String msg) {
 		if( console == null ) return;
-		console.append(msg);
-		console.setCaretPosition(console.getCaretPosition()+msg.length());
+		console.log(msg);
 	}
 	
 	@Override
