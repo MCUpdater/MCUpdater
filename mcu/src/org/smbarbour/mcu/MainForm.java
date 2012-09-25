@@ -44,6 +44,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -76,13 +77,16 @@ public class MainForm extends MCUApp {
 	private Properties config = new Properties();
 	private JFrame frmMain;
 	final MCUpdater mcu = new MCUpdater();
+	
+	private JTabbedPane tabs;
 	private final JTextPane browser = new JTextPane();
 	private final ConsoleArea console = new ConsoleArea();
+	private final SimpleDateFormat logSDF = new SimpleDateFormat("[HH:mm:ss.SSS] ");
+	
 	private ServerList selected;
 	private final JPanel pnlModList = new JPanel();
 	private JLabel lblStatus;
 	private JProgressBar progressBar;
-
 	private JList serverList;
 	private SLListModel slModel;
 	
@@ -201,12 +205,15 @@ public class MainForm extends MCUApp {
 							setProgressBar(10);
 							Calendar cal = Calendar.getInstance();
 							SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-							String backDesc = (String) JOptionPane.showInputDialog(null,"Enter description for backup:", "MCUpdater", JOptionPane.QUESTION_MESSAGE, null, null, ("Automatic backup: " + sdf.format(cal.getTime()))); 
+							String backDesc = (String) JOptionPane.showInputDialog(null,"Enter description for backup:", "MCUpdater", JOptionPane.QUESTION_MESSAGE, null, null, ("Automatic backup: " + sdf.format(cal.getTime())));
+							log("Creating backup ("+backDesc+") ...");
 							mcu.saveConfig(backDesc);
+							log("Backup complete.");
 						} else if(saveConfig == JOptionPane.CANCEL_OPTION){
 							return;
 						}
 						btnUpdate.setEnabled(false);
+						tabs.setSelectedIndex(tabs.getTabCount()-1);
 						config.setProperty("currentConfig", selected.getServerId());
 						config.setProperty("packRevision", selected.getRevision());
 						writeConfig(config);
@@ -214,6 +221,7 @@ public class MainForm extends MCUApp {
 						List<Component> selects = new ArrayList<Component>(Arrays.asList(pnlModList.getComponents()));
 						Iterator<Component> it = selects.iterator();
 						setLblStatus("Preparing module list");
+						log("Preparing module list...");
 						setProgressBar(20);
 						while(it.hasNext()) {
 							Component baseEntry = it.next();
@@ -227,18 +235,22 @@ public class MainForm extends MCUApp {
 						}
 						try {
 							setLblStatus("Installing mods");
+							log("Installing mods...");
 							setProgressBar(25);
 							mcu.installMods(selected, toInstall);
 							if (selected.isGenerateList()) {
 								setLblStatus("Writing servers.dat");
+								log("Writing servers.dat");
 								setProgressBar(90);
 								mcu.writeMCServerFile(selected.getName(), selected.getAddress());
 							}
 							setLblStatus("Finished");
 							setProgressBar(100);
 						} catch (FileNotFoundException fnf) {
+							log("! Error: "+fnf.getMessage());
 							JOptionPane.showMessageDialog(null, fnf.getMessage(), "MCUpdater", JOptionPane.ERROR_MESSAGE);
 						}
+						log("Update complete.");
 						JOptionPane.showMessageDialog(frmMain, "Your update is complete.", "Update Complete", JOptionPane.INFORMATION_MESSAGE);
 						btnUpdate.setEnabled(true);
 					}						
@@ -268,6 +280,7 @@ public class MainForm extends MCUApp {
 				File outFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "client-log.txt");
 				outFile.delete();
 				btnLaunchMinecraft.setEnabled(false);
+				tabs.setSelectedIndex(tabs.getTabCount()-1);
 				final PopupMenu menu = trayIcon.getPopupMenu();
 				MenuItem killItem = null;
 				for( int k = 0; k < menu.getItemCount(); ++k ) {
@@ -378,7 +391,7 @@ public class MainForm extends MCUApp {
 			
 		});
 		
-		JTabbedPane tabs = new JTabbedPane();
+		tabs = new JTabbedPane();
 
 		browser.setText("<HTML><BODY>There are no servers currently defined.</BODY></HTML>");
 		JScrollPane browserScrollPane = new JScrollPane(browser);
@@ -386,7 +399,6 @@ public class MainForm extends MCUApp {
 		browser.setBorder(null);
 		tabs.add("News",browserScrollPane);
 		
-		console.setText("MCUpdater starting...");
 		console.setBorder(null);
 		console.setLineWrap(true);
 		console.setEditable(false);
@@ -398,6 +410,7 @@ public class MainForm extends MCUApp {
 		consoleScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		consoleScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		tabs.add("Console",consoleScrollPane);
+		log("MCUpdater starting...");
 		
 		frmMain.getContentPane().add(tabs, BorderLayout.CENTER);
 		
@@ -505,6 +518,12 @@ public class MainForm extends MCUApp {
 				pnlModList.add(chkModule);
 			}
 			pnlModList.setVisible(true);
+			
+			// switching servers should show news
+			if( tabs != null ) {
+				tabs.setSelectedIndex(0);
+			}
+			
 			this.frmMain.repaint();
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
@@ -541,8 +560,12 @@ public class MainForm extends MCUApp {
 		progressBar.setValue(value);
 	}
 	
+	@Override
 	public void log(String msg) {
-		console.log(msg);
+		final StringBuilder str = new StringBuilder(logSDF.format(new Date()));
+		str.append(msg);
+		str.append('\n');
+		console.log(str.toString());
 	}
 	
 	private void initTray() {

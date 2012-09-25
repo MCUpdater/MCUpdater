@@ -5,6 +5,6 @@ import javax.swing.JTextArea;
 public class ConsoleArea extends JTextArea {
 	public void log(String msg) {
 		append(msg);
-		setCaretPosition(getCaretPosition()+msg.length());
+		setCaretPosition(getText().length());
 	}
 }

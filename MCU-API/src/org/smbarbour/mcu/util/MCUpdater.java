@@ -556,9 +556,11 @@ public class MCUpdater {
 		List<File> contents = recurseFolder(folder, true);
 		File jar = new File(archiveFolder.getPath() + sep + "mc-" + server.getVersion() + ".jar");
 		if(!jar.exists()) {
+			parent.log("! Unable to find a backup copy of minecraft.jar for "+server.getVersion());
 			throw new FileNotFoundException("A backup copy of minecraft.jar for version " + server.getVersion() + " was not found.");
 		}
 		parent.setLblStatus("Clearing existing configuration");
+		parent.log("Clearing existing configuration...");
 		Iterator<File> it = new ArrayList<File>(contents).iterator();
 		while(it.hasNext()) {
 			File entry = it.next();
@@ -572,6 +574,7 @@ public class MCUpdater {
 			entry.delete();
 		}
 		parent.setLblStatus("Preparing to build minecraft.jar");
+		parent.log("Preparing to build minecraft.jar...");
 		Iterator<Module> itMods = toInstall.iterator();
 		File tmpFolder = new File(MCFolder + sep + "temp");
 		tmpFolder.mkdirs();
@@ -583,15 +586,18 @@ public class MCUpdater {
 		
 		int modCount = toInstall.size();
 		int modsLoaded = 0;
+		int errorCount = 0;
 		while(itMods.hasNext()) {
 			Module entry = itMods.next();
 			parent.setLblStatus("Mod: " + entry.getName());
+			parent.log("Mod: "+entry.getName());
 			try {
 				System.out.println(entry.getUrl());
 				URL modURL = new URL(entry.getUrl());
 				//String modFilename = modURL.getFile().substring(modURL.getFile().lastIndexOf('/'));
 				File modPath;
 				if(entry.getInJar()) {
+					parent.log("  Adding to jar.");
 					//modPath = new File(tmpFolder.getPath() + sep + loadOrder + ".zip");
 					//loadOrder++;
 					//System.out.println(modPath.getPath());
@@ -603,10 +609,12 @@ public class MCUpdater {
 						Archive.extractZip(jarMod.getDestFile(), tmpFolder);
 						jarMod.getDestFile().delete();
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
+						++errorCount;
+						parent.log("! "+e.getMessage());
 						e.printStackTrace();
 					}
 				} else if (entry.getExtract()) {
+					parent.log("  Extracting to filesystem.");
 					//modPath = new File(tmpFolder.getPath() + sep + modFilename);
 					//modPath.getParentFile().mkdirs();
 					//System.out.println(modPath.getPath());
@@ -620,27 +628,34 @@ public class MCUpdater {
 						Archive.extractZip(extractMod.getDestFile(), new File(outPath));
 						extractMod.getDestFile().delete();
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
+						++errorCount;
+						parent.log("! "+e.getMessage());
 						e.printStackTrace();
 					}
 				} else if (entry.getCoreMod()) {
+					parent.log("  Installing in /coremods.");
 					modPath = new File(MCFolder + sep + "coremods");
 					modPath.mkdirs();
 					try {
 						ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
 						System.out.println(normalMod.getRemoteFilename() + " -> " + normalMod.getDestFile().getPath());
 					} catch (Exception e) {
+						++errorCount;
+						parent.log("! "+e.getMessage());
 						e.printStackTrace();
 					}					
 				} else {
+					parent.log("  Installing in /mods.");
 					modPath = new File(MCFolder + sep + "mods");
 					modPath.mkdirs();
 					//System.out.println(modPath.getPath());
 					try {
+						
 						ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
 						System.out.println(normalMod.getRemoteFilename() + " -> " + normalMod.getDestFile().getPath());
 					} catch (Exception e) {
-						// TODO Auto-generated catch block
+						++errorCount;
+						parent.log("! "+e.getMessage());
 						e.printStackTrace();
 					}
 					//FileUtils.copyURLToFile(modURL, modPath);
@@ -649,25 +664,34 @@ public class MCUpdater {
 				while(itConfigs.hasNext()) {
 					ConfigFile cfEntry = itConfigs.next();
 					System.out.println(cfEntry.getUrl());
+					parent.log("  Found config for "+cfEntry.getPath());
 					URL configURL = new URL(cfEntry.getUrl());
 					File confFile = new File(MCFolder + sep + cfEntry.getPath());
 					confFile.getParentFile().mkdirs();
 					System.out.println(confFile.getPath());
 					FileUtils.copyURLToFile(configURL, confFile);
 				}
-				modsLoaded++;
-				parent.setProgressBar((int)( (65 / modCount) * modsLoaded + 25));
 			} catch (MalformedURLException e) {
-				//e.printStackTrace();
+				++errorCount;
+				parent.log("! "+e.getMessage());
 				System.out.println(e.getMessage());
 			} catch (IOException e) {
+				++errorCount;
+				parent.log("! "+e.getMessage());
 				e.printStackTrace();
 			}
+			modsLoaded++;
+			parent.setProgressBar((int)( (65 / modCount) * modsLoaded + 25));
+			parent.log("  Done ("+modsLoaded+"/"+modCount+")");
 		}
 		try {
 			buildJar.createNewFile();
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		parent.log("All mods loaded.");
+		if( errorCount > 0 ) {
+			parent.log("WARNING: Errors were detected with this update, please verify your files. There may be a problem with the serverpack configuration or one of your download sites.");
 		}
 		copyFile(jar, buildJar);
 		List<File> buildList = recurseFolder(tmpFolder,true);
@@ -678,6 +702,7 @@ public class MCUpdater {
 				buildList.remove(entry);
 			}
 		}
+		parent.log("Packaging updated jar...");
 		Archive.createJar(buildJar, buildList, tmpFolder.getPath() + sep);
 		//Archive.patchJar(jar, buildJar, new ArrayList<File>(Arrays.asList(tmpFolder.listFiles())));
 		copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
