@@ -77,7 +77,7 @@ public class MainForm extends MCUApp {
 	private JFrame frmMain;
 	final MCUpdater mcu = new MCUpdater();
 	private final JTextPane browser = new JTextPane();
-	private final JTextArea console = new JTextArea();
+	private final ConsoleArea console = new ConsoleArea();
 	private ServerList selected;
 	private final JPanel pnlModList = new JPanel();
 	private JLabel lblStatus;
@@ -539,6 +539,10 @@ public class MainForm extends MCUApp {
 	@Override
 	public void setProgressBar(int value) {
 		progressBar.setValue(value);
+	}
+	
+	public void log(String msg) {
+		console.log(msg);
 	}
 	
 	private void initTray() {
