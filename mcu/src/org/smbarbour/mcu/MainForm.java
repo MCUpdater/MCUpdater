@@ -85,7 +85,10 @@ public class MainForm extends MCUApp {
 
 	private JList serverList;
 	private SLListModel slModel;
+	
+	private JButton btnUpdate;
 	private JButton btnLaunchMinecraft;
+	
 	private boolean minimized;
 	private TrayIcon trayIcon;
 	private ImageIcon mcuIcon;
@@ -186,12 +189,12 @@ public class MainForm extends MCUApp {
 		JPanel pnlButtons = new JPanel();
 		pnlFooter.add(pnlButtons, BorderLayout.EAST);
 
-		JButton btnUpdate = new JButton("Update");
+		btnUpdate = new JButton("Update");
 		btnUpdate.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				new Thread() {
 					public void run() {
-						 mcu.getMCVersion();
+						mcu.getMCVersion();
 						int saveConfig = JOptionPane.showConfirmDialog(null, "Do you want to save a backup of your existing configuration?", "MCUpdater", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 						if(saveConfig == JOptionPane.YES_OPTION){
 							setLblStatus("Creating backup");
@@ -203,6 +206,7 @@ public class MainForm extends MCUApp {
 						} else if(saveConfig == JOptionPane.CANCEL_OPTION){
 							return;
 						}
+						btnUpdate.setEnabled(false);
 						config.setProperty("currentConfig", selected.getServerId());
 						config.setProperty("packRevision", selected.getRevision());
 						writeConfig(config);
@@ -213,7 +217,7 @@ public class MainForm extends MCUApp {
 						setProgressBar(20);
 						while(it.hasNext()) {
 							Component baseEntry = it.next();
-							System.out.println(baseEntry.getClass().toString());
+							//System.out.println(baseEntry.getClass().toString());
 							if(baseEntry.getClass().toString().equals("class org.smbarbour.mcu.JModuleCheckBox")) {
 								JModuleCheckBox entry = (JModuleCheckBox) baseEntry;
 								if(entry.isSelected()){
@@ -235,6 +239,8 @@ public class MainForm extends MCUApp {
 						} catch (FileNotFoundException fnf) {
 							JOptionPane.showMessageDialog(null, fnf.getMessage(), "MCUpdater", JOptionPane.ERROR_MESSAGE);
 						}
+						JOptionPane.showMessageDialog(frmMain, "Your update is complete.", "Update Complete", JOptionPane.INFORMATION_MESSAGE);
+						btnUpdate.setEnabled(true);
 					}						
 				}.start();
 			}
