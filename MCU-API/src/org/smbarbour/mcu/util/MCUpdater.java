@@ -63,6 +63,8 @@ public class MCUpdater {
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
+		// configure the download cache
+		DownloadCache.init(new File(MCFolder + sep + "mcu" + sep + "cache"));
 	}
 	
 	public MCUApp getParent() {
@@ -670,7 +672,6 @@ public class MCUpdater {
 					modPath.mkdirs();
 					//System.out.println(modPath.getPath());
 					try {
-						
 						ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
 						System.out.println(normalMod.getRemoteFilename() + " -> " + normalMod.getDestFile().getPath());
 					} catch (Exception e) {
