@@ -29,21 +29,34 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 	private String remoteFilename;
 	private File destFile = null;
 	public final URL url;
+	public final String expectedMD5;
 
 	public ModDownload(URL url, File destination, String MD5) throws Exception {
-		// TODO
-		// look up file in cache
-		// if found, replace url to local cache
-		this(url, destination);
+		this(url, destination, null, MD5);
 	}
-
 	public ModDownload(URL url, File destination) throws Exception {
-		this(url, destination, (ModDownload)null);
+		this(url, destination, null, null);
+	}
+	public ModDownload(URL url, File destination, ModDownload referer) throws Exception {
+		this(url, destination, referer, null);
 	}
 
-	public ModDownload(URL url, File destination, ModDownload referer) throws Exception {
+	public ModDownload(URL url, File destination, ModDownload referer, String MD5) throws Exception {
 		this.url = url;
+		this.expectedMD5 = MD5;
 		this.remoteFilename = url.getFile().substring(url.getFile().lastIndexOf('/')+1);
+		// TODO: check for md5 in download cache first
+		if( MD5 != null ) {
+			final File cacheFile = DownloadCache.getFile(MD5);
+			if( cacheFile.exists() ) {
+				System.out.println("\n\nCache hit - "+MD5);
+				this.destFile = new File(destination, this.remoteFilename);
+				FileUtils.copyFile(cacheFile, this.destFile);
+				return;
+			} else {
+				System.out.println("\n\nCache miss - "+MD5);
+			}
+		}
 		if (url.getProtocol().equals("file")){
 			this.destFile = new File(destination, this.remoteFilename);
 			FileUtils.copyURLToFile(url, this.destFile);
@@ -59,7 +72,7 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 		if (connection.getResponseCode() / 100 == 3) {
 			String newLocation = connection.getHeaderField("Location");
 			url = redirect(url, newLocation);
-			ModDownload redirect = new ModDownload(url, destination, this);
+			ModDownload redirect = new ModDownload(url, destination, this, MD5);
 			this.remoteFilename = redirect.getRemoteFilename();
 			this.destFile = redirect.getDestFile();
 			return;
@@ -76,7 +89,7 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 		}
 		if (redirectURL != null) {
 			url = redirect(url, redirectURL);
-			ModDownload redirect = new ModDownload(url, destination, this);
+			ModDownload redirect = new ModDownload(url, destination, this, MD5);
 			this.remoteFilename = redirect.getRemoteFilename();
 			this.destFile = redirect.getDestFile();
 			return;
@@ -94,6 +107,13 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 		    }
 			is.close();
 			fos.close();
+			// verify md5 && cache the newly retrieved file
+			if( MD5 != null ) {
+				final boolean cached = DownloadCache.cacheFile(destFile, MD5);
+				if( cached ) {
+					System.out.println("\nSaved in cache");
+				}
+			}
 		}
 	}
 
