@@ -18,14 +18,11 @@ import java.awt.Component;
 import javax.swing.Box;
 import java.awt.Font;
 
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JCheckBox;
 import javax.swing.BoxLayout;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -87,7 +84,7 @@ public class MainForm extends MCUApp {
 	private final JPanel pnlModList = new JPanel();
 	private JLabel lblStatus;
 	private JProgressBar progressBar;
-	private JList serverList;
+	private JList<ServerListPacket> serverList;
 	private SLListModel slModel;
 	
 	private JButton btnUpdate;
@@ -335,7 +332,7 @@ public class MainForm extends MCUApp {
 		pnlLeft.add(lblServers, BorderLayout.NORTH);
 		
 		slModel = new SLListModel();
-		serverList = new JList();
+		serverList = new JList<ServerListPacket>();
 		serverList.setModel(slModel);
 		serverList.setCellRenderer(new ServerListCellRenderer());
 		serverList.addListSelectionListener(new ListSelectionListener() {
@@ -654,7 +651,7 @@ class JModuleCheckBox extends JCheckBox
 	}
 }
 
-class SLListModel extends AbstractListModel
+class SLListModel extends AbstractListModel<ServerListPacket>
 {
 	/**
 	 * 
@@ -688,8 +685,8 @@ class SLListModel extends AbstractListModel
 	}
 
 	@Override
-	public Object getElementAt(int index) {
-		return model.toArray()[index];
+	public ServerListPacket getElementAt(int index) {
+		return model.get(index);
 	}
 
 	public void add(ServerListPacket element)

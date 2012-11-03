@@ -1,7 +1,6 @@
 package org.smbarbour.mcu;
 
 import java.awt.MenuItem;
-import java.awt.SystemTray;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -15,8 +14,6 @@ import java.io.OutputStreamWriter;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
-import javax.swing.JTextArea;
-import javax.swing.text.JTextComponent;
 
 public class LauncherThread implements Runnable {
 	private File launcher;
