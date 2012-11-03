@@ -48,16 +48,19 @@ public class MCUpdater {
 		}
 		if(System.getProperty("os.name").startsWith("Windows"))
 		{
-			MCFolder = System.getenv("APPDATA") + sep + ".minecraft"; 
+			MCFolder = System.getenv("APPDATA") + sep + ".minecraft";
+			archiveFolder = new File(System.getenv("APPDATA") + sep + ".MCUpdater");
 		} else if(System.getProperty("os.name").startsWith("Mac"))
 		{
 			MCFolder = System.getProperty("user.home") + sep + "Library" + sep + "Application Support" + sep + "minecraft";
+			archiveFolder = new File(System.getProperty("user.home") + sep + "Library" + sep + "Application Support" + sep + "MCUpdater");
 		}
 		else
 		{
 			MCFolder = System.getProperty("user.home") + sep + ".minecraft";
+			archiveFolder = new File(System.getProperty("user.home") + sep + ".MCUpdater");
 		}
-		archiveFolder = new File(MCFolder + sep + "mcu");
+		//archiveFolder = new File(MCFolder + sep + "mcu");
 		try {
 			defaultIcon = new ImageIcon(new URL("http://www.minecraft.net/favicon.png"));
 		} catch (MalformedURLException e) {
