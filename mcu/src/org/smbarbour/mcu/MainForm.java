@@ -272,6 +272,7 @@ public class MainForm extends MCUApp {
 						ReadableByteChannel rbc = Channels.newChannel(launcherURL.openStream());
 						FileOutputStream fos = new FileOutputStream(launcher);
 						fos.getChannel().transferFrom(rbc, 0, 1 << 24);
+						fos.close();
 					} catch (MalformedURLException mue) {
 						mue.printStackTrace();
 
