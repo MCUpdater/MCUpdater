@@ -13,7 +13,8 @@
     <path id="MCU-API.classpath">
         <pathelement location="${MCU-API.location}/bin"/>
         <pathelement location="${MCU-API.location}/commons-codec-1.6.jar"/>
-        <pathelement location="${MCU-API.location}/commons-io-2.1.jar"/>
+	<pathelement location="${MCU-API.location}/commons-io-2.1.jar"/>
+	<pathelement location="${MCU-API.location}/log4j-1.2.16.jar"/>
     </path>
     <path id="MCUpdater.classpath">
         <pathelement location="bin"/>
