@@ -37,6 +37,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,14 +48,17 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+
 import org.smbarbour.mcu.MCUApp;
+import org.smbarbour.mcu.util.InstanceManager;
 import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.Module;
 import org.smbarbour.mcu.util.ServerList;
 import org.smbarbour.mcu.util.ServerListPacket;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 
 import javax.swing.JProgressBar;
 import javax.swing.event.HyperlinkEvent;
@@ -101,6 +106,8 @@ public class MainForm extends MCUApp {
 	 * Create the application.
 	 */
 	public MainForm() {
+		this.baseLogger = Logger.getLogger(MainForm.class);
+		PropertyConfigurator.configure(config);
 		window = this;
 		initialize();
 		window.frmMain.setVisible(true);
@@ -197,6 +204,22 @@ public class MainForm extends MCUApp {
 			public void actionPerformed(ActionEvent e) {
 				new Thread() {
 					public void run() {
+						Path instancePath;
+						InstanceManager instance = new InstanceManager(mcu);
+						if ( Files.notExists( mcu.getInstanceRoot().toPath().resolve(selected.getServerId()) ) ) {
+							instancePath = instance.createInstance(selected.getServerId());
+						} else {
+							instancePath = mcu.getInstanceRoot().toPath().resolve(selected.getServerId());
+						}
+						try {
+							Path MCPath = new File(mcu.getMCFolder()).toPath();
+							if (Files.exists(MCPath)) { Files.delete(MCPath); }
+							instance.createLink(MCPath, instancePath);
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+							return;
+						}
 						mcu.getMCVersion();
 						int saveConfig = JOptionPane.showConfirmDialog(null, "Do you want to save a backup of your existing configuration?", "MCUpdater", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 						if(saveConfig == JOptionPane.YES_OPTION){
@@ -451,6 +474,15 @@ public class MainForm extends MCUApp {
 		btnBackups.setIcon(new ImageIcon(MainForm.class.getResource("/icons/folder_database.png")));
 		btnBackups.setToolTipText("Backups");
 		toolBar.add(btnBackups);
+		
+		JButton btnInsttest = new JButton("InstTest");
+		btnInsttest.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				InstanceManager inst = new InstanceManager(mcu);
+				inst.createInstance("Test");
+			}
+		});
+		toolBar.add(btnInsttest);
 		
 		Component horizontalGlue = Box.createHorizontalGlue();
 		toolBar.add(horizontalGlue);

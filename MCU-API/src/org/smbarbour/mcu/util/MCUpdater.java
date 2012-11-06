@@ -1,6 +1,10 @@
 package org.smbarbour.mcu.util;
 
 import java.net.*;
+import java.nio.file.CopyOption;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -34,6 +38,7 @@ public class MCUpdater {
 	private List<Module> modList = new ArrayList<Module>();
 	private String MCFolder;
 	private File archiveFolder;
+	private File instanceRoot;
 	private MCUApp parent;
 	public final static String sep = System.getProperty("file.separator");
 	public MessageDigest md5;
@@ -61,6 +66,7 @@ public class MCUpdater {
 			archiveFolder = new File(System.getProperty("user.home") + sep + ".MCUpdater");
 		}
 		//archiveFolder = new File(MCFolder + sep + "mcu");
+		instanceRoot = new File(archiveFolder, "instances");
 		try {
 			defaultIcon = new ImageIcon(new URL("http://www.minecraft.net/favicon.png"));
 		} catch (MalformedURLException e) {
@@ -360,6 +366,14 @@ public class MCUpdater {
 		return archiveFolder;
 	}
 
+	public File getInstanceRoot() {
+		return instanceRoot;
+	}
+
+	public void setInstanceRoot(File instanceRoot) {
+		this.instanceRoot = instanceRoot;
+	}
+
 	public String getMCVersion() {
 		File jar = new File(MCFolder + sep + "bin" + sep + "minecraft.jar");
 		byte[] hash;
@@ -577,7 +591,19 @@ public class MCUpdater {
 	}
 	
 	public void installMods(ServerList server, List<Module> toInstall) throws FileNotFoundException {
-		File folder = new File(MCFolder);
+		File folder;
+		try {
+			folder = Files.readSymbolicLink(new File(MCFolder).toPath()).toFile();
+			System.out.println(MCFolder);
+			System.out.println(new File(MCFolder).getAbsolutePath());
+			System.out.println(new File(MCFolder).toPath().toString());
+			System.out.println((Files.readSymbolicLink(new File(MCFolder).toPath()).toString()));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+			folder = new File(MCFolder);
+		}
+		System.out.println(folder.getAbsolutePath());
 		List<File> contents = recurseFolder(folder, true);
 		File jar = new File(archiveFolder.getPath() + sep + "mc-" + server.getVersion() + ".jar");
 		if(!jar.exists()) {
@@ -601,9 +627,9 @@ public class MCUpdater {
 		parent.setLblStatus("Preparing to build minecraft.jar");
 		parent.log("Preparing to build minecraft.jar...");
 		Iterator<Module> itMods = toInstall.iterator();
-		File tmpFolder = new File(MCFolder + sep + "temp");
+		File tmpFolder = new File(archiveFolder, "temp");
 		tmpFolder.mkdirs();
-		File buildJar = new File(archiveFolder.getPath() + sep + "build.jar");
+		File buildJar = new File(archiveFolder, "build.jar");
 		if(buildJar.exists()) {
 			buildJar.delete();
 		}
@@ -648,7 +674,7 @@ public class MCUpdater {
 						extractMod = new ModDownload(modURL, tmpFolder, entry.getMD5());
 						System.out.println(extractMod.getRemoteFilename() + " -> " + extractMod.getDestFile().getPath());
 						//FileUtils.copyURLToFile(modURL, modPath);
-						String outPath = MCFolder + sep;
+						String outPath = folder.getPath() + sep;
 						if(!entry.getInRoot()) outPath += "mods" + sep;
 						Archive.extractZip(extractMod.getDestFile(), new File(outPath));
 						extractMod.getDestFile().delete();
@@ -659,7 +685,7 @@ public class MCUpdater {
 					}
 				} else if (entry.getCoreMod()) {
 					parent.log("  Installing in /coremods.");
-					modPath = new File(MCFolder + sep + "coremods");
+					modPath = new File(folder.getPath() + sep + "coremods");
 					modPath.mkdirs();
 					try {
 						ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
@@ -671,7 +697,7 @@ public class MCUpdater {
 					}					
 				} else {
 					parent.log("  Installing in /mods.");
-					modPath = new File(MCFolder + sep + "mods");
+					modPath = new File(folder.getPath() + sep + "mods");
 					modPath.mkdirs();
 					//System.out.println(modPath.getPath());
 					try {
@@ -690,7 +716,7 @@ public class MCUpdater {
 					System.out.println(cfEntry.getUrl());
 					parent.log("  Found config for "+cfEntry.getPath());
 					URL configURL = new URL(cfEntry.getUrl());
-					File confFile = new File(MCFolder + sep + cfEntry.getPath());
+					File confFile = new File(folder.getPath() + sep + cfEntry.getPath());
 					confFile.getParentFile().mkdirs();
 					System.out.println(confFile.getPath());
 					FileUtils.copyURLToFile(configURL, confFile);
@@ -729,7 +755,14 @@ public class MCUpdater {
 		parent.log("Packaging updated jar...");
 		Archive.createJar(buildJar, buildList, tmpFolder.getPath() + sep);
 		//Archive.patchJar(jar, buildJar, new ArrayList<File>(Arrays.asList(tmpFolder.listFiles())));
-		copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
+		//copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
+		try {
+			Path binPath = folder.toPath().resolve("bin");
+			Files.copy(buildJar.toPath(), binPath.resolve("minecraft.jar"));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		List<File> tempFiles = recurseFolder(tmpFolder,true);
 		ListIterator<File> li = tempFiles.listIterator(tempFiles.size());
 		while(li.hasPrevious()) { 
