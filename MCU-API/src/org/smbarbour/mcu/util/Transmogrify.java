@@ -8,7 +8,7 @@ import net.md_5.jbeat.Patcher;
 
 public class Transmogrify {
 	public static void applyPatch(Path source, Path target, Path patch) throws IOException {
-		Patcher beatPatch = new Patcher(source.toFile(), target.toFile(), patch.toFile());
+		Patcher beatPatch = new Patcher(patch.toFile(), source.toFile(), target.toFile());
 		beatPatch.patch();
 	}
 	
