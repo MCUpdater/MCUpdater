@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- WARNING: Eclipse auto-generated file.
-              Any modifications will be overwritten.
-              To include a user specific buildfile here, simply create one in the same
-              directory with the processing instruction <?eclipse.ant.import?>
-              as the first entry and export the buildfile again. -->
 <project basedir="." default="build" name="MCU-API">
     <property environment="env"/>
     <property name="MCU-ServerUtility.location" value="../MCU-ServerUtility"/>
@@ -14,8 +9,9 @@
     <path id="MCU-API.classpath">
         <pathelement location="bin"/>
         <pathelement location="commons-codec-1.6.jar"/>
-	<pathelement location="commons-io-2.1.jar"/>
-	<pathelement location="log4j-1.2.16.jar"/>
+		<pathelement location="commons-io-2.1.jar"/>
+		<pathelement location="log4j-1.2.16.jar"/>
+    	<pathelement location="jbeat-1.0.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
