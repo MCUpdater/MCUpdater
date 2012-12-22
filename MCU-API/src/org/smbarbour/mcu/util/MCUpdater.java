@@ -388,7 +388,7 @@ public class MCUpdater {
 	private String lookupHash(String hash) {
 		Map<String,String> map = new HashMap<String,String>();
 		try {
-			URL md5s = new URL("http://cloud.github.com/downloads/smbarbour/MCUpdater/md5.dat");
+			URL md5s = new URL("http://mcupdater.net46.net/mcu_patches/md5.dat");
 			InputStreamReader input = new InputStreamReader(md5s.openStream());
 			BufferedReader buffer = new BufferedReader(input);
 			String currentLine = null;
