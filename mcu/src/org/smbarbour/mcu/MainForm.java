@@ -142,6 +142,7 @@ public class MainForm extends MCUApp {
 		newConfig.setProperty("currentConfig", "");
 		newConfig.setProperty("packRevision","");
 		newConfig.setProperty("suppressUpdates", "false");
+		newConfig.setProperty("instanceRoot", (new File(mcu.getArchiveFolder(),"instances")).getAbsolutePath());
 		try {
 			configFile.getParentFile().mkdirs();
 			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
@@ -160,6 +161,7 @@ public class MainForm extends MCUApp {
 		if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; }
 		if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; }
 		if (current.getProperty("suppressUpdates") == null) { current.setProperty("suppressUpdates", "false"); hasChanged = true; }
+		if (current.getProperty("instanceRoot") == null) { current.setProperty("instanceRoot", (new File(mcu.getArchiveFolder(),"instances")).getAbsolutePath()); }
 		return hasChanged;
 	}
 
@@ -178,6 +180,7 @@ public class MainForm extends MCUApp {
 			{
 				writeConfig(config);
 			}
+			mcu.setInstanceRoot(new File(config.getProperty("instanceRoot")));
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		} catch (IOException e1) {

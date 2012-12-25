@@ -17,6 +17,7 @@ import javax.swing.Box;
 import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.util.Properties;
 import javax.swing.JCheckBox;
 
@@ -30,6 +31,7 @@ public class ClientConfig extends JDialog {
 	private JTextField txtMinimum;
 	private JTextField txtMaximum;
 	private JCheckBox chckbxSuppressVanillaUpdate;
+	private JTextField txtInstanceRoot;
 
 	/**
 	 * Create the dialog.
@@ -45,9 +47,9 @@ public class ClientConfig extends JDialog {
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
 		GridBagLayout gbl_contentPanel = new GridBagLayout();
 		gbl_contentPanel.columnWidths = new int[]{0, 20, 217, 0, 0};
-		gbl_contentPanel.rowHeights = new int[]{0, 20, 0, 0, 0, 0, 0, 0, 0};
+		gbl_contentPanel.rowHeights = new int[]{0, 20, 0, 0, 0, 0, 0, 0, 0, 0};
 		gbl_contentPanel.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
-		gbl_contentPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		gbl_contentPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
 		contentPanel.setLayout(gbl_contentPanel);
 		{
 			Component rigidArea = Box.createRigidArea(new Dimension(5, 5));
@@ -125,13 +127,33 @@ public class ClientConfig extends JDialog {
 			contentPanel.add(verticalStrut, gbc_verticalStrut);
 		}
 		{
+			JLabel lblInstanceFolder = new JLabel("Instance folder:");
+			GridBagConstraints gbc_lblInstanceFolder = new GridBagConstraints();
+			gbc_lblInstanceFolder.anchor = GridBagConstraints.EAST;
+			gbc_lblInstanceFolder.insets = new Insets(0, 0, 5, 5);
+			gbc_lblInstanceFolder.gridx = 1;
+			gbc_lblInstanceFolder.gridy = 5;
+			contentPanel.add(lblInstanceFolder, gbc_lblInstanceFolder);
+		}
+		{
+			txtInstanceRoot = new JTextField();
+			txtInstanceRoot.setText(parent.getConfig().getProperty("instanceRoot"));
+			GridBagConstraints gbc_txtInstanceRoot = new GridBagConstraints();
+			gbc_txtInstanceRoot.insets = new Insets(0, 0, 5, 5);
+			gbc_txtInstanceRoot.fill = GridBagConstraints.HORIZONTAL;
+			gbc_txtInstanceRoot.gridx = 2;
+			gbc_txtInstanceRoot.gridy = 5;
+			contentPanel.add(txtInstanceRoot, gbc_txtInstanceRoot);
+			txtInstanceRoot.setColumns(10);
+		}
+		{
 			chckbxSuppressVanillaUpdate = new JCheckBox("Suppress vanilla update check");
 			GridBagConstraints gbc_chckbxSuppressVanillaUpdate = new GridBagConstraints();
 			gbc_chckbxSuppressVanillaUpdate.anchor = GridBagConstraints.WEST;
 			gbc_chckbxSuppressVanillaUpdate.gridwidth = 2;
 			gbc_chckbxSuppressVanillaUpdate.insets = new Insets(0, 0, 5, 5);
 			gbc_chckbxSuppressVanillaUpdate.gridx = 1;
-			gbc_chckbxSuppressVanillaUpdate.gridy = 5;
+			gbc_chckbxSuppressVanillaUpdate.gridy = 6;
 			chckbxSuppressVanillaUpdate.setSelected(Boolean.parseBoolean(parent.getConfig().getProperty("suppressUpdates")));
 			contentPanel.add(chckbxSuppressVanillaUpdate, gbc_chckbxSuppressVanillaUpdate);
 		}
@@ -147,7 +169,9 @@ public class ClientConfig extends JDialog {
 						newConfig.setProperty("minimumMemory", txtMinimum.getText());
 						newConfig.setProperty("maximumMemory", txtMaximum.getText());
 						newConfig.setProperty("suppressUpdates", Boolean.toString(chckbxSuppressVanillaUpdate.isSelected()));
+						newConfig.setProperty("instanceRoot", txtInstanceRoot.getText());
 						parent.writeConfig(newConfig);
+						parent.mcu.setInstanceRoot(new File(txtInstanceRoot.getText()));
 						dispose();
 					}
 				});

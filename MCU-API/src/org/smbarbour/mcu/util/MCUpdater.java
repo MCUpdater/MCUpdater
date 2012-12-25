@@ -66,7 +66,7 @@ public class MCUpdater {
 			archiveFolder = new File(System.getProperty("user.home") + sep + ".MCUpdater");
 		}
 		//archiveFolder = new File(MCFolder + sep + "mcu");
-		instanceRoot = new File(archiveFolder, "instances");
+		//instanceRoot = new File(archiveFolder, "instances");
 		try {
 			defaultIcon = new ImageIcon(new URL("http://www.minecraft.net/favicon.png"));
 		} catch (MalformedURLException e) {
