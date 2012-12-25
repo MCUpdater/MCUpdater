@@ -501,6 +501,10 @@ public class MainForm extends MCUApp {
 		while(!serverFile.exists() && !(serverFile.length() > 0)){
 			if(packUrl.isEmpty()) {
 				packUrl = (String) JOptionPane.showInputDialog(null, "No default server defined.\nPlease enter URL to ServerPack.xml: ", "MCUpdater", JOptionPane.INFORMATION_MESSAGE, null, null, "http://www.example.com/ServerPack.xml");
+				if (packUrl.isEmpty()) {
+					JOptionPane.showMessageDialog(null, "This program requires a valid server pack URL to run which is provided to you by a server operator. This program will now close.", "MCUpdater", JOptionPane.ERROR_MESSAGE);
+					System.exit(0);
+				}
 			}
 			try {
 				Document serverHeader = MCUpdater.readXmlFromUrl(packUrl);
