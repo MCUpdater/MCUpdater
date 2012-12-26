@@ -96,7 +96,8 @@ public class Module {
 	}
 	
 	public void setMD5(String md5) {
-		this.md5 = md5.toLowerCase(Locale.ENGLISH);
+		if( md5 != null )
+			this.md5 = md5.toLowerCase(Locale.ENGLISH);
 	}
 
 	public Boolean getIsDefault() {

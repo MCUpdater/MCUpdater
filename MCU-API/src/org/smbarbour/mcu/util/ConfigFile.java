@@ -1,5 +1,7 @@
 package org.smbarbour.mcu.util;
 
+import java.util.Locale;
+
 public class ConfigFile {
 	private String url;
 	private String path;
@@ -9,7 +11,7 @@ public class ConfigFile {
 	{
 		this.url = url;
 		this.path = path;
-		this.md5 = md5;
+		setMD5(md5);
 	}
 	
 	public String getUrl()
@@ -39,6 +41,7 @@ public class ConfigFile {
 	
 	public void setMD5(String md5)
 	{
-		this.md5 = md5;
+		if( md5 != null )
+			this.md5 = md5.toLowerCase(Locale.ENGLISH);
 	}
 }
