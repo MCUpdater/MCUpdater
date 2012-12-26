@@ -609,6 +609,9 @@ public class MCUpdater {
 		int modCount = toInstall.size();
 		int modsLoaded = 0;
 		int errorCount = 0;
+		
+		// TODO: consolidate download logic for mods & configs
+		
 		while(itMods.hasNext()) {
 			Module entry = itMods.next();
 			parent.setLblStatus("Mod: " + entry.getName());
@@ -619,13 +622,17 @@ public class MCUpdater {
 				//String modFilename = modURL.getFile().substring(modURL.getFile().lastIndexOf('/'));
 				File modPath;
 				if(entry.getInJar()) {
-					parent.log("  Adding to jar.");
 					//modPath = new File(tmpFolder.getPath() + sep + loadOrder + ".zip");
 					//loadOrder++;
 					//System.out.println(modPath.getPath());
 					ModDownload jarMod;
 					try {
 						jarMod = new ModDownload(modURL, tmpFolder, entry.getMD5());
+						if( jarMod.cacheHit ) {
+							parent.log("  Adding to jar (cached).");
+						} else {
+							parent.log("  Adding to jar (downloaded).");
+						}
 						System.out.println(jarMod.getRemoteFilename() + " -> " + jarMod.getDestFile().getPath());
 						//FileUtils.copyURLToFile(modURL, modPath);
 						Archive.extractZip(jarMod.getDestFile(), tmpFolder);
@@ -636,13 +643,17 @@ public class MCUpdater {
 						e.printStackTrace();
 					}
 				} else if (entry.getExtract()) {
-					parent.log("  Extracting to filesystem.");
 					//modPath = new File(tmpFolder.getPath() + sep + modFilename);
 					//modPath.getParentFile().mkdirs();
 					//System.out.println(modPath.getPath());
 					ModDownload extractMod;
 					try {
 						extractMod = new ModDownload(modURL, tmpFolder, entry.getMD5());
+						if( extractMod.cacheHit ) {
+							parent.log("  Extracting to filesystem (cached).");
+						} else {
+							parent.log("  Extracting to filesystem (downloaded).");
+						}
 						System.out.println(extractMod.getRemoteFilename() + " -> " + extractMod.getDestFile().getPath());
 						//FileUtils.copyURLToFile(modURL, modPath);
 						String outPath = MCFolder + sep;
@@ -655,11 +666,15 @@ public class MCUpdater {
 						e.printStackTrace();
 					}
 				} else if (entry.getCoreMod()) {
-					parent.log("  Installing in /coremods.");
 					modPath = new File(MCFolder + sep + "coremods");
 					modPath.mkdirs();
 					try {
 						ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
+						if( normalMod.cacheHit ) {
+							parent.log("  Installing in /coremods (cached).");
+						} else {
+							parent.log("  Installing in /coremods (downloaded).");
+						}
 						System.out.println(normalMod.getRemoteFilename() + " -> " + normalMod.getDestFile().getPath());
 					} catch (Exception e) {
 						++errorCount;
@@ -667,12 +682,16 @@ public class MCUpdater {
 						e.printStackTrace();
 					}					
 				} else {
-					parent.log("  Installing in /mods.");
 					modPath = new File(MCFolder + sep + "mods");
 					modPath.mkdirs();
 					//System.out.println(modPath.getPath());
 					try {
 						ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
+						if( normalMod.cacheHit ) {
+							parent.log("  Installing in /mods (cached).");
+						} else {
+							parent.log("  Installing in /mods (downloaded).");
+						}
 						System.out.println(normalMod.getRemoteFilename() + " -> " + normalMod.getDestFile().getPath());
 					} catch (Exception e) {
 						++errorCount;
@@ -683,14 +702,30 @@ public class MCUpdater {
 				}
 				Iterator<ConfigFile> itConfigs = entry.getConfigs().iterator();
 				while(itConfigs.hasNext()) {
-					ConfigFile cfEntry = itConfigs.next();
+					final ConfigFile cfEntry = itConfigs.next();
+					final String MD5 = cfEntry.getMD5(); 
 					System.out.println(cfEntry.getUrl());
-					parent.log("  Found config for "+cfEntry.getPath());
-					URL configURL = new URL(cfEntry.getUrl());
-					File confFile = new File(MCFolder + sep + cfEntry.getPath());
+					final File confFile = new File(MCFolder + sep + cfEntry.getPath());
 					confFile.getParentFile().mkdirs();
+					if( MD5 != null ) {
+						final File cacheFile = DownloadCache.getFile(MD5);
+						if( cacheFile.exists() ) {
+							parent.log("  Found config for "+cfEntry.getPath()+" (cached)");
+							FileUtils.copyFile(cacheFile, confFile);
+							continue;
+						}
+					}
+					parent.log("  Found config for "+cfEntry.getPath()+", downloading...");
+					final URL configURL = new URL(cfEntry.getUrl());
 					System.out.println(confFile.getPath());
 					FileUtils.copyURLToFile(configURL, confFile);
+					// save in cache for future reference
+					if( MD5 != null ) {
+						final boolean cached = DownloadCache.cacheFile(confFile, MD5);
+						if( cached ) {
+							System.out.println("\nSaved in cache");							
+						}
+					}
 				}
 			} catch (MalformedURLException e) {
 				++errorCount;
