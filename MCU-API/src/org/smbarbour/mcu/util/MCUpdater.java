@@ -619,13 +619,17 @@ public class MCUpdater {
 				//String modFilename = modURL.getFile().substring(modURL.getFile().lastIndexOf('/'));
 				File modPath;
 				if(entry.getInJar()) {
-					parent.log("  Adding to jar.");
 					//modPath = new File(tmpFolder.getPath() + sep + loadOrder + ".zip");
 					//loadOrder++;
 					//System.out.println(modPath.getPath());
 					ModDownload jarMod;
 					try {
 						jarMod = new ModDownload(modURL, tmpFolder, entry.getMD5());
+						if( jarMod.cacheHit ) {
+							parent.log("  Adding to jar (cached).");
+						} else {
+							parent.log("  Adding to jar (downloaded).");
+						}
 						System.out.println(jarMod.getRemoteFilename() + " -> " + jarMod.getDestFile().getPath());
 						//FileUtils.copyURLToFile(modURL, modPath);
 						Archive.extractZip(jarMod.getDestFile(), tmpFolder);
@@ -636,13 +640,17 @@ public class MCUpdater {
 						e.printStackTrace();
 					}
 				} else if (entry.getExtract()) {
-					parent.log("  Extracting to filesystem.");
 					//modPath = new File(tmpFolder.getPath() + sep + modFilename);
 					//modPath.getParentFile().mkdirs();
 					//System.out.println(modPath.getPath());
 					ModDownload extractMod;
 					try {
 						extractMod = new ModDownload(modURL, tmpFolder, entry.getMD5());
+						if( extractMod.cacheHit ) {
+							parent.log("  Extracting to filesystem (cached).");
+						} else {
+							parent.log("  Extracting to filesystem (downloaded).");
+						}
 						System.out.println(extractMod.getRemoteFilename() + " -> " + extractMod.getDestFile().getPath());
 						//FileUtils.copyURLToFile(modURL, modPath);
 						String outPath = MCFolder + sep;
@@ -655,11 +663,15 @@ public class MCUpdater {
 						e.printStackTrace();
 					}
 				} else if (entry.getCoreMod()) {
-					parent.log("  Installing in /coremods.");
 					modPath = new File(MCFolder + sep + "coremods");
 					modPath.mkdirs();
 					try {
 						ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
+						if( normalMod.cacheHit ) {
+							parent.log("  Installing in /coremods (cached).");
+						} else {
+							parent.log("  Installing in /coremods (downloaded).");
+						}
 						System.out.println(normalMod.getRemoteFilename() + " -> " + normalMod.getDestFile().getPath());
 					} catch (Exception e) {
 						++errorCount;
@@ -667,12 +679,16 @@ public class MCUpdater {
 						e.printStackTrace();
 					}					
 				} else {
-					parent.log("  Installing in /mods.");
 					modPath = new File(MCFolder + sep + "mods");
 					modPath.mkdirs();
 					//System.out.println(modPath.getPath());
 					try {
 						ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
+						if( normalMod.cacheHit ) {
+							parent.log("  Installing in /mods (cached).");
+						} else {
+							parent.log("  Installing in /mods (downloaded).");
+						}
 						System.out.println(normalMod.getRemoteFilename() + " -> " + normalMod.getDestFile().getPath());
 					} catch (Exception e) {
 						++errorCount;
