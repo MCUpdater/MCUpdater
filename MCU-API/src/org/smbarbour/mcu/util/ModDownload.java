@@ -30,6 +30,8 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 	private File destFile = null;
 	public final URL url;
 	public final String expectedMD5;
+	
+	public boolean cacheHit = false;
 
 	public ModDownload(URL url, File destination, String MD5) throws Exception {
 		this(url, destination, null, MD5);
@@ -49,6 +51,7 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 		if( MD5 != null ) {
 			final File cacheFile = DownloadCache.getFile(MD5);
 			if( cacheFile.exists() ) {
+				cacheHit = true;
 				System.out.println("\n\nCache hit - "+MD5);
 				this.destFile = new File(destination, this.remoteFilename);
 				FileUtils.copyFile(cacheFile, this.destFile);
