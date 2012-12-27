@@ -23,6 +23,7 @@ public class DownloadCache {
 		if( instance != null ) {
 			throw new IllegalArgumentException("Attempt to reinitialize download cache.");
 		}
+		System.out.println("Initializing DownloadCache in "+dir);
 		instance = new DownloadCache(dir);
 	}
 	

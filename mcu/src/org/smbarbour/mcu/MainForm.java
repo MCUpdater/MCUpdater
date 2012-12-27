@@ -76,7 +76,7 @@ public class MainForm extends MCUApp {
 	private static MainForm window;
 	private Properties config = new Properties();
 	private JFrame frmMain;
-	final MCUpdater mcu = new MCUpdater();
+	final MCUpdater mcu = MCUpdater.getInstance();
 	
 	private JTabbedPane tabs;
 	private final JTextPane browser = new JTextPane();

@@ -38,7 +38,7 @@ public class BackupManager extends JFrame {
 	private static final long serialVersionUID = 5904510489295772326L;
 	private JPanel contentPane;
 	private JTable table;
-	final MCUpdater mcu = new MCUpdater();
+	final MCUpdater mcu = MCUpdater.getInstance();
 
 	public BackupManager(final MainForm parent)  {
 		setResizable(false);
