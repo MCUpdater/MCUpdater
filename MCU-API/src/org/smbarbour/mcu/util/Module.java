@@ -2,6 +2,7 @@ package org.smbarbour.mcu.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class Module {
 	private String name;
@@ -95,7 +96,8 @@ public class Module {
 	}
 	
 	public void setMD5(String md5) {
-		this.md5 = md5;
+		if( md5 != null )
+			this.md5 = md5.toLowerCase(Locale.ENGLISH);
 	}
 
 	public Boolean getIsDefault() {
