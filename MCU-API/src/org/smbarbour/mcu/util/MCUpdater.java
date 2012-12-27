@@ -38,8 +38,17 @@ public class MCUpdater {
 	public final static String sep = System.getProperty("file.separator");
 	public MessageDigest md5;
 	public ImageIcon defaultIcon;
+	
+	private static MCUpdater INSTANCE;
 
-	public MCUpdater()
+	public static MCUpdater getInstance() {
+		if( INSTANCE == null ) {
+			INSTANCE = new MCUpdater();
+		}
+		return INSTANCE;
+	}
+	
+	private MCUpdater()
 	{
 		try {
 			md5 = MessageDigest.getInstance("MD5");
@@ -64,7 +73,11 @@ public class MCUpdater {
 			e.printStackTrace();
 		}
 		// configure the download cache
-		DownloadCache.init(new File(MCFolder + sep + "mcu" + sep + "cache"));
+		try {
+			DownloadCache.init(new File(MCFolder + sep + "mcu" + sep + "cache"));
+		} catch (IllegalArgumentException e) {
+			System.out.println( "Suppressed attempt to re-init download cache?!" );
+		}
 	}
 	
 	public MCUApp getParent() {

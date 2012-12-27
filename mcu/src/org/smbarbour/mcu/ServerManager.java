@@ -39,7 +39,7 @@ public class ServerManager extends JFrame {
 	private static final long serialVersionUID = 7843463650576741698L;
 	private JPanel contentPane;
 	private JTable table;
-	final MCUpdater mcu = new MCUpdater();
+	final MCUpdater mcu = MCUpdater.getInstance();
 
 	/**
 	 * Create the frame.

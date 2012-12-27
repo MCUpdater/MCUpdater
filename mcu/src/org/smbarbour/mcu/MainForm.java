@@ -73,7 +73,7 @@ public class MainForm extends MCUApp {
 	private static MainForm window;
 	private Properties config = new Properties();
 	private JFrame frmMain;
-	final MCUpdater mcu = new MCUpdater();
+	final MCUpdater mcu = MCUpdater.getInstance();
 	
 	private JTabbedPane tabs;
 	private final JTextPane browser = new JTextPane();
@@ -197,6 +197,8 @@ public class MainForm extends MCUApp {
 			public void actionPerformed(ActionEvent e) {
 				new Thread() {
 					public void run() {
+						btnUpdate.setEnabled(false);
+						btnLaunchMinecraft.setEnabled(false);
 						mcu.getMCVersion();
 						int saveConfig = JOptionPane.showConfirmDialog(null, "Do you want to save a backup of your existing configuration?", "MCUpdater", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 						if(saveConfig == JOptionPane.YES_OPTION){
@@ -209,9 +211,10 @@ public class MainForm extends MCUApp {
 							mcu.saveConfig(backDesc);
 							log("Backup complete.");
 						} else if(saveConfig == JOptionPane.CANCEL_OPTION){
+							btnUpdate.setEnabled(true);
+							btnLaunchMinecraft.setEnabled(true);
 							return;
 						}
-						btnUpdate.setEnabled(false);
 						tabs.setSelectedIndex(tabs.getTabCount()-1);
 						config.setProperty("currentConfig", selected.getServerId());
 						config.setProperty("packRevision", selected.getRevision());
@@ -252,6 +255,7 @@ public class MainForm extends MCUApp {
 						log("Update complete.");
 						JOptionPane.showMessageDialog(frmMain, "Your update is complete.", "Update Complete", JOptionPane.INFORMATION_MESSAGE);
 						btnUpdate.setEnabled(true);
+						btnLaunchMinecraft.setEnabled(true);
 					}						
 				}.start();
 			}
