@@ -732,10 +732,10 @@ public class MCUpdater {
 				Iterator<ConfigFile> itConfigs = entry.getConfigs().iterator();
 				while(itConfigs.hasNext()) {
 					final ConfigFile cfEntry = itConfigs.next();
-					final String MD5 = cfEntry.getMD5(); 
+					final String MD5 = cfEntry.getMD5();
+					final URL configURL = new URL(cfEntry.getUrl());
 					System.out.println(cfEntry.getUrl());
 					parent.log("  Found config for "+cfEntry.getPath());
-					URL configURL = new URL(cfEntry.getUrl());
 					final File confFile = new File(MCFolder + sep + cfEntry.getPath());
 					confFile.getParentFile().mkdirs();
 					if( MD5 != null ) {
@@ -747,7 +747,6 @@ public class MCUpdater {
 						}
 					}
 					parent.log("  Found config for "+cfEntry.getPath()+", downloading...");
-					final URL configURL = new URL(cfEntry.getUrl());
 					System.out.println(confFile.getPath());
 					FileUtils.copyURLToFile(configURL, confFile);
 					// save in cache for future reference
