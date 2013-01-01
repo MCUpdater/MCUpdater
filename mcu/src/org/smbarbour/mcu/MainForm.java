@@ -74,11 +74,13 @@ import javax.swing.ImageIcon;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
-	private static final String VERSION = "v1.36";
+	public static final int MAJOR_VERSION = 1;
+	public static final int MINOR_VERSION = 36;
+	private static final String VERSION = "v"+MAJOR_VERSION+"."+MINOR_VERSION;
 	private static MainForm window;
 	private Properties config = new Properties();
 	private JFrame frmMain;
-	final MCUpdater mcu = new MCUpdater();
+	final MCUpdater mcu = MCUpdater.getInstance();
 	
 	private JTabbedPane tabs;
 	private final JTextPane browser = new JTextPane();
@@ -109,9 +111,9 @@ public class MainForm extends MCUApp {
 		this.baseLogger = Logger.getLogger(MainForm.class);
 		PropertyConfigurator.configure(config);
 		window = this;
+		mcu.setParent(window);
 		initialize();
 		window.frmMain.setVisible(true);
-		mcu.setParent(window);
 	}
 
 	public Properties getConfig()
@@ -223,6 +225,8 @@ public class MainForm extends MCUApp {
 							e.printStackTrace();
 							return;
 						}
+						btnUpdate.setEnabled(false);
+						btnLaunchMinecraft.setEnabled(false);
 						mcu.getMCVersion();
 						int saveConfig = JOptionPane.showConfirmDialog(null, "Do you want to save a backup of your existing configuration?", "MCUpdater", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
 						if(saveConfig == JOptionPane.YES_OPTION){
@@ -235,9 +239,10 @@ public class MainForm extends MCUApp {
 							mcu.saveConfig(backDesc);
 							log("Backup complete.");
 						} else if(saveConfig == JOptionPane.CANCEL_OPTION){
+							btnUpdate.setEnabled(true);
+							btnLaunchMinecraft.setEnabled(true);
 							return;
 						}
-						btnUpdate.setEnabled(false);
 						tabs.setSelectedIndex(tabs.getTabCount()-1);
 						config.setProperty("currentConfig", selected.getServerId());
 						config.setProperty("packRevision", selected.getRevision());
@@ -278,6 +283,7 @@ public class MainForm extends MCUApp {
 						log("Update complete.");
 						JOptionPane.showMessageDialog(frmMain, "Your update is complete.", "Update Complete", JOptionPane.INFORMATION_MESSAGE);
 						btnUpdate.setEnabled(true);
+						btnLaunchMinecraft.setEnabled(true);
 					}						
 				}.start();
 			}
@@ -368,9 +374,22 @@ public class MainForm extends MCUApp {
 				if (!e.getValueIsAdjusting())
 				{
 					changeSelectedServer(((ServerListPacket)serverList.getSelectedValue()).getEntry());
-					if (selected.getServerId().equals(config.getProperty("currentConfig")) && !(selected.getRevision().equals(config.getProperty("packRevision")))) {
-						JOptionPane.showMessageDialog(null, "Your configuration is out of sync with the server. Updating is necessary.", "MCUpdater", JOptionPane.WARNING_MESSAGE);
+					// check for server version update
+					final boolean needUpdate = selected.getServerId().equals(config.getProperty("currentConfig")) && !selected.getRevision().equals(config.getProperty("packRevision"));
+					// check for mcu version update
+					final boolean needMCUUpgrade = isVersionOld(selected.getMCUVersion());
+					
+					String warningMessage = null;
+					if( needUpdate ) {
+						warningMessage = "Your configuration is out of sync with the server. Updating is necessary.";
+					} else if( needMCUUpgrade ) {
+						warningMessage = "The server requires a newer version of MCUpdater than you currently have installed.\nPlease upgrade as soon as possible, things are not likely to update correctly otherwise.";
 					}
+					
+					if ( warningMessage != null ) {
+						JOptionPane.showMessageDialog(null, warningMessage, "MCUpdater", JOptionPane.WARNING_MESSAGE);
+					}
+					
 				}
 			}
 			
@@ -526,6 +545,25 @@ public class MainForm extends MCUApp {
 		initTray();
 	}
 
+	protected boolean isVersionOld(String packVersion) {
+		if( packVersion == null ) return false;	// can't check anything if they don't tell us
+		String parts[] = packVersion.split("\\.");
+		try {
+			int packMajor = Integer.valueOf(parts[0]);
+			int packMinor = Integer.valueOf(parts[1]);
+			if( packMajor < MAJOR_VERSION )
+				return false;
+			else if( packMajor > MAJOR_VERSION )
+				return true;
+			else
+				return packMinor > MINOR_VERSION;
+		} catch( NumberFormatException e ) {
+			log("Got non-numerical pack format version '"+packVersion+"'");
+		} catch( ArrayIndexOutOfBoundsException e ) {
+			log("Got malformed pack format version '"+packVersion+"'");
+		}
+		return false;
+	}
 	protected void changeSelectedServer(ServerList entry) {
 		try {
 			selected = entry;
