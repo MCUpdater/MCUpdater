@@ -76,7 +76,7 @@ public class MCUpdater {
 		try {
 			DownloadCache.init(new File(MCFolder + sep + "mcu" + sep + "cache"));
 		} catch (IllegalArgumentException e) {
-			System.out.println( "Suppressed attempt to re-init download cache?!" );
+			_debug( "Suppressed attempt to re-init download cache?!" );
 		}
 	}
 	
@@ -124,7 +124,7 @@ public class MCUpdater {
 			return bList;
 			
 		} catch(FileNotFoundException notfound) {
-			System.out.println("File not found");
+			_debug("File not found");
 		} catch(IOException ioe) {
 			ioe.printStackTrace();		
 		}
@@ -183,8 +183,7 @@ public class MCUpdater {
 							slList.add(new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), serverUrl, parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), parseBoolean(parent.getAttribute("generateList")), parent.getAttribute("revision")));
 						}
 					} else {
-						//TODO: Replace with logging
-						System.out.println("Unable to get server information from " + serverUrl);
+						_log("Unable to get server information from " + serverUrl);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -198,7 +197,7 @@ public class MCUpdater {
 		}
 		catch( FileNotFoundException notfound)
 		{
-			System.out.println("File not found");
+			_debug("File not found");
 		}
 		catch (IOException x)
 		{
@@ -264,11 +263,10 @@ public class MCUpdater {
 	
 	public static Document readXmlFromUrl(String serverUrl) throws Exception
 	{
-		//TODO: Replace System.out with logging
-		System.out.println(serverUrl);
 		if (serverUrl.equals("http://www.example.org/ServerPack.xml")) {
 			return null;
 		}
+		_log("Reading "+serverUrl+"...");
 		URL server = new URL(serverUrl);
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		
@@ -284,7 +282,7 @@ public class MCUpdater {
 		}
 		return null;
 	}
-	
+
 	private void parseDocument(Document dom, String serverId)
 	{
 		modList.clear();
@@ -324,7 +322,7 @@ public class MCUpdater {
 		String md5 = getTextValue(modEl,"MD5");
 		List<ConfigFile> configs = new ArrayList<ConfigFile>();
 		NodeList nl = modEl.getElementsByTagName("ConfigFile");
-//		System.out.println("NodeList[getLength]: " + nl.getLength());
+//		_log("NodeList[getLength]: " + nl.getLength());
 		for(int i = 0; i < nl.getLength(); i++) 
 		{
 			Element el = (Element)nl.item(i);
@@ -459,11 +457,11 @@ public class MCUpdater {
 			}
 			Archive.createZip(new File(archiveFolder.getPath() + sep + uniqueName), contents, (MCFolder + sep), parent);
 			Backup entry = new Backup(description, uniqueName);
-			System.out.println("DEBUG: LoadBackupList");
+			_debug("DEBUG: LoadBackupList");
 			List<Backup> bList = loadBackupList();
-			System.out.println("DEBUG: add");
+			_debug("DEBUG: add");
 			bList.add(entry);
-			System.out.println("DEBUG: writeBackupList");
+			_debug("DEBUG: writeBackupList");
 			writeBackupList(bList);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -630,14 +628,14 @@ public class MCUpdater {
 			parent.setLblStatus("Mod: " + entry.getName());
 			parent.log("Mod: "+entry.getName());
 			try {
-				System.out.println(entry.getUrl());
+				_debug("Mod @ "+entry.getUrl());
 				URL modURL = new URL(entry.getUrl());
 				//String modFilename = modURL.getFile().substring(modURL.getFile().lastIndexOf('/'));
 				File modPath;
 				if(entry.getInJar()) {
 					//modPath = new File(tmpFolder.getPath() + sep + loadOrder + ".zip");
 					//loadOrder++;
-					//System.out.println(modPath.getPath());
+					//_log(modPath.getPath());
 					ModDownload jarMod;
 					try {
 						jarMod = new ModDownload(modURL, tmpFolder, entry.getMD5());
@@ -646,7 +644,7 @@ public class MCUpdater {
 						} else {
 							parent.log("  Adding to jar (downloaded).");
 						}
-						System.out.println(jarMod.getRemoteFilename() + " -> " + jarMod.getDestFile().getPath());
+						_debug(jarMod.getRemoteFilename() + " -> " + jarMod.getDestFile().getPath());
 						//FileUtils.copyURLToFile(modURL, modPath);
 						Archive.extractZip(jarMod.getDestFile(), tmpFolder);
 						jarMod.getDestFile().delete();
@@ -658,7 +656,7 @@ public class MCUpdater {
 				} else if (entry.getExtract()) {
 					//modPath = new File(tmpFolder.getPath() + sep + modFilename);
 					//modPath.getParentFile().mkdirs();
-					//System.out.println(modPath.getPath());
+					//_log(modPath.getPath());
 					ModDownload extractMod;
 					try {
 						extractMod = new ModDownload(modURL, tmpFolder, entry.getMD5());
@@ -667,7 +665,7 @@ public class MCUpdater {
 						} else {
 							parent.log("  Extracting to filesystem (downloaded).");
 						}
-						System.out.println(extractMod.getRemoteFilename() + " -> " + extractMod.getDestFile().getPath());
+						_debug(extractMod.getRemoteFilename() + " -> " + extractMod.getDestFile().getPath());
 						//FileUtils.copyURLToFile(modURL, modPath);
 						String outPath = MCFolder + sep;
 						if(!entry.getInRoot()) outPath += "mods" + sep;
@@ -688,7 +686,7 @@ public class MCUpdater {
 						} else {
 							parent.log("  Installing in /coremods (downloaded).");
 						}
-						System.out.println(normalMod.getRemoteFilename() + " -> " + normalMod.getDestFile().getPath());
+						_debug(normalMod.getRemoteFilename() + " -> " + normalMod.getDestFile().getPath());
 					} catch (Exception e) {
 						++errorCount;
 						parent.log("! "+e.getMessage());
@@ -697,7 +695,7 @@ public class MCUpdater {
 				} else {
 					modPath = new File(MCFolder + sep + "mods");
 					modPath.mkdirs();
-					//System.out.println(modPath.getPath());
+					//_log(modPath.getPath());
 					try {
 						ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
 						if( normalMod.cacheHit ) {
@@ -705,7 +703,7 @@ public class MCUpdater {
 						} else {
 							parent.log("  Installing in /mods (downloaded).");
 						}
-						System.out.println(normalMod.getRemoteFilename() + " -> " + normalMod.getDestFile().getPath());
+						_debug(normalMod.getRemoteFilename() + " -> " + normalMod.getDestFile().getPath());
 					} catch (Exception e) {
 						++errorCount;
 						parent.log("! "+e.getMessage());
@@ -717,7 +715,7 @@ public class MCUpdater {
 				while(itConfigs.hasNext()) {
 					final ConfigFile cfEntry = itConfigs.next();
 					final String MD5 = cfEntry.getMD5(); 
-					System.out.println(cfEntry.getUrl());
+					_debug(cfEntry.getUrl());
 					final File confFile = new File(MCFolder + sep + cfEntry.getPath());
 					confFile.getParentFile().mkdirs();
 					if( MD5 != null ) {
@@ -730,20 +728,20 @@ public class MCUpdater {
 					}
 					parent.log("  Found config for "+cfEntry.getPath()+", downloading...");
 					final URL configURL = new URL(cfEntry.getUrl());
-					System.out.println(confFile.getPath());
+					_debug(confFile.getPath());
 					FileUtils.copyURLToFile(configURL, confFile);
 					// save in cache for future reference
 					if( MD5 != null ) {
 						final boolean cached = DownloadCache.cacheFile(confFile, MD5);
 						if( cached ) {
-							System.out.println("\nSaved in cache");							
+							_debug("\nSaved in cache");							
 						}
 					}
 				}
 			} catch (MalformedURLException e) {
 				++errorCount;
 				parent.log("! "+e.getMessage());
-				System.out.println(e.getMessage());
+				_log(e.getMessage());
 			} catch (IOException e) {
 				++errorCount;
 				parent.log("! "+e.getMessage());
@@ -823,7 +821,19 @@ public class MCUpdater {
 			Object o = Class.forName("java.awt.Desktop").getMethod("getDesktop", new Class[0]).invoke(null, new Object[0]);
 			o.getClass().getMethod("browse", new Class[] { URI.class }).invoke(o, new Object[] { uri });
 		} catch (Throwable e) {
-			System.out.println("Failed to open link " + uri.toString());
+			_log("Failed to open link " + uri.toString());
 		}
 	}
+	
+	private static void _log(String msg) {
+		if( INSTANCE.parent != null ) {
+			INSTANCE.parent.log(msg);
+		} else {
+			System.out.println(msg);
+		}
+	}
+	private static void _debug(String msg) {
+		System.out.println(msg);
+	}
+
 }
