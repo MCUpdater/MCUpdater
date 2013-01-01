@@ -399,6 +399,7 @@ public class MCUpdater {
 	private String lookupHash(String hash) {
 		Map<String,String> map = new HashMap<String,String>();
 		try {
+			long start = System.currentTimeMillis();
 			URL md5s = new URL("http://mcupdater.net46.net/mcu_patches/md5.dat");
 			InputStreamReader input = new InputStreamReader(md5s.openStream());
 			BufferedReader buffer = new BufferedReader(input);
@@ -414,6 +415,7 @@ public class MCUpdater {
 			}
 			buffer.close();
 			input.close();
+			_debug("Took "+(System.currentTimeMillis()-start)+"ms to load md5.dat");
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
