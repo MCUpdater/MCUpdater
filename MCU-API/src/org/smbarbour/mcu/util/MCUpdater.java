@@ -174,10 +174,13 @@ public class MCUpdater {
 					if (!(serverHeader == null)) {
 						Element parent = serverHeader.getDocumentElement();
 						if (parent.getNodeName().equals("ServerPack")){
+							String mcuVersion = parent.getAttribute("version");
 							NodeList servers = parent.getElementsByTagName("Server");
 							for (int i = 0; i < servers.getLength(); i++){
 								docEle = (Element)servers.item(i);
-								slList.add(new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), serverUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision")));
+								ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), serverUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
+								sl.setMCUVersion(mcuVersion);
+								slList.add(sl);
 							}					
 						} else {
 							slList.add(new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), serverUrl, parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), parseBoolean(parent.getAttribute("generateList")), parent.getAttribute("revision")));

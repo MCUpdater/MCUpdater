@@ -5,10 +5,11 @@ public class ServerList {
 	private String packUrl;
 	private String newsUrl;
 	private String iconUrl;
-	private String version;
+	private String version;		// minecraft version
+	private String mcuVersion;	// minimum version of MCU required to use this pack
 	private String address;
 	private boolean generateList = true;
-	private String revision;
+	private String revision;	// serverpack revision
 	private String serverId;
 	
 	public ServerList(String serverId, String name, String packUrl, String newsUrl, String iconUrl, String version, String address, boolean generateList, String revision)
@@ -98,5 +99,13 @@ public class ServerList {
 
 	public void setServerId(String serverId) {
 		this.serverId = serverId;
+	}
+
+	public String getMCUVersion() {
+		return mcuVersion;
+	}
+
+	public void setMCUVersion(String mcuVersion) {
+		this.mcuVersion = mcuVersion;
 	}
 }
