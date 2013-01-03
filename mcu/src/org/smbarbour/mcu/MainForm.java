@@ -5,10 +5,13 @@ import javax.swing.JPanel;
 
 import java.awt.AWTException;
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
+import java.awt.SplashScreen;
 import java.awt.SystemTray;
+import java.awt.Toolkit;
 import java.awt.TrayIcon;
 
 import javax.swing.JLabel;
@@ -114,6 +117,11 @@ public class MainForm extends MCUApp {
 		mcu.setParent(window);
 		initialize();
 		window.frmMain.setVisible(true);
+		
+		SplashScreen splash = SplashScreen.getSplashScreen();
+		if( splash != null ) {
+			splash.close();
+		}
 	}
 
 	public Properties getConfig()
@@ -166,7 +174,18 @@ public class MainForm extends MCUApp {
 		if (current.getProperty("instanceRoot") == null) { current.setProperty("instanceRoot", (new File(mcu.getArchiveFolder(),"instances")).getAbsolutePath()); }
 		return hasChanged;
 	}
-
+	/*
+	private void initSplash() {
+		frmSplash = new JFrame();
+		frmSplash.setSize(256,96);
+		frmSplash.setAlwaysOnTop(true);
+		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+		frmSplash.setLocation((screen.width-frmSplash.getWidth())/2, (screen.height-frmSplash.getHeight())/2);
+		ImageIcon splashIcon = new ImageIcon(MainForm.class.getResource("/art/mcu-splash.png"));
+		frmSplash.getContentPane().add(splashIcon);
+		frmSplash.setVisible(true);
+	}
+	*/
 	/**
 	 * Initialize the contents of the frame.
 	 */
