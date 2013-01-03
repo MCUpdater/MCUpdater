@@ -5,6 +5,7 @@ import java.awt.FlowLayout;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
@@ -18,6 +19,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 import javax.swing.JCheckBox;
 
@@ -155,13 +157,28 @@ public class ClientConfig extends JDialog {
 		}
 		{
 			JButton btnJavaPath = new JButton("Browse");
-			btnJavaPath.setEnabled(false);
 			GridBagConstraints gbc_btnJavaPath = new GridBagConstraints();
 			gbc_btnJavaPath.anchor = GridBagConstraints.WEST;
 			gbc_btnJavaPath.insets = new Insets(0, 0, 5, 5);
 			gbc_btnJavaPath.gridx = 3;
 			gbc_btnJavaPath.gridy = 5;
 			contentPanel.add(btnJavaPath, gbc_btnJavaPath);
+			btnJavaPath.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent evt) {
+					JFileChooser fc = new JFileChooser();
+					fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					fc.setCurrentDirectory(new File(txtJavaPath.getText()));
+					int choice = fc.showOpenDialog(null);
+					if( choice == JFileChooser.APPROVE_OPTION ) {
+						try {
+							txtJavaPath.setText(fc.getSelectedFile().getCanonicalPath());
+						} catch (IOException e) {
+							parent.log("[Error]" +e.getMessage()+"\n");
+						}
+					}
+				}
+			});
 		}
 		
 		// Instance
