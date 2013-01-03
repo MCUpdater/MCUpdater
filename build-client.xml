@@ -2,7 +2,11 @@
 <project default="package" name="Create Runnable Jar for Project MCUpdater">
     <property name="MCU-API.location" value="MCU-API"/>
     <property name="MCUpdater.location" value="mcu"/>
-    <!--this file was created by Eclipse Runnable JAR Export Wizard-->
+	
+	<property environment="ENV"/>
+	<property name="ENV.BUILD_NUMBER" value="0"/>
+
+	<!--this file was created by Eclipse Runnable JAR Export Wizard-->
     <!--ANT 1.7 is required                                        -->
     <target name="build-API">
 	<ant antfile="build.xml" dir="${MCU-API.location}" inheritAll="false" target="build-project">
@@ -19,11 +23,15 @@
 	</ant>
     </target>
     <target name="package" depends="build-API,build-Client">
+    	<propertyfile file="${MCUpdater.location}/bin/version.properties" comment="MCUpdater automatic build version">
+    		<entry key="build_version" value="${ENV.BUILD_NUMBER}"/>
+    	</propertyfile>
+
         <jar destfile="dist/MCUpdater.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="org.smbarbour.mcu.Main"/>
                 <attribute name="Class-Path" value="."/>
-            	<attribute name="SplashScreen-Image" value="art/mcu-splash.png"/>
+            	<attribute name="SplashScreen-Image" value="mcu-splash.png"/>
             </manifest>
             <fileset dir="${MCUpdater.location}/bin"/>
             <zipfileset excludes="META-INF/*.SF" src="${MCUpdater.location}/log4j-1.2.16.jar"/>

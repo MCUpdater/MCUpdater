@@ -2,3 +2,4 @@
 mcu/bin/
 
 /.metadata
+/dist/MCUpdater.jar

@@ -5,13 +5,11 @@ import javax.swing.JPanel;
 
 import java.awt.AWTException;
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SplashScreen;
 import java.awt.SystemTray;
-import java.awt.Toolkit;
 import java.awt.TrayIcon;
 
 import javax.swing.JLabel;
@@ -77,9 +75,20 @@ import javax.swing.ImageIcon;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
+	
+	public static final int BUILD_VERSION;
+	static {
+		Properties prop = new Properties();
+		try {
+			prop.load(MainForm.class.getResourceAsStream("/version.properties"));
+		} catch (IOException e) {
+		}
+		BUILD_VERSION = Integer.valueOf(prop.getProperty("build_version","0"));
+	}
 	public static final int MAJOR_VERSION = 1;
 	public static final int MINOR_VERSION = 36;
-	private static final String VERSION = "v"+MAJOR_VERSION+"."+MINOR_VERSION;
+	private static final String VERSION = "v"+MAJOR_VERSION+"."+MINOR_VERSION+"."+BUILD_VERSION;
+
 	private static MainForm window;
 	private Properties config = new Properties();
 	private JFrame frmMain;
@@ -568,14 +577,13 @@ public class MainForm extends MCUApp {
 		if( packVersion == null ) return false;	// can't check anything if they don't tell us
 		String parts[] = packVersion.split("\\.");
 		try {
-			int packMajor = Integer.valueOf(parts[0]);
-			int packMinor = Integer.valueOf(parts[1]);
-			if( packMajor < MAJOR_VERSION )
-				return false;
-			else if( packMajor > MAJOR_VERSION )
-				return true;
-			else
-				return packMinor > MINOR_VERSION;
+			int mcuParts[] = { MAJOR_VERSION, MINOR_VERSION, BUILD_VERSION };
+			for( int q = 0; q < mcuParts.length && q < parts.length; ++q ) {
+				int packPart = Integer.valueOf(parts[q]);
+				if( packPart < mcuParts[q] )
+					return false;
+			}
+			return true;
 		} catch( NumberFormatException e ) {
 			log("Got non-numerical pack format version '"+packVersion+"'");
 		} catch( ArrayIndexOutOfBoundsException e ) {
