@@ -180,7 +180,7 @@ public class MainForm extends MCUApp {
 			e1.printStackTrace();
 		}
 		frmMain = new JFrame();
-		frmMain.setTitle("[No Server Selected] - MCUpdater " + MainForm.VERSION);
+		frmMain.setTitle("[No Server Selected] - MCUpdater Legacy " + MainForm.VERSION);
 		frmMain.setResizable(false);
 		frmMain.setBounds(100, 100, 1175, 592);
 		frmMain.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -493,7 +493,7 @@ public class MainForm extends MCUApp {
 		try {
 			selected = entry;
 			browser.setPage(entry.getNewsUrl());
-			frmMain.setTitle(entry.getName() + " - MCUpdater " + MainForm.VERSION);
+			frmMain.setTitle(entry.getName() + " - MCUpdater Legacy " + MainForm.VERSION);
 			List<Module> modules = mcu.loadFromURL(entry.getPackUrl(), entry.getServerId());
 			Iterator<Module> itMods = modules.iterator();
 			pnlModList.setVisible(false);
