@@ -30,6 +30,7 @@ public class ClientConfig extends JDialog {
 	private final JPanel contentPanel = new JPanel();
 	private JTextField txtMinimum;
 	private JTextField txtMaximum;
+	private JTextField txtJavaPath;
 	private JCheckBox chckbxSuppressVanillaUpdate;
 	private JTextField txtInstanceRoot;
 
@@ -41,7 +42,7 @@ public class ClientConfig extends JDialog {
 		setModal(true);
 		setTitle("Client Configuration");
 		setResizable(false);
-		setBounds(100, 100, 354, 213);
+		setBounds(100, 100, 480, 244);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -59,6 +60,8 @@ public class ClientConfig extends JDialog {
 			gbc_rigidArea.gridy = 0;
 			contentPanel.add(rigidArea, gbc_rigidArea);
 		}
+		
+		// memory
 		{
 			JLabel lblMinimumMemory = new JLabel("Minimum memory:");
 			GridBagConstraints gbc_lblMinimumMemory = new GridBagConstraints();
@@ -77,6 +80,7 @@ public class ClientConfig extends JDialog {
 			gbc_txtMinimum.fill = GridBagConstraints.HORIZONTAL;
 			gbc_txtMinimum.gridx = 2;
 			gbc_txtMinimum.gridy = 1;
+			gbc_txtMinimum.gridwidth = 2;
 			contentPanel.add(txtMinimum, gbc_txtMinimum);
 			txtMinimum.setColumns(10);
 		}
@@ -106,18 +110,21 @@ public class ClientConfig extends JDialog {
 			gbc_txtMaximum.fill = GridBagConstraints.HORIZONTAL;
 			gbc_txtMaximum.gridx = 2;
 			gbc_txtMaximum.gridy = 2;
+			gbc_txtMaximum.gridwidth = 2;
 			contentPanel.add(txtMaximum, gbc_txtMaximum);
 			txtMaximum.setColumns(10);
 		}
 		{
 			JLabel lblMemoryCanBe = new JLabel("Memory can be specified in MB or GB (i.e. 512M or 1G)");
 			GridBagConstraints gbc_lblMemoryCanBe = new GridBagConstraints();
-			gbc_lblMemoryCanBe.gridwidth = 2;
+			gbc_lblMemoryCanBe.gridwidth = 3;
 			gbc_lblMemoryCanBe.insets = new Insets(0, 0, 5, 5);
 			gbc_lblMemoryCanBe.gridx = 1;
 			gbc_lblMemoryCanBe.gridy = 3;
 			contentPanel.add(lblMemoryCanBe, gbc_lblMemoryCanBe);
 		}
+		
+		// JRE
 		{
 			Component verticalStrut = Box.createVerticalStrut(5);
 			GridBagConstraints gbc_verticalStrut = new GridBagConstraints();
@@ -127,12 +134,52 @@ public class ClientConfig extends JDialog {
 			contentPanel.add(verticalStrut, gbc_verticalStrut);
 		}
 		{
+			JLabel lblJavaPath = new JLabel("Java home path:");
+			GridBagConstraints gbc_lblJavaPath = new GridBagConstraints();
+			gbc_lblJavaPath.anchor = GridBagConstraints.EAST;
+			gbc_lblJavaPath.insets = new Insets(0, 0, 5, 5);
+			gbc_lblJavaPath.gridx = 1;
+			gbc_lblJavaPath.gridy = 5;
+			contentPanel.add(lblJavaPath, gbc_lblJavaPath);
+		}
+		{
+			txtJavaPath = new JTextField();
+			txtJavaPath.setText(parent.getConfig().getProperty("jrePath",System.getProperty("java.home")));
+			GridBagConstraints gbc_txtJavaPath = new GridBagConstraints();
+			gbc_txtJavaPath.anchor = GridBagConstraints.WEST;
+			gbc_txtJavaPath.insets = new Insets(0, 0, 5, 5);
+			gbc_txtJavaPath.fill = GridBagConstraints.HORIZONTAL;
+			gbc_txtJavaPath.gridx = 2;
+			gbc_txtJavaPath.gridy = 5;
+			contentPanel.add(txtJavaPath, gbc_txtJavaPath);
+		}
+		{
+			JButton btnJavaPath = new JButton("Browse");
+			btnJavaPath.setEnabled(false);
+			GridBagConstraints gbc_btnJavaPath = new GridBagConstraints();
+			gbc_btnJavaPath.anchor = GridBagConstraints.WEST;
+			gbc_btnJavaPath.insets = new Insets(0, 0, 5, 5);
+			gbc_btnJavaPath.gridx = 3;
+			gbc_btnJavaPath.gridy = 5;
+			contentPanel.add(btnJavaPath, gbc_btnJavaPath);
+		}
+		
+		// Instance
+		{
+			Component verticalStrut = Box.createVerticalStrut(5);
+			GridBagConstraints gbc_verticalStrut = new GridBagConstraints();
+			gbc_verticalStrut.insets = new Insets(0, 0, 5, 5);
+			gbc_verticalStrut.gridx = 1;
+			gbc_verticalStrut.gridy = 6;
+			contentPanel.add(verticalStrut, gbc_verticalStrut);
+		}
+		{
 			JLabel lblInstanceFolder = new JLabel("Instance folder:");
 			GridBagConstraints gbc_lblInstanceFolder = new GridBagConstraints();
 			gbc_lblInstanceFolder.anchor = GridBagConstraints.EAST;
 			gbc_lblInstanceFolder.insets = new Insets(0, 0, 5, 5);
 			gbc_lblInstanceFolder.gridx = 1;
-			gbc_lblInstanceFolder.gridy = 5;
+			gbc_lblInstanceFolder.gridy = 7;
 			contentPanel.add(lblInstanceFolder, gbc_lblInstanceFolder);
 		}
 		{
@@ -142,21 +189,35 @@ public class ClientConfig extends JDialog {
 			gbc_txtInstanceRoot.insets = new Insets(0, 0, 5, 5);
 			gbc_txtInstanceRoot.fill = GridBagConstraints.HORIZONTAL;
 			gbc_txtInstanceRoot.gridx = 2;
-			gbc_txtInstanceRoot.gridy = 5;
+			gbc_txtInstanceRoot.gridy = 7;
 			contentPanel.add(txtInstanceRoot, gbc_txtInstanceRoot);
 			txtInstanceRoot.setColumns(10);
 		}
 		{
+			JButton btnInstanceRoot = new JButton("Browse");
+			btnInstanceRoot.setEnabled(false);
+			GridBagConstraints gbc_btnInstanceRoot = new GridBagConstraints();
+			gbc_btnInstanceRoot.anchor = GridBagConstraints.WEST;
+			gbc_btnInstanceRoot.insets = new Insets(0, 0, 5, 5);
+			gbc_btnInstanceRoot.gridx = 3;
+			gbc_btnInstanceRoot.gridy = 7;
+			contentPanel.add(btnInstanceRoot, gbc_btnInstanceRoot);
+		}
+		
+		// Suppress update
+		{
 			chckbxSuppressVanillaUpdate = new JCheckBox("Suppress vanilla update check");
 			GridBagConstraints gbc_chckbxSuppressVanillaUpdate = new GridBagConstraints();
 			gbc_chckbxSuppressVanillaUpdate.anchor = GridBagConstraints.WEST;
-			gbc_chckbxSuppressVanillaUpdate.gridwidth = 2;
+			gbc_chckbxSuppressVanillaUpdate.gridwidth = 3;
 			gbc_chckbxSuppressVanillaUpdate.insets = new Insets(0, 0, 5, 5);
 			gbc_chckbxSuppressVanillaUpdate.gridx = 1;
-			gbc_chckbxSuppressVanillaUpdate.gridy = 6;
+			gbc_chckbxSuppressVanillaUpdate.gridy = 8;
 			chckbxSuppressVanillaUpdate.setSelected(Boolean.parseBoolean(parent.getConfig().getProperty("suppressUpdates")));
 			contentPanel.add(chckbxSuppressVanillaUpdate, gbc_chckbxSuppressVanillaUpdate);
 		}
+		
+		// Buttons
 		{
 			JPanel buttonPane = new JPanel();
 			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
@@ -168,6 +229,7 @@ public class ClientConfig extends JDialog {
 						Properties newConfig = parent.getConfig();
 						newConfig.setProperty("minimumMemory", txtMinimum.getText());
 						newConfig.setProperty("maximumMemory", txtMaximum.getText());
+						newConfig.setProperty("jrePath", txtJavaPath.getText());
 						newConfig.setProperty("suppressUpdates", Boolean.toString(chckbxSuppressVanillaUpdate.isSelected()));
 						newConfig.setProperty("instanceRoot", txtInstanceRoot.getText());
 						parent.writeConfig(newConfig);

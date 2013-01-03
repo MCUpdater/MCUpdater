@@ -350,7 +350,7 @@ public class MainForm extends MCUApp {
 						break;
 					}
 				}
-				LauncherThread thread = LauncherThread.launch(launcher, config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), Boolean.parseBoolean(config.getProperty("suppressUpdates")), outFile, console);
+				LauncherThread thread = LauncherThread.launch(launcher, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), Boolean.parseBoolean(config.getProperty("suppressUpdates")), outFile, console);
 				thread.register( window, btnLaunchMinecraft, killItem );
 				thread.start();
 			}

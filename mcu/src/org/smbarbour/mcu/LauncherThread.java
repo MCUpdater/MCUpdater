@@ -15,6 +15,8 @@ import java.io.OutputStreamWriter;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 
+import org.smbarbour.mcu.util.MCUpdater;
+
 public class LauncherThread implements Runnable {
 	private File launcher;
 	private String minMem;
@@ -30,10 +32,12 @@ public class LauncherThread implements Runnable {
 	private Process task;
 	private MenuItem killItem;
 	private boolean forceKilled = false;
+	private String jrePath;
 
-	public LauncherThread(File launcher, String minMem, String maxMem, boolean suppressUpdates, File output)
+	public LauncherThread(File launcher, String jrePath, String minMem, String maxMem, boolean suppressUpdates, File output)
 	{
 		this.launcher = launcher;
+		this.jrePath = jrePath;
 		this.minMem = minMem;
 		this.maxMem = maxMem;
 		this.output = output;
@@ -41,9 +45,9 @@ public class LauncherThread implements Runnable {
 		ready = false;
 	}
 	
-	public static LauncherThread launch(File launcher, String minMem, String maxMem, boolean suppressUpdates, File output, ConsoleArea console)
+	public static LauncherThread launch(File launcher, String jrePath, String minMem, String maxMem, boolean suppressUpdates, File output, ConsoleArea console)
 	{
-		LauncherThread me = new LauncherThread(launcher, minMem, maxMem, suppressUpdates, output);
+		LauncherThread me = new LauncherThread(launcher, jrePath, minMem, maxMem, suppressUpdates, output);
 		me.console = console;
 		console.setText("");
 		return me;
@@ -85,7 +89,14 @@ public class LauncherThread implements Runnable {
 		if (this.suppressUpdates) {
 			suppress = "--noupdate";
 		}
-		ProcessBuilder pb = new ProcessBuilder("java","-Xms"+minMem, "-Xmx"+maxMem, "-jar", launcher.getPath(), suppress);
+		
+		String javaBin = "java";
+		File binDir = new File(jrePath+MCUpdater.sep+"bin");
+		if( binDir.exists() ) {
+			javaBin = binDir + MCUpdater.sep + "java";
+		}
+		
+		ProcessBuilder pb = new ProcessBuilder(javaBin,"-Xms"+minMem, "-Xmx"+maxMem, "-jar", launcher.getPath(), suppress);
 		pb.redirectErrorStream(true);
 		BufferedWriter buffWrite = null;
 		try {
