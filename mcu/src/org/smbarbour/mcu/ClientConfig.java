@@ -35,6 +35,7 @@ public class ClientConfig extends JDialog {
 	private JTextField txtJavaPath;
 	private JCheckBox chckbxSuppressVanillaUpdate;
 	private JTextField txtInstanceRoot;
+	//private JCheckBox chckbxMinimize;
 
 	/**
 	 * Create the dialog.
@@ -44,7 +45,7 @@ public class ClientConfig extends JDialog {
 		setModal(true);
 		setTitle("Client Configuration");
 		setResizable(false);
-		setBounds(100, 100, 480, 284);
+		setBounds(100, 100, 480, 75);	// height is amount of padding reserved for button bar
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -230,6 +231,22 @@ public class ClientConfig extends JDialog {
 			contentPanel.add(btnInstanceRoot, gbc_btnInstanceRoot);
 		}
 		
+		/*
+		// Minimize preference
+		++row;
+		{
+			chckbxMinimize = new JCheckBox("Minimize MCU on launch");
+			GridBagConstraints gbc_chckbxMinimize = new GridBagConstraints();
+			gbc_chckbxMinimize.anchor = GridBagConstraints.WEST;
+			gbc_chckbxMinimize.gridwidth = 3;
+			gbc_chckbxMinimize.insets = new Insets(0, 0, 5, 5);
+			gbc_chckbxMinimize.gridx = 1;
+			gbc_chckbxMinimize.gridy = row;
+			//chckbxMinimize.setSelected(Boolean.parseBoolean(parent.getConfig().getProperty("minimize","true")));
+			contentPanel.add(chckbxMinimize, gbc_chckbxMinimize);
+		}
+		*/
+		
 		// Suppress update
 		++row;
 		{
@@ -243,6 +260,9 @@ public class ClientConfig extends JDialog {
 			chckbxSuppressVanillaUpdate.setSelected(Boolean.parseBoolean(parent.getConfig().getProperty("suppressUpdates")));
 			contentPanel.add(chckbxSuppressVanillaUpdate, gbc_chckbxSuppressVanillaUpdate);
 		}
+		
+		// Stretch to make room for the content panel
+		setSize(this.getWidth(), this.getHeight() + (int)contentPanel.getMinimumSize().getHeight());
 		
 		// Buttons
 		{
