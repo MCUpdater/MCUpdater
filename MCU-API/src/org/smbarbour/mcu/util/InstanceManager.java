@@ -40,7 +40,12 @@ public class InstanceManager {
 		try {
 			Path instance = parent.getInstanceRoot().toPath().resolve(instanceName);
 			Files.createDirectories(instance);
-			Files.createFile(instance.resolve("instance.dat"));
+			Path instanceFile = instance.resolve("instance.dat");
+			Files.createFile(instanceFile);
+			Properties instData = new Properties();
+			instData.setProperty("serverID", instanceName);
+			instData.setProperty("revision", "0");
+			instData.store(Files.newOutputStream(instanceFile), "Instance data");
 			Path binPath = Files.createDirectory(instance.resolve("bin"));
 			Path nativesPath = Files.createDirectory(binPath.resolve("natives"));
 			String baseURL = "http://s3.amazonaws.com/MinecraftDownload/";

@@ -702,10 +702,10 @@ public class MainForm extends MCUApp {
 							//TODO read instance data
 							Properties instProp = new Properties();
 							instProp.load(Files.newInputStream(instDataPath));
-							Path oldInstance = mcu.getInstanceRoot().toPath().resolve(instProp.getProperty("ServerID"));
-							removeAndPrepareFolder(MCPath, instancePath, false);
+							Path oldInstance = mcu.getInstanceRoot().toPath().resolve(instProp.getProperty("serverID"));
+							removeAndPrepareFolder(MCPath, oldInstance, false);
 						} else {
-							removeAndPrepareFolder(MCPath, )
+							removeAndPrepareFolder(MCPath, mcu.getInstanceRoot().toPath().resolve("unmanaged"), true);
 						}
 					}
 				}
@@ -757,6 +757,10 @@ public class MainForm extends MCUApp {
 			Path instanceFile = instancePath.resolve("instance.dat");
 			if (!Files.exists(instanceFile)) {
 				Files.createFile(instanceFile);
+				Properties instData = new Properties();
+				instData.setProperty("serverID", "unmanaged");
+				instData.setProperty("revision", "0");
+				instData.store(Files.newOutputStream(instanceFile), "Instance data");
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
