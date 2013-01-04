@@ -750,7 +750,6 @@ public class MCUpdater {
 					final ConfigFile cfEntry = itConfigs.next();
 					final String MD5 = cfEntry.getMD5(); 
 					_debug(cfEntry.getUrl());
-					parent.log("  Found config for "+cfEntry.getPath());
 					URL configURL = new URL(cfEntry.getUrl());
 					final File confFile = new File(MCFolder + sep + cfEntry.getPath());
 					confFile.getParentFile().mkdirs();
@@ -810,7 +809,7 @@ public class MCUpdater {
 		//copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
 		try {
 			Path binPath = folder.toPath().resolve("bin");
-			Files.copy(buildJar.toPath(), binPath.resolve("minecraft.jar"));
+			Files.copy(buildJar.toPath(), binPath.resolve("minecraft.jar"), StandardCopyOption.REPLACE_EXISTING );
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
