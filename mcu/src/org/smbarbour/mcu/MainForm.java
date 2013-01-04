@@ -577,6 +577,7 @@ public class MainForm extends MCUApp {
 		
 		//JLabel lblNewLabel = new JLabel("minecraft.jar version: " + mcu.getMCVersion());
 		//toolBar.add(lblNewLabel);
+		log("minecraft.jar version: " + mcu.getMCVersion());
 		
 		Component horizontalStrut_1 = Box.createHorizontalStrut(5);
 		toolBar.add(horizontalStrut_1);
