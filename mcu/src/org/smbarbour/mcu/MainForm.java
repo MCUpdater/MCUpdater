@@ -73,6 +73,7 @@ import javax.swing.JList;
 import javax.swing.AbstractListModel;
 import javax.swing.JToolBar;
 import javax.swing.ImageIcon;
+import java.awt.GridLayout;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
@@ -116,6 +117,7 @@ public class MainForm extends MCUApp {
 	
 	private ServerList selected;
 	private final JPanel pnlModList = new JPanel();
+	private JCheckBox chkHardUpdate;
 	private JLabel lblStatus;
 	private JProgressBar progressBar;
 	private JList<ServerListPacket> serverList;
@@ -315,7 +317,7 @@ public class MainForm extends MCUApp {
 							setLblStatus("Installing mods");
 							log("Installing mods...");
 							setProgressBar(25);
-							mcu.installMods(selected, toInstall);
+							mcu.installMods(selected, toInstall, chkHardUpdate.isSelected());
 							if (selected.isGenerateList()) {
 								setLblStatus("Writing servers.dat");
 								log("Writing servers.dat");
@@ -467,6 +469,13 @@ public class MainForm extends MCUApp {
 		JScrollPane modScroller = new JScrollPane(pnlModList);
 		pnlRight.add(modScroller, BorderLayout.CENTER);
 		pnlModList.setLayout(new BoxLayout(pnlModList, BoxLayout.Y_AXIS));
+		
+		JPanel pnlUpdateOptions = new JPanel();
+		pnlRight.add(pnlUpdateOptions, BorderLayout.SOUTH);
+		pnlUpdateOptions.setLayout(new GridLayout(0, 1, 0, 0));
+		
+		chkHardUpdate = new JCheckBox("Perform \"hard\" update");
+		pnlUpdateOptions.add(chkHardUpdate);
 		browser.setEditable(false);
 		browser.setContentType("text/html");
 		browser.addHyperlinkListener(new HyperlinkListener(){

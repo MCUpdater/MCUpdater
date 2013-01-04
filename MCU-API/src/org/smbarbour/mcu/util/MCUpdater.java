@@ -606,7 +606,7 @@ public class MCUpdater {
 		return jar.exists();
 	}
 	
-	public void installMods(ServerList server, List<Module> toInstall) throws FileNotFoundException {
+	public void installMods(ServerList server, List<Module> toInstall, boolean clearExisting) throws FileNotFoundException {
 		File folder;
 		try {
 			folder = Files.readSymbolicLink(new File(MCFolder).toPath()).toFile();
@@ -626,19 +626,21 @@ public class MCUpdater {
 			parent.log("! Unable to find a backup copy of minecraft.jar for "+server.getVersion());
 			throw new FileNotFoundException("A backup copy of minecraft.jar for version " + server.getVersion() + " was not found.");
 		}
-		parent.setLblStatus("Clearing existing configuration");
-		parent.log("Clearing existing configuration...");
-		Iterator<File> it = new ArrayList<File>(contents).iterator();
-		while(it.hasNext()) {
-			File entry = it.next();
-			if(getExcludedNames(entry.getPath(), true)){
-				contents.remove(entry);
+		if (clearExisting){
+			parent.setLblStatus("Clearing existing configuration");
+			parent.log("Clearing existing configuration...");
+			Iterator<File> it = new ArrayList<File>(contents).iterator();
+			while(it.hasNext()) {
+				File entry = it.next();
+				if(getExcludedNames(entry.getPath(), true)){
+					contents.remove(entry);
+				}
 			}
-		}
-		ListIterator<File> liClear = contents.listIterator(contents.size());
-		while(liClear.hasPrevious()) { 
-			File entry = liClear.previous();
-			entry.delete();
+			ListIterator<File> liClear = contents.listIterator(contents.size());
+			while(liClear.hasPrevious()) { 
+				File entry = liClear.previous();
+				entry.delete();
+			}
 		}
 		parent.setLblStatus("Preparing to build minecraft.jar");
 		parent.log("Preparing to build minecraft.jar...");
