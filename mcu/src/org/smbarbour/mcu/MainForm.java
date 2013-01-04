@@ -41,7 +41,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -198,22 +197,12 @@ public class MainForm extends MCUApp {
 		if (current.getProperty("maximumMemory") == null) {	current.setProperty("maximumMemory", "1G"); hasChanged = true; }
 		//if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; }
 		//if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; }
+		if (current.getProperty("minimizeOnLaunch") == null) { current.setProperty("minimizeOnLaunch", "true"); hasChanged = true; }
 		if (current.getProperty("suppressUpdates") == null) { current.setProperty("suppressUpdates", "false"); hasChanged = true; }
 		if (current.getProperty("instanceRoot") == null) { current.setProperty("instanceRoot", (new File(mcu.getArchiveFolder(),"instances")).getAbsolutePath()); }
 		return hasChanged;
 	}
-	/*
-	private void initSplash() {
-		frmSplash = new JFrame();
-		frmSplash.setSize(256,96);
-		frmSplash.setAlwaysOnTop(true);
-		Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-		frmSplash.setLocation((screen.width-frmSplash.getWidth())/2, (screen.height-frmSplash.getHeight())/2);
-		ImageIcon splashIcon = new ImageIcon(MainForm.class.getResource("/art/mcu-splash.png"));
-		frmSplash.getContentPane().add(splashIcon);
-		frmSplash.setVisible(true);
-	}
-	*/
+
 	/**
 	 * Initialize the contents of the frame.
 	 */
@@ -898,7 +887,10 @@ public class MainForm extends MCUApp {
 			// only minimize if we have a way to come back
 			return;
 		}
-		// TODO: add preference whether to autohide or not
+		if( auto && !Boolean.parseBoolean(config.getProperty("minimizeOnLaunch")) ) {
+			// don't autominimize unless configured to
+			return;
+		}
 		frmMain.setVisible(false);
 		frmMain.setState(Frame.ICONIFIED);
 		minimized = true;

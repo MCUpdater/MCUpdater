@@ -33,9 +33,9 @@ public class ClientConfig extends JDialog {
 	private JTextField txtMinimum;
 	private JTextField txtMaximum;
 	private JTextField txtJavaPath;
+	private JCheckBox chckbxMinimize;
 	private JCheckBox chckbxSuppressVanillaUpdate;
 	private JTextField txtInstanceRoot;
-	//private JCheckBox chckbxMinimize;
 
 	/**
 	 * Create the dialog.
@@ -231,7 +231,16 @@ public class ClientConfig extends JDialog {
 			contentPanel.add(btnInstanceRoot, gbc_btnInstanceRoot);
 		}
 		
-		/*
+		++row;
+		{
+			Component verticalStrut = Box.createVerticalStrut(5);
+			GridBagConstraints gbc_verticalStrut = new GridBagConstraints();
+			gbc_verticalStrut.insets = new Insets(0, 0, 5, 5);
+			gbc_verticalStrut.gridx = 1;
+			gbc_verticalStrut.gridy = row;
+			contentPanel.add(verticalStrut, gbc_verticalStrut);
+		}
+		
 		// Minimize preference
 		++row;
 		{
@@ -242,10 +251,9 @@ public class ClientConfig extends JDialog {
 			gbc_chckbxMinimize.insets = new Insets(0, 0, 5, 5);
 			gbc_chckbxMinimize.gridx = 1;
 			gbc_chckbxMinimize.gridy = row;
-			//chckbxMinimize.setSelected(Boolean.parseBoolean(parent.getConfig().getProperty("minimize","true")));
+			chckbxMinimize.setSelected(Boolean.parseBoolean(parent.getConfig().getProperty("minimizeOnLaunch")));
 			contentPanel.add(chckbxMinimize, gbc_chckbxMinimize);
 		}
-		*/
 		
 		// Suppress update
 		++row;
@@ -277,6 +285,7 @@ public class ClientConfig extends JDialog {
 						newConfig.setProperty("minimumMemory", txtMinimum.getText());
 						newConfig.setProperty("maximumMemory", txtMaximum.getText());
 						newConfig.setProperty("jrePath", txtJavaPath.getText());
+						newConfig.setProperty("minimizeOnLaunch", Boolean.toString(chckbxMinimize.isSelected()));
 						newConfig.setProperty("suppressUpdates", Boolean.toString(chckbxSuppressVanillaUpdate.isSelected()));
 						newConfig.setProperty("instanceRoot", txtInstanceRoot.getText());
 						parent.writeConfig(newConfig);
