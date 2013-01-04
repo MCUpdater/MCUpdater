@@ -94,7 +94,7 @@ public class MainForm extends MCUApp {
 		}
 		BUILD_VERSION = Integer.valueOf(prop.getProperty("build_version","0"));
 		BUILD_BRANCH = prop.getProperty("git_branch","unknown");
-		if( BUILD_BRANCH == "unknown" || BUILD_BRANCH == "master" ) {
+		if( BUILD_BRANCH.equals("unknown") || BUILD_BRANCH.equals("master") ) {
 			BUILD_LABEL = "";
 		} else {
 			BUILD_LABEL = " ("+BUILD_BRANCH+")";
