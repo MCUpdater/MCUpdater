@@ -44,7 +44,7 @@ public class ClientConfig extends JDialog {
 		setModal(true);
 		setTitle("Client Configuration");
 		setResizable(false);
-		setBounds(100, 100, 480, 244);
+		setBounds(100, 100, 480, 284);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);

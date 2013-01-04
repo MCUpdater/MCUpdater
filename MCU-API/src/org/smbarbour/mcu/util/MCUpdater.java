@@ -531,6 +531,9 @@ public class MCUpdater {
 		if(path.contains("mcuServers.dat")) {
 			return true;
 		}
+		if(path.contains("instance.dat")) {
+			return true;
+		}
 		if(path.contains("minecraft.jar")) {
 			return true;
 		}

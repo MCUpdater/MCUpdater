@@ -116,6 +116,7 @@ public class MainForm extends MCUApp {
 	private final SimpleDateFormat logSDF = new SimpleDateFormat("[HH:mm:ss.SSS] ");
 	
 	private ServerList selected;
+	private JPanel pnlRight;
 	private final JPanel pnlModList = new JPanel();
 	private JCheckBox chkHardUpdate;
 	private JLabel lblStatus;
@@ -278,9 +279,23 @@ public class MainForm extends MCUApp {
 							return;
 						}
 						tabs.setSelectedIndex(tabs.getTabCount()-1);
-						config.setProperty("currentConfig", selected.getServerId());
-						config.setProperty("packRevision", selected.getRevision());
-						writeConfig(config);
+						Properties instData = new Properties();
+						Path instanceFile = new File(mcu.getMCFolder()).toPath().resolve("instance.dat");
+						try {
+							instData.load(Files.newInputStream(instanceFile));
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+
+						instData.setProperty("serverID", selected.getServerId());
+						instData.setProperty("revision", selected.getRevision());
+						try {
+							instData.store(Files.newOutputStream(instanceFile), "Instance Data");
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 						List<Module> toInstall = new ArrayList<Module>();
 						List<Component> selects = new ArrayList<Component>(Arrays.asList(pnlModList.getComponents()));
 						Iterator<Component> it = selects.iterator();
@@ -409,7 +424,14 @@ public class MainForm extends MCUApp {
 				{
 					changeSelectedServer(((ServerListPacket)serverList.getSelectedValue()).getEntry());
 					// check for server version update
-					final boolean needUpdate = selected.getServerId().equals(config.getProperty("currentConfig")) && !selected.getRevision().equals(config.getProperty("packRevision"));
+					Properties instData = new Properties();
+					try {
+						instData.load(Files.newInputStream(new File(mcu.getMCFolder()).toPath().resolve("instance.dat")));
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					final boolean needUpdate = !selected.getRevision().equals(instData.getProperty("revision"));
 					// check for mcu version update
 					final boolean needMCUUpgrade = isVersionOld(selected.getMCUVersion());
 					
@@ -432,7 +454,7 @@ public class MainForm extends MCUApp {
 		JScrollPane serverScroller = new JScrollPane(serverList);
 		pnlLeft.add(serverScroller, BorderLayout.CENTER);
 						
-		JPanel pnlRight = new JPanel();
+		pnlRight = new JPanel();
 		frmMain.getContentPane().add(pnlRight, BorderLayout.EAST);
 		pnlRight.setLayout(new BorderLayout(0, 0));
 
@@ -538,6 +560,7 @@ public class MainForm extends MCUApp {
 		btnBackups.setToolTipText("Backups");
 		toolBar.add(btnBackups);
 		
+		/*
 		JButton btnInsttest = new JButton("InstTest");
 		btnInsttest.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -546,12 +569,13 @@ public class MainForm extends MCUApp {
 			}
 		});
 		toolBar.add(btnInsttest);
+		*/
 		
 		Component horizontalGlue = Box.createHorizontalGlue();
 		toolBar.add(horizontalGlue);
 		
-		JLabel lblNewLabel = new JLabel("minecraft.jar version: " + mcu.getMCVersion());
-		toolBar.add(lblNewLabel);
+		//JLabel lblNewLabel = new JLabel("minecraft.jar version: " + mcu.getMCVersion());
+		//toolBar.add(lblNewLabel);
 		
 		Component horizontalStrut_1 = Box.createHorizontalStrut(5);
 		toolBar.add(horizontalStrut_1);
@@ -580,7 +604,14 @@ public class MainForm extends MCUApp {
 		}
 
 		updateServerList();
-		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(config.getProperty("currentConfig"));
+		Properties instData = new Properties();
+		try {
+			instData.load(Files.newInputStream(new File(mcu.getMCFolder()).toPath().resolve("instance.dat")));
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(instData.getProperty("serverID"));
 		serverList.setSelectedIndex(selectIndex);
 		
 		initTray();
@@ -657,31 +688,39 @@ public class MainForm extends MCUApp {
 			selected = entry;
 			browser.setPage(entry.getNewsUrl());
 			frmMain.setTitle(entry.getName() + " - MCUpdater " + MainForm.VERSION + MainForm.BUILD_LABEL);
-			List<Module> modules = mcu.loadFromURL(entry.getPackUrl(), entry.getServerId());
-			Iterator<Module> itMods = modules.iterator();
-			pnlModList.setVisible(false);
-			pnlModList.removeAll();
-			while(itMods.hasNext())
-			{
-				Module modEntry = itMods.next();
-				JModuleCheckBox chkModule = new JModuleCheckBox(modEntry.getName());
-				if(modEntry.getInJar())
+			if (!selected.getServerId().equals("unmanaged")) {
+				List<Module> modules = mcu.loadFromURL(entry.getPackUrl(), entry.getServerId());
+				Iterator<Module> itMods = modules.iterator();
+				pnlModList.setVisible(false);
+				pnlModList.removeAll();
+				while(itMods.hasNext())
 				{
-					chkModule.setFont(chkModule.getFont().deriveFont(Font.BOLD));
+					Module modEntry = itMods.next();
+					JModuleCheckBox chkModule = new JModuleCheckBox(modEntry.getName());
+					if(modEntry.getInJar())
+					{
+						chkModule.setFont(chkModule.getFont().deriveFont(Font.BOLD));
+					}
+					chkModule.setModule(modEntry);
+					if(modEntry.getRequired())
+					{
+						chkModule.setSelected(true);
+						chkModule.setEnabled(false);
+					}
+					if(modEntry.getIsDefault())
+					{
+						chkModule.setSelected(true);
+					}
+					pnlModList.add(chkModule);
 				}
-				chkModule.setModule(modEntry);
-				if(modEntry.getRequired())
-				{
-					chkModule.setSelected(true);
-					chkModule.setEnabled(false);
-				}
-				if(modEntry.getIsDefault())
-				{
-					chkModule.setSelected(true);
-				}
-				pnlModList.add(chkModule);
+				pnlModList.setVisible(true);
+				pnlRight.setVisible(true);
+				btnUpdate.setEnabled(true);
+			} else {
+				pnlModList.removeAll();
+				pnlRight.setVisible(false);
+				btnUpdate.setEnabled(false);
 			}
-			pnlModList.setVisible(true);
 			
 			Path instancePath;
 			InstanceManager instance = new InstanceManager(mcu);
@@ -783,6 +822,7 @@ public class MainForm extends MCUApp {
 				ServerList entry = it.next();
 				slModel.add(new ServerListPacket(entry, mcu));
 			}
+			slModel.add(new ServerListPacket(new ServerList("unmanaged","Unmanaged","http://www.example.org/ServerPack.xml","http://mcupdater.net46.net","","","",false,"0"), mcu));
 		}
 		serverList.setVisible(true);
 	}
