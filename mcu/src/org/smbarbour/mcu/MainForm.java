@@ -233,7 +233,9 @@ public class MainForm extends MCUApp {
 		}
 		checkAccess();
 		System.out.println("Access checks: MC-" + canWriteMinecraft + " MCU-" + canWriteMCUpdater + " Instance-" + canWriteInstances + " SymLink-" + canCreateLinks);
-
+		if (canCreateLinks == false) {
+			JOptionPane.showMessageDialog(null, "MCUpdater has detected that symbolic linking cannot be performed.\nTrue instancing will be disabled and switching between instances will take considerably longer.\n\nOn Windows, this can be caused by not running MCUpdater as Administrator.", "MCUpdater", JOptionPane.WARNING_MESSAGE);
+		}
 		frmMain = new JFrame();
 		frmMain.setTitle("[No Server Selected] - MCUpdater " + MainForm.VERSION + MainForm.BUILD_LABEL);
 		frmMain.setResizable(false);
@@ -404,7 +406,7 @@ public class MainForm extends MCUApp {
 		frmMain.getContentPane().add(pnlLeft, BorderLayout.WEST);
 		pnlLeft.setLayout(new BorderLayout(0, 0));
 		
-		JLabel lblServers = new JLabel("Servers");
+		JLabel lblServers = new JLabel("Instances");
 		lblServers.setHorizontalAlignment(SwingConstants.CENTER);
 		lblServers.setFont(new Font("Dialog", Font.BOLD, 14));
 		pnlLeft.add(lblServers, BorderLayout.NORTH);
@@ -758,12 +760,13 @@ public class MainForm extends MCUApp {
 		final PopupMenu menu = new PopupMenu();
 		
 		final MenuItem restoreItem = new MenuItem("Restore MCU");
-		restoreItem.addActionListener(new ActionListener(){
+		ActionListener restoreAL = new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				restore();
 			}
-		});
+		};
+		restoreItem.addActionListener(restoreAL);
 		final MenuItem killItem = new MenuItem("Kill Minecraft");
 		killItem.setEnabled(false);
 		
@@ -771,6 +774,7 @@ public class MainForm extends MCUApp {
 		menu.add(killItem);
 		
 		trayIcon.setPopupMenu(menu);
+		trayIcon.addActionListener(restoreAL);
 		
 		try {
 			tray.add(trayIcon);
