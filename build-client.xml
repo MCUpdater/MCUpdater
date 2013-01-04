@@ -23,8 +23,14 @@
 	</ant>
     </target>
     <target name="package" depends="build-API,build-Client">
+    	<exec executable="git" outputproperty="git_branch" failifexecutionfails="false">
+    		<arg line='rev-parse --abbrev-ref HEAD'/>
+    	</exec>
+    	<property name="git_branch" value="unknown"/>
+    	<echo message="git_branch = ${git_branch}"/>
     	<propertyfile file="${MCUpdater.location}/bin/version.properties" comment="MCUpdater automatic build version">
     		<entry key="build_version" value="${ENV.BUILD_NUMBER}"/>
+    		<entry key="git_branch" value="${git_branch}"/>
     	</propertyfile>
 
         <jar destfile="dist/MCUpdater.jar" filesetmanifest="mergewithoutmain">

@@ -77,6 +77,8 @@ public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
 	
 	public static final int BUILD_VERSION;
+	public static final String BUILD_BRANCH;
+	public static final String BUILD_LABEL;
 	static {
 		Properties prop = new Properties();
 		try {
@@ -84,11 +86,17 @@ public class MainForm extends MCUApp {
 		} catch (IOException e) {
 		}
 		BUILD_VERSION = Integer.valueOf(prop.getProperty("build_version","0"));
+		BUILD_BRANCH = prop.getProperty("git_branch","unknown");
+		if( BUILD_BRANCH == "unknown" || BUILD_BRANCH == "master" ) {
+			BUILD_LABEL = "";
+		} else {
+			BUILD_LABEL = " ("+BUILD_BRANCH+")";
+		}
 	}
 	public static final int MAJOR_VERSION = 1;
 	public static final int MINOR_VERSION = 36;
 	private static final String VERSION = "v"+MAJOR_VERSION+"."+MINOR_VERSION+"."+BUILD_VERSION;
-
+	
 	private static MainForm window;
 	private Properties config = new Properties();
 	private JFrame frmMain;
@@ -217,7 +225,7 @@ public class MainForm extends MCUApp {
 			e1.printStackTrace();
 		}
 		frmMain = new JFrame();
-		frmMain.setTitle("[No Server Selected] - MCUpdater " + MainForm.VERSION);
+		frmMain.setTitle("[No Server Selected] - MCUpdater " + MainForm.VERSION + MainForm.BUILD_LABEL);
 		frmMain.setResizable(false);
 		frmMain.setBounds(100, 100, 1175, 592);
 		frmMain.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -595,7 +603,7 @@ public class MainForm extends MCUApp {
 		try {
 			selected = entry;
 			browser.setPage(entry.getNewsUrl());
-			frmMain.setTitle(entry.getName() + " - MCUpdater " + MainForm.VERSION);
+			frmMain.setTitle(entry.getName() + " - MCUpdater " + MainForm.VERSION + MainForm.BUILD_LABEL);
 			List<Module> modules = mcu.loadFromURL(entry.getPackUrl(), entry.getServerId());
 			Iterator<Module> itMods = modules.iterator();
 			pnlModList.setVisible(false);
