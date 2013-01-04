@@ -39,7 +39,9 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -72,9 +74,16 @@ import javax.swing.JList;
 import javax.swing.AbstractListModel;
 import javax.swing.JToolBar;
 import javax.swing.ImageIcon;
+import java.awt.GridLayout;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
+	
+	//Access check booleans
+	private boolean canWriteMinecraft = false;
+	private boolean canWriteMCUpdater = false;
+	private boolean canWriteInstances = false;
+	private boolean canCreateLinks = false;
 	
 	public static final int BUILD_VERSION;
 	public static final String BUILD_BRANCH;
@@ -87,14 +96,14 @@ public class MainForm extends MCUApp {
 		}
 		BUILD_VERSION = Integer.valueOf(prop.getProperty("build_version","0"));
 		BUILD_BRANCH = prop.getProperty("git_branch","unknown");
-		if( BUILD_BRANCH == "unknown" || BUILD_BRANCH == "master" ) {
+		if( BUILD_BRANCH.equals("unknown") || BUILD_BRANCH.equals("master") ) {
 			BUILD_LABEL = "";
 		} else {
 			BUILD_LABEL = " ("+BUILD_BRANCH+")";
 		}
 	}
 	public static final int MAJOR_VERSION = 1;
-	public static final int MINOR_VERSION = 36;
+	public static final int MINOR_VERSION = 37;
 	private static final String VERSION = "v"+MAJOR_VERSION+"."+MINOR_VERSION+"."+BUILD_VERSION;
 	
 	private static MainForm window;
@@ -108,7 +117,9 @@ public class MainForm extends MCUApp {
 	private final SimpleDateFormat logSDF = new SimpleDateFormat("[HH:mm:ss.SSS] ");
 	
 	private ServerList selected;
+	private JPanel pnlRight;
 	private final JPanel pnlModList = new JPanel();
+	private JCheckBox chkHardUpdate;
 	private JLabel lblStatus;
 	private JProgressBar progressBar;
 	private JList<ServerListPacket> serverList;
@@ -166,8 +177,8 @@ public class MainForm extends MCUApp {
 		Properties newConfig = new Properties();
 		newConfig.setProperty("minimumMemory", "512M");
 		newConfig.setProperty("maximumMemory", "1G");
-		newConfig.setProperty("currentConfig", "");
-		newConfig.setProperty("packRevision","");
+		//newConfig.setProperty("currentConfig", "");
+		//newConfig.setProperty("packRevision","");
 		newConfig.setProperty("suppressUpdates", "false");
 		newConfig.setProperty("instanceRoot", (new File(mcu.getArchiveFolder(),"instances")).getAbsolutePath());
 		try {
@@ -185,8 +196,8 @@ public class MainForm extends MCUApp {
 		boolean hasChanged = false;
 		if (current.getProperty("minimumMemory") == null) {	current.setProperty("minimumMemory", "512M"); hasChanged = true; }
 		if (current.getProperty("maximumMemory") == null) {	current.setProperty("maximumMemory", "1G"); hasChanged = true; }
-		if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; }
-		if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; }
+		//if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; }
+		//if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; }
 		if (current.getProperty("suppressUpdates") == null) { current.setProperty("suppressUpdates", "false"); hasChanged = true; }
 		if (current.getProperty("instanceRoot") == null) { current.setProperty("instanceRoot", (new File(mcu.getArchiveFolder(),"instances")).getAbsolutePath()); }
 		return hasChanged;
@@ -224,6 +235,11 @@ public class MainForm extends MCUApp {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+		checkAccess();
+		System.out.println("Access checks: MC-" + canWriteMinecraft + " MCU-" + canWriteMCUpdater + " Instance-" + canWriteInstances + " SymLink-" + canCreateLinks);
+		if (canCreateLinks == false) {
+			JOptionPane.showMessageDialog(null, "MCUpdater has detected that symbolic linking cannot be performed.\nTrue instancing will be disabled and switching between instances will take considerably longer.\n\nOn Windows, this can be caused by not running MCUpdater as Administrator.", "MCUpdater", JOptionPane.WARNING_MESSAGE);
+		}
 		frmMain = new JFrame();
 		frmMain.setTitle("[No Server Selected] - MCUpdater " + MainForm.VERSION + MainForm.BUILD_LABEL);
 		frmMain.setResizable(false);
@@ -245,22 +261,6 @@ public class MainForm extends MCUApp {
 			public void actionPerformed(ActionEvent e) {
 				new Thread() {
 					public void run() {
-						Path instancePath;
-						InstanceManager instance = new InstanceManager(mcu);
-						if ( Files.notExists( mcu.getInstanceRoot().toPath().resolve(selected.getServerId()) ) ) {
-							instancePath = instance.createInstance(selected.getServerId());
-						} else {
-							instancePath = mcu.getInstanceRoot().toPath().resolve(selected.getServerId());
-						}
-						try {
-							Path MCPath = new File(mcu.getMCFolder()).toPath();
-							if (Files.exists(MCPath)) { Files.delete(MCPath); }
-							instance.createLink(MCPath, instancePath);
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-							return;
-						}
 						btnUpdate.setEnabled(false);
 						btnLaunchMinecraft.setEnabled(false);
 						mcu.getMCVersion();
@@ -280,9 +280,23 @@ public class MainForm extends MCUApp {
 							return;
 						}
 						tabs.setSelectedIndex(tabs.getTabCount()-1);
-						config.setProperty("currentConfig", selected.getServerId());
-						config.setProperty("packRevision", selected.getRevision());
-						writeConfig(config);
+						Properties instData = new Properties();
+						Path instanceFile = new File(mcu.getMCFolder()).toPath().resolve("instance.dat");
+						try {
+							instData.load(Files.newInputStream(instanceFile));
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+
+						instData.setProperty("serverID", selected.getServerId());
+						instData.setProperty("revision", selected.getRevision());
+						try {
+							instData.store(Files.newOutputStream(instanceFile), "Instance Data");
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 						List<Module> toInstall = new ArrayList<Module>();
 						List<Component> selects = new ArrayList<Component>(Arrays.asList(pnlModList.getComponents()));
 						Iterator<Component> it = selects.iterator();
@@ -303,7 +317,7 @@ public class MainForm extends MCUApp {
 							setLblStatus("Installing mods");
 							log("Installing mods...");
 							setProgressBar(25);
-							mcu.installMods(selected, toInstall);
+							mcu.installMods(selected, toInstall, chkHardUpdate.isSelected());
 							if (selected.isGenerateList()) {
 								setLblStatus("Writing servers.dat");
 								log("Writing servers.dat");
@@ -394,7 +408,7 @@ public class MainForm extends MCUApp {
 		frmMain.getContentPane().add(pnlLeft, BorderLayout.WEST);
 		pnlLeft.setLayout(new BorderLayout(0, 0));
 		
-		JLabel lblServers = new JLabel("Servers");
+		JLabel lblServers = new JLabel("Instances");
 		lblServers.setHorizontalAlignment(SwingConstants.CENTER);
 		lblServers.setFont(new Font("Dialog", Font.BOLD, 14));
 		pnlLeft.add(lblServers, BorderLayout.NORTH);
@@ -411,7 +425,14 @@ public class MainForm extends MCUApp {
 				{
 					changeSelectedServer(((ServerListPacket)serverList.getSelectedValue()).getEntry());
 					// check for server version update
-					final boolean needUpdate = selected.getServerId().equals(config.getProperty("currentConfig")) && !selected.getRevision().equals(config.getProperty("packRevision"));
+					Properties instData = new Properties();
+					try {
+						instData.load(Files.newInputStream(new File(mcu.getMCFolder()).toPath().resolve("instance.dat")));
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+					final boolean needUpdate = !selected.getRevision().equals(instData.getProperty("revision"));
 					// check for mcu version update
 					final boolean needMCUUpgrade = isVersionOld(selected.getMCUVersion());
 					
@@ -434,7 +455,7 @@ public class MainForm extends MCUApp {
 		JScrollPane serverScroller = new JScrollPane(serverList);
 		pnlLeft.add(serverScroller, BorderLayout.CENTER);
 						
-		JPanel pnlRight = new JPanel();
+		pnlRight = new JPanel();
 		frmMain.getContentPane().add(pnlRight, BorderLayout.EAST);
 		pnlRight.setLayout(new BorderLayout(0, 0));
 
@@ -455,6 +476,13 @@ public class MainForm extends MCUApp {
 		JScrollPane modScroller = new JScrollPane(pnlModList);
 		pnlRight.add(modScroller, BorderLayout.CENTER);
 		pnlModList.setLayout(new BoxLayout(pnlModList, BoxLayout.Y_AXIS));
+		
+		JPanel pnlUpdateOptions = new JPanel();
+		pnlRight.add(pnlUpdateOptions, BorderLayout.SOUTH);
+		pnlUpdateOptions.setLayout(new GridLayout(0, 1, 0, 0));
+		
+		chkHardUpdate = new JCheckBox("Perform \"hard\" update");
+		pnlUpdateOptions.add(chkHardUpdate);
 		browser.setEditable(false);
 		browser.setContentType("text/html");
 		browser.addHyperlinkListener(new HyperlinkListener(){
@@ -533,6 +561,7 @@ public class MainForm extends MCUApp {
 		btnBackups.setToolTipText("Backups");
 		toolBar.add(btnBackups);
 		
+		/*
 		JButton btnInsttest = new JButton("InstTest");
 		btnInsttest.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -541,12 +570,14 @@ public class MainForm extends MCUApp {
 			}
 		});
 		toolBar.add(btnInsttest);
+		*/
 		
 		Component horizontalGlue = Box.createHorizontalGlue();
 		toolBar.add(horizontalGlue);
 		
-		JLabel lblNewLabel = new JLabel("minecraft.jar version: " + mcu.getMCVersion());
-		toolBar.add(lblNewLabel);
+		//JLabel lblNewLabel = new JLabel("minecraft.jar version: " + mcu.getMCVersion());
+		//toolBar.add(lblNewLabel);
+		log("minecraft.jar version: " + mcu.getMCVersion());
 		
 		Component horizontalStrut_1 = Box.createHorizontalStrut(5);
 		toolBar.add(horizontalStrut_1);
@@ -575,12 +606,69 @@ public class MainForm extends MCUApp {
 		}
 
 		updateServerList();
-		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(config.getProperty("currentConfig"));
+		Properties instData = new Properties();
+		try {
+			instData.load(Files.newInputStream(new File(mcu.getMCFolder()).toPath().resolve("instance.dat")));
+		} catch (NoSuchFileException nsfe) {
+			instData.setProperty("serverID", "unmanaged");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(instData.getProperty("serverID"));
 		serverList.setSelectedIndex(selectIndex);
 		
 		initTray();
 	}
 
+	private void checkAccess() {
+		Path MCFolder = new File(mcu.getMCFolder()).toPath();
+		Path MCUFolder = mcu.getArchiveFolder().toPath();
+		Path InstancesFolder = mcu.getInstanceRoot().toPath();
+		Path testMCFile = MCFolder.resolve("MCUTest.dat");
+		Path testMCUFile = MCUFolder.resolve("MCUTest.dat");
+		Path testInstancesFile = InstancesFolder.resolve("MCUTest.dat");
+		Path testLink = MCUFolder.resolve("LinkTest.dat");
+		
+		try {
+			Files.createFile(testMCFile);
+			Files.delete(testMCFile);
+			canWriteMinecraft = true;
+		} catch (IOException ioe) {
+			canWriteMinecraft = false;
+		}
+		
+		try {
+			Files.createFile(testMCUFile);
+			canWriteMCUpdater = true;
+		} catch (IOException ioe) {
+			canWriteMCUpdater = false;
+		}
+		
+		try {
+			Files.createFile(testInstancesFile);
+			Files.delete(testInstancesFile);
+			canWriteInstances = true;
+		} catch (IOException ioe) {
+			canWriteInstances=false;
+		}
+		
+		try {
+			Files.createSymbolicLink(testLink, testMCUFile);
+			Files.delete(testLink);
+			canCreateLinks = true;
+		} catch (IOException ioe) {
+			canCreateLinks = false;
+		}
+		
+		try {
+			Files.delete(testMCUFile);
+		} catch (IOException e) {
+			// Ignore exception
+		}
+		
+	}
+	
 	protected boolean isVersionOld(String packVersion) {
 		if( packVersion == null ) return false;	// can't check anything if they don't tell us
 		String parts[] = packVersion.split("\\.");
@@ -604,31 +692,76 @@ public class MainForm extends MCUApp {
 			selected = entry;
 			browser.setPage(entry.getNewsUrl());
 			frmMain.setTitle(entry.getName() + " - MCUpdater " + MainForm.VERSION + MainForm.BUILD_LABEL);
-			List<Module> modules = mcu.loadFromURL(entry.getPackUrl(), entry.getServerId());
-			Iterator<Module> itMods = modules.iterator();
-			pnlModList.setVisible(false);
-			pnlModList.removeAll();
-			while(itMods.hasNext())
-			{
-				Module modEntry = itMods.next();
-				JModuleCheckBox chkModule = new JModuleCheckBox(modEntry.getName());
-				if(modEntry.getInJar())
+			if (!selected.getServerId().equals("unmanaged")) {
+				List<Module> modules = mcu.loadFromURL(entry.getPackUrl(), entry.getServerId());
+				Iterator<Module> itMods = modules.iterator();
+				pnlModList.setVisible(false);
+				pnlModList.removeAll();
+				while(itMods.hasNext())
 				{
-					chkModule.setFont(chkModule.getFont().deriveFont(Font.BOLD));
+					Module modEntry = itMods.next();
+					JModuleCheckBox chkModule = new JModuleCheckBox(modEntry.getName());
+					if(modEntry.getInJar())
+					{
+						chkModule.setFont(chkModule.getFont().deriveFont(Font.BOLD));
+					}
+					chkModule.setModule(modEntry);
+					if(modEntry.getRequired())
+					{
+						chkModule.setSelected(true);
+						chkModule.setEnabled(false);
+					}
+					if(modEntry.getIsDefault())
+					{
+						chkModule.setSelected(true);
+					}
+					pnlModList.add(chkModule);
 				}
-				chkModule.setModule(modEntry);
-				if(modEntry.getRequired())
-				{
-					chkModule.setSelected(true);
-					chkModule.setEnabled(false);
-				}
-				if(modEntry.getIsDefault())
-				{
-					chkModule.setSelected(true);
-				}
-				pnlModList.add(chkModule);
+				pnlModList.setVisible(true);
+				pnlRight.setVisible(true);
+				btnUpdate.setEnabled(true);
+			} else {
+				pnlModList.removeAll();
+				pnlRight.setVisible(false);
+				btnUpdate.setEnabled(false);
 			}
-			pnlModList.setVisible(true);
+			
+			Path instancePath;
+			InstanceManager instance = new InstanceManager(mcu);
+			if ( Files.notExists( mcu.getInstanceRoot().toPath().resolve(selected.getServerId()) ) ) {
+				instancePath = instance.createInstance(selected.getServerId());
+			} else {
+				instancePath = mcu.getInstanceRoot().toPath().resolve(selected.getServerId());
+			}
+			try {
+				Path MCPath = new File(mcu.getMCFolder()).toPath();
+				if (Files.exists(MCPath)) {
+					if (Files.isSymbolicLink(MCPath)) {
+						Files.delete(MCPath);
+					} else {
+						Path instDataPath = MCPath.resolve("instance.dat");
+						boolean instanceDataExists = Files.exists(instDataPath);
+						if (instanceDataExists) {
+							//TODO read instance data
+							Properties instProp = new Properties();
+							instProp.load(Files.newInputStream(instDataPath));
+							Path oldInstance = mcu.getInstanceRoot().toPath().resolve(instProp.getProperty("serverID"));
+							removeAndPrepareFolder(MCPath, oldInstance, false);
+						} else {
+							removeAndPrepareFolder(MCPath, mcu.getInstanceRoot().toPath().resolve("unmanaged"), true);
+						}
+					}
+				}
+				if (canCreateLinks) {
+					instance.createLink(MCPath, instancePath);
+				} else {
+					copyInstanceFolder(instancePath, MCPath);
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return;
+			}
 			
 			// switching servers should show news
 			if( tabs != null ) {
@@ -642,6 +775,42 @@ public class MainForm extends MCUApp {
 
 	}
 
+	private void copyInstanceFolder(Path instancePath, Path MCPath) {
+		CopyFiles cf = new CopyFiles(instancePath, MCPath);
+		try {
+			Files.walkFileTree(instancePath, cf);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	private void removeAndPrepareFolder(Path MCPath, Path instancePath, boolean prepareInstance) {
+		
+		if (!Files.exists(instancePath)) {
+			try {
+				Files.createDirectory(instancePath);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		PrepareFiles pf = new PrepareFiles(MCPath, instancePath, prepareInstance);
+		try {
+			Files.walkFileTree(MCPath, pf);
+			Path instanceFile = instancePath.resolve("instance.dat");
+			if (!Files.exists(instanceFile)) {
+				Files.createFile(instanceFile);
+				Properties instData = new Properties();
+				instData.setProperty("serverID", "unmanaged");
+				instData.setProperty("revision", "0");
+				instData.store(Files.newOutputStream(instanceFile), "Instance data");
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 	public void updateServerList()
 	{
 		serverList.setVisible(false);
@@ -657,6 +826,7 @@ public class MainForm extends MCUApp {
 				ServerList entry = it.next();
 				slModel.add(new ServerListPacket(entry, mcu));
 			}
+			slModel.add(new ServerListPacket(new ServerList("unmanaged","Unmanaged","http://www.example.org/ServerPack.xml","http://mcupdater.net46.net","","","",false,"0"), mcu));
 		}
 		serverList.setVisible(true);
 	}
@@ -700,12 +870,13 @@ public class MainForm extends MCUApp {
 		final PopupMenu menu = new PopupMenu();
 		
 		final MenuItem restoreItem = new MenuItem("Restore MCU");
-		restoreItem.addActionListener(new ActionListener(){
+		ActionListener restoreAL = new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				restore();
 			}
-		});
+		};
+		restoreItem.addActionListener(restoreAL);
 		final MenuItem killItem = new MenuItem("Kill Minecraft");
 		killItem.setEnabled(false);
 		
@@ -713,6 +884,7 @@ public class MainForm extends MCUApp {
 		menu.add(killItem);
 		
 		trayIcon.setPopupMenu(menu);
+		trayIcon.addActionListener(restoreAL);
 		
 		try {
 			tray.add(trayIcon);
