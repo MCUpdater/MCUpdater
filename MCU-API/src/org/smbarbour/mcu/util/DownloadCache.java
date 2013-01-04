@@ -15,6 +15,7 @@ public class DownloadCache {
 	
 	private DownloadCache(File dir) {
 		this.dir = dir;
+		this.dir.mkdirs();
 	}
 	
 	public static void init(File dir) {

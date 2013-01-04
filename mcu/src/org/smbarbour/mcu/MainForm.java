@@ -40,6 +40,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileAttribute;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -75,6 +76,12 @@ import javax.swing.ImageIcon;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
+	
+	//Access check booleans
+	private boolean canWriteMinecraft = false;
+	private boolean canWriteMCUpdater = false;
+	private boolean canWriteInstances = false;
+	private boolean canCreateLinks = false;
 	
 	public static final int BUILD_VERSION;
 	static {
@@ -216,6 +223,9 @@ public class MainForm extends MCUApp {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
+		checkAccess();
+		System.out.println("Access checks: MC-" + canWriteMinecraft + " MCU-" + canWriteMCUpdater + " Instance-" + canWriteInstances + " SymLink-" + canCreateLinks);
+
 		frmMain = new JFrame();
 		frmMain.setTitle("[No Server Selected] - MCUpdater " + MainForm.VERSION);
 		frmMain.setResizable(false);
@@ -573,6 +583,54 @@ public class MainForm extends MCUApp {
 		initTray();
 	}
 
+	private void checkAccess() {
+		Path MCFolder = new File(mcu.getMCFolder()).toPath();
+		Path MCUFolder = mcu.getArchiveFolder().toPath();
+		Path InstancesFolder = mcu.getInstanceRoot().toPath();
+		Path testMCFile = MCFolder.resolve("MCUTest.dat");
+		Path testMCUFile = MCUFolder.resolve("MCUTest.dat");
+		Path testInstancesFile = InstancesFolder.resolve("MCUTest.dat");
+		Path testLink = MCUFolder.resolve("LinkTest.dat");
+		
+		try {
+			Files.createFile(testMCFile);
+			Files.delete(testMCFile);
+			canWriteMinecraft = true;
+		} catch (IOException ioe) {
+			canWriteMinecraft = false;
+		}
+		
+		try {
+			Files.createFile(testMCUFile);
+			canWriteMCUpdater = true;
+		} catch (IOException ioe) {
+			canWriteMCUpdater = false;
+		}
+		
+		try {
+			Files.createFile(testInstancesFile);
+			Files.delete(testInstancesFile);
+			canWriteInstances = true;
+		} catch (IOException ioe) {
+			canWriteInstances=false;
+		}
+		
+		try {
+			Files.createSymbolicLink(testLink, testMCUFile);
+			Files.delete(testLink);
+			canCreateLinks = true;
+		} catch (IOException ioe) {
+			canCreateLinks = false;
+		}
+		
+		try {
+			Files.delete(testMCUFile);
+		} catch (IOException e) {
+			// Ignore exception
+		}
+		
+	}
+	
 	protected boolean isVersionOld(String packVersion) {
 		if( packVersion == null ) return false;	// can't check anything if they don't tell us
 		String parts[] = packVersion.split("\\.");

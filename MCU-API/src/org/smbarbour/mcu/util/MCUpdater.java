@@ -83,7 +83,7 @@ public class MCUpdater {
 		}
 		// configure the download cache
 		try {
-			DownloadCache.init(new File(MCFolder + sep + "mcu" + sep + "cache"));
+			DownloadCache.init(new File(archiveFolder,"cache"));
 		} catch (IllegalArgumentException e) {
 			_debug( "Suppressed attempt to re-init download cache?!" );
 		}
