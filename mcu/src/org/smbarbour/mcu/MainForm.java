@@ -175,8 +175,8 @@ public class MainForm extends MCUApp {
 		Properties newConfig = new Properties();
 		newConfig.setProperty("minimumMemory", "512M");
 		newConfig.setProperty("maximumMemory", "1G");
-		newConfig.setProperty("currentConfig", "");
-		newConfig.setProperty("packRevision","");
+		//newConfig.setProperty("currentConfig", "");
+		//newConfig.setProperty("packRevision","");
 		newConfig.setProperty("suppressUpdates", "false");
 		newConfig.setProperty("instanceRoot", (new File(mcu.getArchiveFolder(),"instances")).getAbsolutePath());
 		try {
@@ -194,8 +194,8 @@ public class MainForm extends MCUApp {
 		boolean hasChanged = false;
 		if (current.getProperty("minimumMemory") == null) {	current.setProperty("minimumMemory", "512M"); hasChanged = true; }
 		if (current.getProperty("maximumMemory") == null) {	current.setProperty("maximumMemory", "1G"); hasChanged = true; }
-		if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; }
-		if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; }
+		//if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; }
+		//if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; }
 		if (current.getProperty("suppressUpdates") == null) { current.setProperty("suppressUpdates", "false"); hasChanged = true; }
 		if (current.getProperty("instanceRoot") == null) { current.setProperty("instanceRoot", (new File(mcu.getArchiveFolder(),"instances")).getAbsolutePath()); }
 		return hasChanged;
@@ -259,22 +259,6 @@ public class MainForm extends MCUApp {
 			public void actionPerformed(ActionEvent e) {
 				new Thread() {
 					public void run() {
-						Path instancePath;
-						InstanceManager instance = new InstanceManager(mcu);
-						if ( Files.notExists( mcu.getInstanceRoot().toPath().resolve(selected.getServerId()) ) ) {
-							instancePath = instance.createInstance(selected.getServerId());
-						} else {
-							instancePath = mcu.getInstanceRoot().toPath().resolve(selected.getServerId());
-						}
-						try {
-							Path MCPath = new File(mcu.getMCFolder()).toPath();
-							if (Files.exists(MCPath)) { Files.delete(MCPath); }
-							instance.createLink(MCPath, instancePath);
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-							return;
-						}
 						btnUpdate.setEnabled(false);
 						btnLaunchMinecraft.setEnabled(false);
 						mcu.getMCVersion();
@@ -699,6 +683,43 @@ public class MainForm extends MCUApp {
 			}
 			pnlModList.setVisible(true);
 			
+			Path instancePath;
+			InstanceManager instance = new InstanceManager(mcu);
+			if ( Files.notExists( mcu.getInstanceRoot().toPath().resolve(selected.getServerId()) ) ) {
+				instancePath = instance.createInstance(selected.getServerId());
+			} else {
+				instancePath = mcu.getInstanceRoot().toPath().resolve(selected.getServerId());
+			}
+			try {
+				Path MCPath = new File(mcu.getMCFolder()).toPath();
+				if (Files.exists(MCPath)) {
+					if (Files.isSymbolicLink(MCPath)) {
+						Files.delete(MCPath);
+					} else {
+						Path instDataPath = MCPath.resolve("instance.dat");
+						boolean instanceDataExists = Files.exists(instDataPath);
+						if (instanceDataExists) {
+							//TODO read instance data
+							Properties instProp = new Properties();
+							instProp.load(Files.newInputStream(instDataPath));
+							Path oldInstance = mcu.getInstanceRoot().toPath().resolve(instProp.getProperty("ServerID"));
+							removeAndPrepareFolder(MCPath, instancePath, false);
+						} else {
+							removeAndPrepareFolder(MCPath, )
+						}
+					}
+				}
+				if (canCreateLinks) {
+					instance.createLink(MCPath, instancePath);
+				} else {
+					copyInstanceFolder(instancePath, MCPath);
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return;
+			}
+			
 			// switching servers should show news
 			if( tabs != null ) {
 				tabs.setSelectedIndex(0);
@@ -711,6 +732,38 @@ public class MainForm extends MCUApp {
 
 	}
 
+	private void copyInstanceFolder(Path instancePath, Path MCPath) {
+		CopyFiles cf = new CopyFiles(instancePath, MCPath);
+		try {
+			Files.walkFileTree(instancePath, cf);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	private void removeAndPrepareFolder(Path MCPath, Path instancePath, boolean prepareInstance) {
+		
+		if (!Files.exists(instancePath)) {
+			try {
+				Files.createDirectory(instancePath);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		PrepareFiles pf = new PrepareFiles(MCPath, instancePath, prepareInstance);
+		try {
+			Files.walkFileTree(MCPath, pf);
+			Path instanceFile = instancePath.resolve("instance.dat");
+			if (!Files.exists(instanceFile)) {
+				Files.createFile(instanceFile);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 	public void updateServerList()
 	{
 		serverList.setVisible(false);

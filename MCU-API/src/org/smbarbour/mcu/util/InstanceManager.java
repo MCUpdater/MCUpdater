@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 
@@ -39,6 +40,7 @@ public class InstanceManager {
 		try {
 			Path instance = parent.getInstanceRoot().toPath().resolve(instanceName);
 			Files.createDirectories(instance);
+			Files.createFile(instance.resolve("instance.dat"));
 			Path binPath = Files.createDirectory(instance.resolve("bin"));
 			Path nativesPath = Files.createDirectory(binPath.resolve("natives"));
 			String baseURL = "http://s3.amazonaws.com/MinecraftDownload/";
