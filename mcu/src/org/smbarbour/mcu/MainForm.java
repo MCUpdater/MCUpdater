@@ -39,6 +39,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileAttribute;
 import java.text.SimpleDateFormat;
@@ -607,6 +608,8 @@ public class MainForm extends MCUApp {
 		Properties instData = new Properties();
 		try {
 			instData.load(Files.newInputStream(new File(mcu.getMCFolder()).toPath().resolve("instance.dat")));
+		} catch (NoSuchFileException nsfe) {
+			instData.setProperty("serverID", "unmanaged");
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
