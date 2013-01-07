@@ -620,6 +620,8 @@ public class MCUpdater {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 			folder = new File(MCFolder);
+		} catch (UnsupportedOperationException uoe) {
+			folder = new File(MCFolder);
 		}
 		System.out.println(folder.getAbsolutePath());
 		List<File> contents = recurseFolder(folder, true);
