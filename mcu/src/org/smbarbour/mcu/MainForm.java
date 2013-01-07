@@ -648,6 +648,8 @@ public class MainForm extends MCUApp {
 			canCreateLinks = true;
 		} catch (IOException ioe) {
 			canCreateLinks = false;
+		} catch (UnsupportedOperationException uoe) {
+			canCreateLinks = false;
 		}
 		
 		try {
