@@ -8,6 +8,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -20,6 +21,8 @@ import javax.swing.border.EmptyBorder;
 
 import org.smbarbour.mcu.MCLoginException.ResponseType;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 public class LoginForm extends JDialog {
 
@@ -27,17 +30,6 @@ public class LoginForm extends JDialog {
 	private final JPanel contentPanel = new JPanel();
 	private JTextField txtUsername;
 	private JPasswordField txtPassword;
-
-
-	public static void main(String[] args) {
-		try {
-			LoginForm dialog = new LoginForm();
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
 
 	/**
 	 * Create the dialog.
@@ -122,6 +114,23 @@ public class LoginForm extends JDialog {
 			{
 				JButton okButton = new JButton("OK");
 				okButton.setActionCommand("OK");
+				okButton.addActionListener(new ActionListener() {
+
+					@Override
+					public void actionPerformed(ActionEvent arg0) {
+						try {
+							HashMap<String,String> response = login(txtUsername.getText(), String.valueOf(txtPassword.getPassword()));
+							for (Map.Entry<String, String> responseEntry : response.entrySet()) {
+								System.out.println(responseEntry.getKey() + ": " + responseEntry.getValue());
+							}
+						} catch (MCLoginException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						
+					}
+					
+				});
 				buttonPane.add(okButton);
 				getRootPane().setDefaultButton(okButton);
 			}
@@ -135,7 +144,7 @@ public class LoginForm extends JDialog {
 
 	}
 
-	public boolean login(String username, String password) throws MCLoginException {
+	public HashMap<String,String> login(String username, String password) throws MCLoginException {
 	    try {
 	      HashMap<String, Object> localHashMap = new HashMap<String, Object>();
 	      localHashMap.put("user", username);
@@ -164,7 +173,7 @@ public class LoginForm extends JDialog {
 	      loginParams.put("latestVersion", arrayOfString[0].trim());
 	      loginParams.put("downloadTicket", arrayOfString[1].trim());
 	      loginParams.put("sessionId", arrayOfString[3].trim());
-	      return true;
+	      return loginParams;
 	    } catch (Exception localException) {
 	      localException.printStackTrace();
 	      throw new MCLoginException(localException.toString());

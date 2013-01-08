@@ -561,6 +561,15 @@ public class MainForm extends MCUApp {
 		toolBar.add(btnInsttest);
 		*/
 		
+		JButton btnLoginTest = new JButton("Login Test");
+		btnLoginTest.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				LoginForm lf = new LoginForm();
+				lf.setVisible(true);
+			}
+		});
+		toolBar.add(btnLoginTest);
+		
 		Component horizontalGlue = Box.createHorizontalGlue();
 		toolBar.add(horizontalGlue);
 		
