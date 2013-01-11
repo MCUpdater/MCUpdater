@@ -3,27 +3,29 @@ package org.smbarbour.mcu;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
 
+import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
 
 import org.smbarbour.mcu.MCLoginException.ResponseType;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.awt.Font;
 import java.awt.Color;
 import java.awt.Toolkit;
@@ -36,6 +38,7 @@ public class LoginForm extends JDialog {
 	private JTextField txtUsername;
 	private JPasswordField txtPassword;
 	private JLabel lblStatus;
+	private JButton cancelButton;
 	/**
 	 * Create the dialog.
 	 */
@@ -140,13 +143,13 @@ public class LoginForm extends JDialog {
 					buttonPane.add(lblStatus, gbc_lblStatus);
 				}
 				{
-					JButton cancelButton = new JButton("Cancel");
+					cancelButton = new JButton("Cancel");
 					cancelButton.setActionCommand("Cancel");
 					cancelButton.addActionListener(new ActionListener() {
 
 						@Override
 						public void actionPerformed(ActionEvent e) {
-							window.dispose();
+							onCancel(window);
 						}
 						
 					});
@@ -193,6 +196,28 @@ public class LoginForm extends JDialog {
 		}
 		setSize(this.getWidth() + (int)buttonPane.getMinimumSize().getWidth(), this.getHeight() + (int)contentPanel.getMinimumSize().getHeight());
 
+		getRootPane().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "CANCEL");
+		getRootPane().getActionMap().put("CANCEL", new AbstractAction(){
+
+			private static final long serialVersionUID = -5137929722752752866L;
+
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				onCancel(window);
+			}
+		});
+		
+		this.addWindowListener( new WindowAdapter() {
+			public void windowOpened( WindowEvent e ){
+				if (!txtUsername.getText().isEmpty()) {
+					txtPassword.requestFocus();
+				}				
+			}
+		});
+	}
+
+	protected void onCancel(LoginForm window) {
+		window.dispose();		
 	}
 
 	public LoginData login(String username, String password) throws MCLoginException {

@@ -336,8 +336,13 @@ public class MainForm extends MCUApp {
 		btnLaunchMinecraft.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (loginData.getUserName().isEmpty()) {
-					JOptionPane.showMessageDialog(null,"You must login first.","MCUpdater",JOptionPane.ERROR_MESSAGE);
-					return;
+					LoginForm login = new LoginForm(window);
+					login.setModal(true);
+					login.setVisible(true);
+					if (loginData.getUserName().isEmpty()) {
+						JOptionPane.showMessageDialog(null,"You must login first.","MCUpdater",JOptionPane.ERROR_MESSAGE);
+						return;
+					}
 				}
 /*
 				File launcher = new File(mcu.getMCFolder() + MCUpdater.sep + "minecraft.jar");
