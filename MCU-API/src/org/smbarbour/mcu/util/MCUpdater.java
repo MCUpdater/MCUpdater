@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.io.*;
@@ -665,6 +666,16 @@ public class MCUpdater {
 			buildJar.delete();
 		}
 		Archive.extractZip(jar, tmpFolder);
+		
+		File branding = new File(tmpFolder, "fmlbranding.properties");
+		try {
+			branding.createNewFile();
+			Properties propBrand = new Properties();
+			propBrand.setProperty("fmlbranding", "MCUpdater: " + server.getName() + " (rev " + server.getRevision() + ")");
+			propBrand.store(new FileOutputStream(branding), "MCUpdater ServerPack branding");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 		
 		int modCount = toInstall.size();
 		int modsLoaded = 0;
