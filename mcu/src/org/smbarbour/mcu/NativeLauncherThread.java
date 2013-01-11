@@ -96,7 +96,7 @@ public class NativeLauncherThread implements Runnable {
 		sbClassPath.append(MCUpdater.cpDelimiter() + mcBinPath + "lwjgl_util.jar");
 		sbClassPath.append(MCUpdater.cpDelimiter() + mcBinPath + "jinput.jar");
 		
-		String jlp = "-Djava.library.path=" + ((mcBinPath.contains(" ")) ? "\"" : "") + mcBinPath + "natives" + ((mcBinPath.contains(" ")) ? "\"" : "");
+		String jlp = "-Djava.library.path=" + handleWhitespace(mcBinPath + "natives");
 		String className = "net.minecraft.client.Minecraft";
 		
 		List<String> args = new ArrayList<String>();
@@ -175,6 +175,15 @@ public class NativeLauncherThread implements Runnable {
 
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
+		}
+	}
+
+	private String handleWhitespace(String path) {
+		String osName = System.getProperty("os.name");
+		if (osName.startsWith("Windows")) {
+			return "\"" + path + "\"";
+		} else {
+			return path.replace(" ", "\\ ");
 		}
 	}
 
