@@ -32,6 +32,7 @@ public class LoginForm extends JDialog {
 
 	private static final long serialVersionUID = 494448102754040724L;
 	private final JPanel contentPanel = new JPanel();
+	private final JPanel buttonPane = new JPanel();
 	private JTextField txtUsername;
 	private JPasswordField txtPassword;
 	private JLabel lblStatus;
@@ -43,7 +44,7 @@ public class LoginForm extends JDialog {
 		setTitle("Minecraft Login");
 		this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		final LoginForm window = this;
-		setBounds(100, 100, 250, 75);
+		setBounds(100, 100, 0, 75);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);
@@ -116,7 +117,6 @@ public class LoginForm extends JDialog {
 				}
 		
 		{
-			JPanel buttonPane = new JPanel();
 			buttonPane.setBorder(new EmptyBorder(0, 5, 5, 5));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
@@ -191,7 +191,7 @@ public class LoginForm extends JDialog {
 				}
 			}
 		}
-		setSize(320, 125);
+		setSize(this.getWidth() + (int)buttonPane.getMinimumSize().getWidth(), this.getHeight() + (int)contentPanel.getMinimumSize().getHeight());
 
 	}
 

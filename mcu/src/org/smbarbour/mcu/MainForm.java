@@ -132,7 +132,7 @@ public class MainForm extends MCUApp {
 	private ImageIcon mcuIcon;
 	private JLabel lblPlayerName2;
 
-	private LoginData loginData;
+	private LoginData loginData = new LoginData();
 	
 	public ResourceBundle getCustomization(){
 		return Customization;
@@ -335,6 +335,11 @@ public class MainForm extends MCUApp {
 		btnLaunchMinecraft = new JButton("Launch Minecraft");
 		btnLaunchMinecraft.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (loginData.getUserName().isEmpty()) {
+					JOptionPane.showMessageDialog(null,"You must login first.","MCUpdater",JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+/*
 				File launcher = new File(mcu.getMCFolder() + MCUpdater.sep + "minecraft.jar");
 				if(!launcher.exists())
 				{
@@ -351,6 +356,7 @@ public class MainForm extends MCUApp {
 						ioe.printStackTrace();
 					}
 				}
+*/
 				File outFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "client-log.txt");
 				outFile.delete();
 				btnLaunchMinecraft.setEnabled(false);
@@ -431,7 +437,7 @@ public class MainForm extends MCUApp {
 					
 					String warningMessage = null;
 					if( needUpdate ) {
-						warningMessage = "Your configuration is out of sync with the server. Updating is necessary.";
+						warningMessage = "Your configuration is out of sync with the server. UpI could mindlessly churn out database GUIsdating is necessary.";
 					} else if( needMCUUpgrade ) {
 						warningMessage = "The server requires a newer version of MCUpdater than you currently have installed.\nPlease upgrade as soon as possible, things are not likely to update correctly otherwise.";
 					}

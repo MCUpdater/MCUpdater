@@ -1,9 +1,9 @@
 package org.smbarbour.mcu;
 
 public class LoginData {
-	private String userName;
-	private String latestVersion;
-	private String sessionId;
+	private String userName = "";
+	private String latestVersion = "";
+	private String sessionId = "";
 
 	public LoginData() {
 	}

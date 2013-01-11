@@ -96,7 +96,7 @@ public class NativeLauncherThread implements Runnable {
 		sbClassPath.append(MCUpdater.cpDelimiter() + mcBinPath + "lwjgl_util.jar");
 		sbClassPath.append(MCUpdater.cpDelimiter() + mcBinPath + "jinput.jar");
 		
-		String jlp = "-Djava.library.path=\"" + mcBinPath + MCUpdater.sep + "natives\"";
+		String jlp = "-Djava.library.path=" + ((mcBinPath.contains(" ")) ? "\"" : "") + mcBinPath + "natives" + ((mcBinPath.contains(" ")) ? "\"" : "");
 		String className = "net.minecraft.client.Minecraft";
 		
 		List<String> args = new ArrayList<String>();
@@ -112,6 +112,8 @@ public class NativeLauncherThread implements Runnable {
 		args.add(className);
 		args.add(session.getUserName());
 		args.add(session.getSessionId());
+		
+		//System.out.println(args.toString());
 		
 		ProcessBuilder pb = new ProcessBuilder(args);
 		pb.redirectErrorStream(true);
