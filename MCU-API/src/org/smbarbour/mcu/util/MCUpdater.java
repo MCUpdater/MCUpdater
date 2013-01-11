@@ -52,6 +52,15 @@ public class MCUpdater {
 		return INSTANCE;
 	}
 	
+	public static String cpDelimiter() {
+		String osName = System.getProperty("os.name");
+		if (osName.startsWith("Windows")) {
+			return ";";
+		} else {
+			return ":";
+		}
+	}
+	
 	private MCUpdater()
 	{
 		try {
