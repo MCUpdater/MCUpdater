@@ -25,4 +25,5 @@ public class MCLoginException extends Exception {
 	public MCLoginException(String message) {
 		super(message);
 	}
+	
 }

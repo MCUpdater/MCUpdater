@@ -9,6 +9,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -23,6 +24,9 @@ import org.smbarbour.mcu.MCLoginException.ResponseType;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.Font;
+import java.awt.Color;
+import java.awt.Toolkit;
 
 public class LoginForm extends JDialog {
 
@@ -30,11 +34,15 @@ public class LoginForm extends JDialog {
 	private final JPanel contentPanel = new JPanel();
 	private JTextField txtUsername;
 	private JPasswordField txtPassword;
-
+	private JLabel lblStatus;
 	/**
 	 * Create the dialog.
 	 */
-	public LoginForm() {
+	public LoginForm(final MainForm parent) {
+		setIconImage(Toolkit.getDefaultToolkit().getImage(LoginForm.class.getResource("/art/mcu-icon.png")));
+		setTitle("Minecraft Login");
+		this.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+		final LoginForm window = this;
 		setBounds(100, 100, 250, 75);
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -88,7 +96,7 @@ public class LoginForm extends JDialog {
 			contentPanel.add(lblPassword, gbc_lblPassword);
 		}
 		{
-			txtUsername = new JTextField();
+			txtUsername = new JTextField(parent.getConfig().getProperty("userName",""));
 			GridBagConstraints gbc_txtUsername = new GridBagConstraints();
 			gbc_txtUsername.anchor = GridBagConstraints.NORTH;
 			gbc_txtUsername.fill = GridBagConstraints.HORIZONTAL;
@@ -109,42 +117,85 @@ public class LoginForm extends JDialog {
 		
 		{
 			JPanel buttonPane = new JPanel();
-			buttonPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
+			buttonPane.setBorder(new EmptyBorder(0, 5, 5, 5));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
 			{
-				JButton okButton = new JButton("OK");
-				okButton.setActionCommand("OK");
-				okButton.addActionListener(new ActionListener() {
+				GridBagLayout gbl_buttonPane = new GridBagLayout();
+				gbl_buttonPane.columnWidths = new int[]{78, 78, 78, 0, 0};
+				gbl_buttonPane.rowHeights = new int[]{23, 0};
+				gbl_buttonPane.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+				gbl_buttonPane.rowWeights = new double[]{0.0, Double.MIN_VALUE};
+				buttonPane.setLayout(gbl_buttonPane);
+				{
+					lblStatus = new JLabel("");
+					lblStatus.setForeground(Color.RED);
+					lblStatus.setFont(new Font("Tahoma", Font.BOLD, 12));
+					GridBagConstraints gbc_lblStatus = new GridBagConstraints();
+					gbc_lblStatus.anchor = GridBagConstraints.WEST;
+					gbc_lblStatus.gridwidth = 2;
+					gbc_lblStatus.fill = GridBagConstraints.BOTH;
+					gbc_lblStatus.insets = new Insets(0, 0, 0, 5);
+					gbc_lblStatus.gridx = 0;
+					gbc_lblStatus.gridy = 0;
+					buttonPane.add(lblStatus, gbc_lblStatus);
+				}
+				{
+					JButton cancelButton = new JButton("Cancel");
+					cancelButton.setActionCommand("Cancel");
+					cancelButton.addActionListener(new ActionListener() {
 
-					@Override
-					public void actionPerformed(ActionEvent arg0) {
-						try {
-							HashMap<String,String> response = login(txtUsername.getText(), String.valueOf(txtPassword.getPassword()));
-							for (Map.Entry<String, String> responseEntry : response.entrySet()) {
-								System.out.println(responseEntry.getKey() + ": " + responseEntry.getValue());
-							}
-						} catch (MCLoginException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							window.dispose();
 						}
 						
-					}
-					
-				});
-				buttonPane.add(okButton);
-				getRootPane().setDefaultButton(okButton);
-			}
-			{
-				JButton cancelButton = new JButton("Cancel");
-				cancelButton.setActionCommand("Cancel");
-				buttonPane.add(cancelButton);
+					});
+					JButton okButton = new JButton("OK");
+					okButton.setActionCommand("OK");
+					okButton.addActionListener(new ActionListener() {
+
+						@Override
+						public void actionPerformed(ActionEvent arg0) {
+							try {
+								getContentPane().setEnabled(false);
+								LoginData response = login(txtUsername.getText(), String.valueOf(txtPassword.getPassword()));
+								parent.setLoginData(response);
+								parent.getConfig().setProperty("userName", txtUsername.getText());
+								parent.writeConfig(parent.getConfig());
+								parent.setPlayerName(response.getUserName());
+								window.dispose();
+								
+							} catch (MCLoginException e) {
+								lblStatus.setText(e.getMessage());
+							} finally {
+								getContentPane().setEnabled(true);
+							}
+							
+						}
+						
+					});
+					GridBagConstraints gbc_okButton = new GridBagConstraints();
+					gbc_okButton.anchor = GridBagConstraints.EAST;
+					gbc_okButton.fill = GridBagConstraints.BOTH;
+					gbc_okButton.insets = new Insets(0, 0, 0, 5);
+					gbc_okButton.gridx = 2;
+					gbc_okButton.gridy = 0;
+					buttonPane.add(okButton, gbc_okButton);
+					getRootPane().setDefaultButton(okButton);
+					GridBagConstraints gbc_cancelButton = new GridBagConstraints();
+					gbc_cancelButton.anchor = GridBagConstraints.EAST;
+					gbc_cancelButton.fill = GridBagConstraints.BOTH;
+					gbc_cancelButton.gridx = 3;
+					gbc_cancelButton.gridy = 0;
+					buttonPane.add(cancelButton, gbc_cancelButton);				
+				}
 			}
 		}
-		setSize(this.getWidth(), this.getHeight() + (int)contentPanel.getMinimumSize().getHeight());
+		setSize(320, 125);
 
 	}
 
-	public HashMap<String,String> login(String username, String password) throws MCLoginException {
+	public LoginData login(String username, String password) throws MCLoginException {
 	    try {
 	      HashMap<String, Object> localHashMap = new HashMap<String, Object>();
 	      localHashMap.put("user", username);
@@ -168,15 +219,25 @@ public class LoginForm extends JDialog {
 	      }
 	      String[] arrayOfString = str.split(":");
 
+/*
 	      HashMap<String,String> loginParams = new HashMap<String, String>();
 	      loginParams.put("userName", arrayOfString[2].trim());
 	      loginParams.put("latestVersion", arrayOfString[0].trim());
 	      loginParams.put("downloadTicket", arrayOfString[1].trim());
 	      loginParams.put("sessionId", arrayOfString[3].trim());
 	      return loginParams;
+	      */
+	      LoginData login = new LoginData();
+	      login.setUserName(arrayOfString[2].trim());
+	      login.setLatestVersion(arrayOfString[0].trim());
+	      login.setSessionId(arrayOfString[3].trim());
+	      return login;
+	      
+	    } catch (MCLoginException mcle) {
+	    	throw mcle;
 	    } catch (Exception localException) {
-	      localException.printStackTrace();
-	      throw new MCLoginException(localException.toString());
+	    	localException.printStackTrace();
+	    	throw localException;
 	    }
 	  }
 }

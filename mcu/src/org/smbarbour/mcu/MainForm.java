@@ -130,6 +130,9 @@ public class MainForm extends MCUApp {
 	private boolean minimized;
 	private TrayIcon trayIcon;
 	private ImageIcon mcuIcon;
+	private JLabel lblPlayerName2;
+
+	private LoginData loginData;
 	
 	public ResourceBundle getCustomization(){
 		return Customization;
@@ -561,21 +564,32 @@ public class MainForm extends MCUApp {
 		toolBar.add(btnInsttest);
 		*/
 		
-		JButton btnLoginTest = new JButton("Login Test");
-		btnLoginTest.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				LoginForm lf = new LoginForm();
-				lf.setVisible(true);
-			}
-		});
-		toolBar.add(btnLoginTest);
-		
 		Component horizontalGlue = Box.createHorizontalGlue();
 		toolBar.add(horizontalGlue);
 		
 		//JLabel lblNewLabel = new JLabel("minecraft.jar version: " + mcu.getMCVersion());
 		//toolBar.add(lblNewLabel);
 		log("minecraft.jar version: " + mcu.getMCVersion());
+		
+		JLabel lblPlayerName1 = new JLabel("Player name:  ");
+		toolBar.add(lblPlayerName1);
+		
+		lblPlayerName2 = new JLabel("Not Logged In");
+		toolBar.add(lblPlayerName2);
+		
+		JButton btnLogin = new JButton("");
+		btnLogin.setHorizontalAlignment(SwingConstants.TRAILING);
+		btnLogin.setIcon(new ImageIcon(MainForm.class.getResource("/icons/key.png")));
+		btnLogin.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				LoginForm lf = new LoginForm(window);
+				lf.setVisible(true);
+			}
+		});
+		
+		Component horizontalStrut_2 = Box.createHorizontalStrut(5);
+		toolBar.add(horizontalStrut_2);
+		toolBar.add(btnLogin);
 		
 		Component horizontalStrut_1 = Box.createHorizontalStrut(5);
 		toolBar.add(horizontalStrut_1);
@@ -841,6 +855,10 @@ public class MainForm extends MCUApp {
 		progressBar.setValue(value);
 	}
 	
+	public void setPlayerName(String playerName) {
+		this.lblPlayerName2.setText(playerName);
+	}
+	
 	@Override
 	public void log(String msg) {
 		final StringBuilder str = new StringBuilder(logSDF.format(new Date()));
@@ -912,6 +930,9 @@ public class MainForm extends MCUApp {
 		}
 		frmMain.setVisible(true);
 		frmMain.setState(Frame.NORMAL);
+	}
+	public void setLoginData(LoginData response) {
+		this.loginData = response;
 	}
 }
 
