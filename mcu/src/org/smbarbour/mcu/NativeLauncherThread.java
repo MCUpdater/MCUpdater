@@ -91,12 +91,12 @@ public class NativeLauncherThread implements Runnable {
 
 		StringBuilder sbClassPath = new StringBuilder();
 		String mcBinPath = parent.mcu.getMCFolder() + MCUpdater.sep + "bin" + MCUpdater.sep;
-		sbClassPath.append(MCUpdater.cpDelimiter() + mcBinPath + "minecraft.jar");
+		sbClassPath.append(mcBinPath + "minecraft.jar");
 		sbClassPath.append(MCUpdater.cpDelimiter() + mcBinPath + "lwjgl.jar");
 		sbClassPath.append(MCUpdater.cpDelimiter() + mcBinPath + "lwjgl_util.jar");
 		sbClassPath.append(MCUpdater.cpDelimiter() + mcBinPath + "jinput.jar");
 		
-		String jlp = "-Djava.library.path=\"" + binDir + MCUpdater.sep + "natives\"";
+		String jlp = "-Djava.library.path=\"" + mcBinPath + MCUpdater.sep + "natives\"";
 		String className = "net.minecraft.client.Minecraft";
 		
 		List<String> args = new ArrayList<String>();
@@ -104,9 +104,10 @@ public class NativeLauncherThread implements Runnable {
 		args.add("-XX:+UseConcMarkSweepGC");
 		args.add("-XX:+CMSIncrementalMode");
 		args.add("-XX:+AggressiveOpts");
-		args.add("-Xms=" + this.minMem);
-		args.add("-Xmx=" + this.maxMem);
-		args.add("-cp " + sbClassPath.toString());
+		args.add("-Xms" + this.minMem);
+		args.add("-Xmx" + this.maxMem);
+		args.add("-cp");
+		args.add(sbClassPath.toString());
 		args.add(jlp);
 		args.add(className);
 		args.add(session.getUserName());
