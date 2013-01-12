@@ -92,10 +92,10 @@ public class NativeLauncherThread implements Runnable {
 
 		StringBuilder sbClassPath = new StringBuilder();
 		String mcBinPath = parent.mcu.getMCFolder() + MCUpdater.sep + "bin" + MCUpdater.sep;
-		sbClassPath.append(mcBinPath + "minecraft.jar");
-		sbClassPath.append(MCUpdater.cpDelimiter() + mcBinPath + "lwjgl.jar");
-		sbClassPath.append(MCUpdater.cpDelimiter() + mcBinPath + "lwjgl_util.jar");
-		sbClassPath.append(MCUpdater.cpDelimiter() + mcBinPath + "jinput.jar");
+		sbClassPath.append(handleWhitespace(mcBinPath + "minecraft.jar"));
+		sbClassPath.append(MCUpdater.cpDelimiter() + handleWhitespace(mcBinPath + "lwjgl.jar"));
+		sbClassPath.append(MCUpdater.cpDelimiter() + handleWhitespace(mcBinPath + "lwjgl_util.jar"));
+		sbClassPath.append(MCUpdater.cpDelimiter() + handleWhitespace(mcBinPath + "jinput.jar"));
 		
 		String jlp = "-Djava.library.path=" + handleWhitespace(mcBinPath + "natives");
 		String className = "net.minecraft.client.Minecraft";
