@@ -34,10 +34,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -253,6 +249,10 @@ public class MainForm extends MCUApp {
 			public void actionPerformed(ActionEvent e) {
 				new Thread() {
 					public void run() {
+						if (!mcu.checkVersionCache(window, selected.getVersion())) {
+							JOptionPane.showMessageDialog(null, "Unable to validate Minecraft version!", "MCUpdater", JOptionPane.ERROR_MESSAGE);
+							return;
+						}
 						btnUpdate.setEnabled(false);
 						btnLaunchMinecraft.setEnabled(false);
 						mcu.getMCVersion();
@@ -335,10 +335,7 @@ public class MainForm extends MCUApp {
 		btnLaunchMinecraft = new JButton("Launch Minecraft");
 		btnLaunchMinecraft.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (loginData.getUserName().isEmpty()) {
-					LoginForm login = new LoginForm(window);
-					login.setModal(true);
-					login.setVisible(true);
+				if (!requestLogin()) {					
 					if (loginData.getUserName().isEmpty()) {
 						JOptionPane.showMessageDialog(null,"You must login first.","MCUpdater",JOptionPane.ERROR_MESSAGE);
 						return;
@@ -645,6 +642,18 @@ public class MainForm extends MCUApp {
 		initTray();
 	}
 
+	@Override
+	public boolean requestLogin() {
+		if (this.loginData.getUserName().isEmpty()) {
+			LoginForm login = new LoginForm(window);
+			login.setModal(true);
+			login.setVisible(true);
+			return !this.loginData.getUserName().isEmpty();
+		} else {
+			return true;
+		}
+	}
+	
 	private void checkAccess() {
 		Path MCFolder = new File(mcu.getMCFolder()).toPath();
 		Path MCUFolder = mcu.getArchiveFolder().toPath();

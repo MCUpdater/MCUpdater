@@ -43,6 +43,7 @@ public class MCUpdater {
 	public final static String sep = System.getProperty("file.separator");
 	public MessageDigest md5;
 	public ImageIcon defaultIcon;
+	private String newestMC = "";
 	
 	private static MCUpdater INSTANCE;
 
@@ -438,6 +439,7 @@ public class MCUpdater {
 				if(currentLine != null){
 					String entry[] = currentLine.split("\\|");
 					map.put(entry[0], entry[1]);
+					newestMC = entry[1]; // Most recent entry in md5.dat is the current release
 				} else {
 					break;
 				}
@@ -445,6 +447,7 @@ public class MCUpdater {
 			buffer.close();
 			input.close();
 			_debug("Took "+(System.currentTimeMillis()-start)+"ms to load md5.dat");
+			_debug("newest Minecraft in md5.dat: " + newestMC);
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -901,6 +904,43 @@ public class MCUpdater {
 	}
 	private static void _debug(String msg) {
 		System.out.println(msg);
+	}
+
+	public boolean checkVersionCache(MCUApp window, String version) {
+		File requestedJar = new File(archiveFolder, "mc-" + version + ".jar");
+		File newestJar = new File(archiveFolder, "mc-" + newestMC + ".jar");
+		if (requestedJar.exists()) return true;
+		if (newestJar.exists()) {
+			doPatch(requestedJar, newestJar, version);
+			return true;
+		} else {
+			if (window.requestLogin()) {
+				try {
+					FileUtils.copyURLToFile(new URL("http://assets.minecraft.net/" + newestMC.replace(".","_") + "/minecraft.jar"), newestJar);
+				} catch (MalformedURLException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				doPatch(requestedJar, newestJar, version);
+				return true;
+			} else {
+				return false;
+			}
+		}
+	}
+	
+	private void doPatch(File requestedJar, File newestJar, String version) {
+		try {
+			URL patchURL = new URL("http://mcupdater.net46.net/mcu_patches/" + newestMC.replace(".", "") + "to" + version.replace(".","") + ".patch");
+			_debug(patchURL.toString());
+			File patchFile = new File(archiveFolder, "temp.patch");
+			FileUtils.copyURLToFile(patchURL, patchFile);
+			Transmogrify.applyPatch(newestJar.toPath(), requestedJar.toPath(), patchFile.toPath());
+			patchFile.delete();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 }
