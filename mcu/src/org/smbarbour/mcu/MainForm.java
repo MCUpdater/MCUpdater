@@ -439,7 +439,7 @@ public class MainForm extends MCUApp {
 					
 					String warningMessage = null;
 					if( needUpdate ) {
-						warningMessage = "Your configuration is out of sync with the server. UpI could mindlessly churn out database GUIsdating is necessary.";
+						warningMessage = "Your configuration is out of sync with the server. Updating is necessary.";
 					} else if( needMCUUpgrade ) {
 						warningMessage = "The server requires a newer version of MCUpdater than you currently have installed.\nPlease upgrade as soon as possible, things are not likely to update correctly otherwise.";
 					}
