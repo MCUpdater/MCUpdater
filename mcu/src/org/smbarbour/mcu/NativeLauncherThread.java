@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.JButton;
@@ -113,7 +114,14 @@ public class NativeLauncherThread implements Runnable {
 		args.add(session.getUserName());
 		args.add(session.getSessionId());
 		
-		//System.out.println(args.toString());
+		if (!MainForm.BUILD_BRANCH.equals("master")) {
+			parent.log("Process args:");
+			Iterator<String> itArgs = args.iterator();
+			while (itArgs.hasNext()) {
+				String entry = itArgs.next();
+				parent.log(entry);
+			}
+		}
 		
 		ProcessBuilder pb = new ProcessBuilder(args);
 		pb.redirectErrorStream(true);
