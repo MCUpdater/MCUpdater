@@ -97,8 +97,8 @@ public class MainForm extends MCUApp {
 			BUILD_LABEL = " ("+BUILD_BRANCH+")";
 		}
 	}
-	public static final int MAJOR_VERSION = 1;
-	public static final int MINOR_VERSION = 37;
+	public static final int MAJOR_VERSION = 2;
+	public static final int MINOR_VERSION = 0;
 	private static final String VERSION = "v"+MAJOR_VERSION+"."+MINOR_VERSION+"."+BUILD_VERSION;
 	
 	private static MainForm window;
