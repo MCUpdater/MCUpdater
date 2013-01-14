@@ -98,7 +98,7 @@ public class MainForm extends MCUApp {
 		}
 	}
 	public static final int MAJOR_VERSION = 2;
-	public static final int MINOR_VERSION = 0;
+	public static final int MINOR_VERSION = 1;
 	private static final String VERSION = "v"+MAJOR_VERSION+"."+MINOR_VERSION+"."+BUILD_VERSION;
 	
 	private static MainForm window;
