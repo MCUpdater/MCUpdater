@@ -34,7 +34,7 @@ public class ClientConfig extends JDialog {
 	private JTextField txtMaximum;
 	private JTextField txtJavaPath;
 	private JCheckBox chckbxMinimize;
-	private JCheckBox chckbxSuppressVanillaUpdate;
+	//private JCheckBox chckbxSuppressVanillaUpdate;
 	private JTextField txtInstanceRoot;
 
 	/**
@@ -255,6 +255,7 @@ public class ClientConfig extends JDialog {
 			contentPanel.add(chckbxMinimize, gbc_chckbxMinimize);
 		}
 		
+		/* This option is obsolete with native launcher
 		// Suppress update
 		++row;
 		{
@@ -268,6 +269,7 @@ public class ClientConfig extends JDialog {
 			chckbxSuppressVanillaUpdate.setSelected(Boolean.parseBoolean(parent.getConfig().getProperty("suppressUpdates")));
 			contentPanel.add(chckbxSuppressVanillaUpdate, gbc_chckbxSuppressVanillaUpdate);
 		}
+		*/
 		
 		// Stretch to make room for the content panel
 		setSize(this.getWidth(), this.getHeight() + (int)contentPanel.getMinimumSize().getHeight());
@@ -286,7 +288,7 @@ public class ClientConfig extends JDialog {
 						newConfig.setProperty("maximumMemory", txtMaximum.getText());
 						newConfig.setProperty("jrePath", txtJavaPath.getText());
 						newConfig.setProperty("minimizeOnLaunch", Boolean.toString(chckbxMinimize.isSelected()));
-						newConfig.setProperty("suppressUpdates", Boolean.toString(chckbxSuppressVanillaUpdate.isSelected()));
+						//newConfig.setProperty("suppressUpdates", Boolean.toString(chckbxSuppressVanillaUpdate.isSelected()));
 						newConfig.setProperty("instanceRoot", txtInstanceRoot.getText());
 						parent.writeConfig(newConfig);
 						parent.mcu.setInstanceRoot(new File(txtInstanceRoot.getText()));

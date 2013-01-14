@@ -194,10 +194,10 @@ public class MainForm extends MCUApp {
 		boolean hasChanged = false;
 		if (current.getProperty("minimumMemory") == null) {	current.setProperty("minimumMemory", "512M"); hasChanged = true; }
 		if (current.getProperty("maximumMemory") == null) {	current.setProperty("maximumMemory", "1G"); hasChanged = true; }
-		//if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; }
-		//if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; }
+		//if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; } // Made obsolete by instancing
+		//if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; } // Made obsolete by instancing
 		if (current.getProperty("minimizeOnLaunch") == null) { current.setProperty("minimizeOnLaunch", "true"); hasChanged = true; }
-		if (current.getProperty("suppressUpdates") == null) { current.setProperty("suppressUpdates", "false"); hasChanged = true; }
+		//if (current.getProperty("suppressUpdates") == null) { current.setProperty("suppressUpdates", "false"); hasChanged = true; } // Made obsolete by native launcher
 		if (current.getProperty("instanceRoot") == null) { current.setProperty("instanceRoot", (new File(mcu.getArchiveFolder(),"instances")).getAbsolutePath()); }
 		return hasChanged;
 	}
@@ -777,7 +777,6 @@ public class MainForm extends MCUApp {
 						Path instDataPath = MCPath.resolve("instance.dat");
 						boolean instanceDataExists = Files.exists(instDataPath);
 						if (instanceDataExists) {
-							//TODO read instance data
 							Properties instProp = new Properties();
 							instProp.load(Files.newInputStream(instDataPath));
 							Path oldInstance = mcu.getInstanceRoot().toPath().resolve(instProp.getProperty("serverID"));
