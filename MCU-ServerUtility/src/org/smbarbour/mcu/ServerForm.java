@@ -39,7 +39,7 @@ public class ServerForm extends MCUApp {
 
 	private static ServerForm window;
 	private JFrame frmMain;
-	final MCUpdater mcu = new MCUpdater();
+	final MCUpdater mcu = MCUpdater.getInstance();
 	private JTextField txtServerName;
 	private JTextField txtNewsUrl;
 	private JTextField txtServerAddress;
@@ -50,7 +50,7 @@ public class ServerForm extends MCUApp {
 	private JTextField txtVersion;
 	private List<Module> modList = new ArrayList<Module>();
 	private List<ConfigFile> configList = new ArrayList<ConfigFile>();
-	private ServerList serverInfo = new ServerList(null, null, null, null, null, null, false, null);
+	private ServerList serverInfo = new ServerList(null, null, null, null, null, null, null, false, null);
 	
 	public ServerForm() {
 		initialize();
@@ -500,6 +500,18 @@ public class ServerForm extends MCUApp {
 	}
 	protected String getVersion() {
 		return txtVersion.getText();
+	}
+
+	@Override
+	public void log(String msg) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean requestLogin() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 }
 
