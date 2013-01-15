@@ -42,6 +42,7 @@
             <fileset dir="${MCU-API.location}/bin"/>
             <zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/commons-codec-1.6.jar"/>
 		    <zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/commons-io-2.1.jar"/>
+        	<zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/jbeat-1.0.jar"/>
 		    <zipfileset src="${MCUpdater.location}/resources/famfamfam_silk_icons_v013.zip"/>
 		    <zipfileset src="${MCUpdater.location}/resources/assets.zip"/>
         </jar>
