@@ -114,7 +114,7 @@ public class NativeLauncherThread implements Runnable {
 		args.add(session.getUserName());
 		args.add(session.getSessionId());
 		
-		if (!MainForm.BUILD_BRANCH.equals("master")) {
+		if (!Version.isMasterBranch()) {
 			parent.log("Process args:");
 			Iterator<String> itArgs = args.iterator();
 			while (itArgs.hasNext()) {

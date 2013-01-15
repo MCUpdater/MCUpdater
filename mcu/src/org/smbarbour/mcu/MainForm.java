@@ -80,27 +80,6 @@ public class MainForm extends MCUApp {
 	private boolean canWriteInstances = false;
 	private boolean canCreateLinks = false;
 	
-	public static final int BUILD_VERSION;
-	public static final String BUILD_BRANCH;
-	public static final String BUILD_LABEL;
-	static {
-		Properties prop = new Properties();
-		try {
-			prop.load(MainForm.class.getResourceAsStream("/version.properties"));
-		} catch (IOException e) {
-		}
-		BUILD_VERSION = Integer.valueOf(prop.getProperty("build_version","0"));
-		BUILD_BRANCH = prop.getProperty("git_branch","unknown");
-		if( BUILD_BRANCH.equals("unknown") || BUILD_BRANCH.equals("master") ) {
-			BUILD_LABEL = "";
-		} else {
-			BUILD_LABEL = " ("+BUILD_BRANCH+")";
-		}
-	}
-	public static final int MAJOR_VERSION = 2;
-	public static final int MINOR_VERSION = 1;
-	private static final String VERSION = "v"+MAJOR_VERSION+"."+MINOR_VERSION+"."+BUILD_VERSION;
-	
 	private static MainForm window;
 	private Properties config = new Properties();
 	private JFrame frmMain;
@@ -138,6 +117,7 @@ public class MainForm extends MCUApp {
 	 */
 	public MainForm() {
 		this.baseLogger = Logger.getLogger(MainForm.class);
+		Version.setApp(this);
 		PropertyConfigurator.configure(config);
 		window = this;
 		mcu.setParent(window);
@@ -229,7 +209,7 @@ public class MainForm extends MCUApp {
 			JOptionPane.showMessageDialog(null, "MCUpdater has detected that symbolic linking cannot be performed.\nTrue instancing will be disabled and switching between instances will take considerably longer.\n\nOn Windows, this can be caused by not running MCUpdater as Administrator.", "MCUpdater", JOptionPane.WARNING_MESSAGE);
 		}
 		frmMain = new JFrame();
-		frmMain.setTitle("[No Server Selected] - MCUpdater " + MainForm.VERSION + MainForm.BUILD_LABEL);
+		frmMain.setTitle("[No Server Selected] - MCUpdater " + Version.VERSION + Version.BUILD_LABEL);
 		frmMain.setResizable(false);
 		frmMain.setBounds(100, 100, 1175, 592);
 		frmMain.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -435,7 +415,7 @@ public class MainForm extends MCUApp {
 					}
 					final boolean needUpdate = !selected.getRevision().equals(instData.getProperty("revision"));
 					// check for mcu version update
-					final boolean needMCUUpgrade = isVersionOld(selected.getMCUVersion());
+					final boolean needMCUUpgrade = Version.isVersionOld(selected.getMCUVersion());
 					
 					String warningMessage = null;
 					if( needUpdate ) {
@@ -704,29 +684,11 @@ public class MainForm extends MCUApp {
 		
 	}
 	
-	protected boolean isVersionOld(String packVersion) {
-		if( packVersion == null ) return false;	// can't check anything if they don't tell us
-		String parts[] = packVersion.split("\\.");
-		try {
-			int mcuParts[] = { MAJOR_VERSION, MINOR_VERSION, BUILD_VERSION };
-			for( int q = 0; q < mcuParts.length && q < parts.length; ++q ) {
-				int packPart = Integer.valueOf(parts[q]);
-				if( packPart < mcuParts[q] )
-					return false;
-			}
-			return true;
-		} catch( NumberFormatException e ) {
-			log("Got non-numerical pack format version '"+packVersion+"'");
-		} catch( ArrayIndexOutOfBoundsException e ) {
-			log("Got malformed pack format version '"+packVersion+"'");
-		}
-		return false;
-	}
 	protected void changeSelectedServer(ServerList entry) {
 		try {
 			selected = entry;
 			browser.setPage(entry.getNewsUrl());
-			frmMain.setTitle(entry.getName() + " - MCUpdater " + MainForm.VERSION + MainForm.BUILD_LABEL);
+			frmMain.setTitle(entry.getName() + " - MCUpdater " + Version.VERSION + Version.BUILD_LABEL);
 			if (!selected.getServerId().equals("unmanaged")) {
 				List<Module> modules = mcu.loadFromURL(entry.getPackUrl(), entry.getServerId());
 				Iterator<Module> itMods = modules.iterator();
@@ -900,7 +862,7 @@ public class MainForm extends MCUApp {
 			}
 		});
 		
-		final String label = "MCUpdater "+VERSION;
+		final String label = "MCUpdater "+Version.VERSION;
 		
 		trayIcon = new TrayIcon(mcuIcon.getImage(),label);
 		trayIcon.setImageAutoSize(true);
