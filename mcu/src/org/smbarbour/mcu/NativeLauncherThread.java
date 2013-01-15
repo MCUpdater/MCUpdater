@@ -107,7 +107,7 @@ public class NativeLauncherThread implements Runnable {
 		args.add("-XX:+AggressiveOpts");
 		args.add("-Xms" + this.minMem);
 		args.add("-Xmx" + this.maxMem);
-		args.add("-cp");
+		args.add("-classpath");
 		args.add(sbClassPath.toString());
 		args.add(jlp);
 		args.add(className);

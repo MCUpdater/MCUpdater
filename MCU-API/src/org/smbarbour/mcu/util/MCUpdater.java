@@ -84,13 +84,8 @@ public class MCUpdater {
 			MCFolder = System.getProperty("user.home") + sep + ".minecraft";
 			archiveFolder = new File(System.getProperty("user.home") + sep + ".MCUpdater");
 		}
-		//archiveFolder = new File(MCFolder + sep + "mcu");
-		//instanceRoot = new File(archiveFolder, "instances");
-		try {
-			defaultIcon = new ImageIcon(new URL("http://www.minecraft.net/favicon.png"));
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		}
+		//defaultIcon = new ImageIcon(new URL("http://www.minecraft.net/favicon.png"));
+		defaultIcon = new ImageIcon(MCUpdater.class.getResource("/minecraft.png"));
 		// configure the download cache
 		try {
 			DownloadCache.init(new File(archiveFolder,"cache"));

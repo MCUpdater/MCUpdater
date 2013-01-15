@@ -6,5 +6,6 @@
 	<classpathentry kind="lib" path="commons-io-2.1.jar"/>
 	<classpathentry kind="lib" path="log4j-1.2.16.jar"/>
 	<classpathentry kind="lib" path="jbeat-1.0.jar"/>
+	<classpathentry kind="lib" path="assets-API.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
