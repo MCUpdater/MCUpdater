@@ -8,6 +8,7 @@ public class Module {
 	private String name;
 	private String id;
 	private String url;
+	private String depends;
 	private Boolean required;
 	private Boolean inJar;
 	private Boolean extract;
@@ -17,11 +18,12 @@ public class Module {
 	private String md5;
 	private List<ConfigFile> configs;
 	
-	public Module(String name, String id, String url, Boolean required, Boolean inJar, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs)
+	public Module(String name, String id, String url, String depends, Boolean required, Boolean inJar, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs)
 	{
 		this.setName(name);
 		this.setId(id);
 		this.setUrl(url);
+		this.setDepends(depends);
 		this.setRequired(required);
 		this.setInJar(inJar);
 		this.setIsDefault(isDefault);
@@ -134,6 +136,14 @@ public class Module {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public String getDepends() {
+		return depends;
+	}
+
+	public void setDepends(String depends) {
+		this.depends = depends;
 	}
 }
 
