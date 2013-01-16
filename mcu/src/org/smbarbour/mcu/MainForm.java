@@ -56,6 +56,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -170,8 +171,9 @@ public class MainForm extends MCUApp {
 		newConfig.setProperty("maximumMemory", "1G");
 		//newConfig.setProperty("currentConfig", "");
 		//newConfig.setProperty("packRevision","");
-		newConfig.setProperty("suppressUpdates", "false");
+		//newConfig.setProperty("suppressUpdates", "false");
 		newConfig.setProperty("instanceRoot", (new File(mcu.getArchiveFolder(),"instances")).getAbsolutePath());
+		newConfig.setProperty("storePassword", "false");
 		try {
 			configFile.getParentFile().mkdirs();
 			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
@@ -192,6 +194,7 @@ public class MainForm extends MCUApp {
 		if (current.getProperty("minimizeOnLaunch") == null) { current.setProperty("minimizeOnLaunch", "true"); hasChanged = true; }
 		//if (current.getProperty("suppressUpdates") == null) { current.setProperty("suppressUpdates", "false"); hasChanged = true; } // Made obsolete by native launcher
 		if (current.getProperty("instanceRoot") == null) { current.setProperty("instanceRoot", (new File(mcu.getArchiveFolder(),"instances")).getAbsolutePath()); }
+		if (current.getProperty("storePassword") == null) { current.setProperty("storePassword", "false"); hasChanged = true; }
 		return hasChanged;
 	}
 
@@ -643,8 +646,45 @@ public class MainForm extends MCUApp {
 		serverList.setSelectedIndex(selectIndex);
 		
 		initTray();
+		
+		if (config.getProperty("storePassword").toLowerCase().equals("true")) {
+			if (config.containsKey("password")) {
+				String user = config.getProperty("userName");
+				String password = decrypt(config.getProperty("password"));
+				try {
+					login(user, password);
+				} catch (MCLoginException e1) {
+				}
+			}
+		}
 	}
 
+	private String encrypt(String password) {
+		try {
+			Cipher cipher = getCipher(Cipher.ENCRYPT_MODE, "MCUpdater");
+			byte[] utf8 = password.getBytes("UTF8");
+			byte[] enc = cipher.doFinal(utf8);
+			
+			return Base64.encodeBase64String(enc);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}		
+		return null;
+	}
+
+	private String decrypt(String property) {
+		try {
+			Cipher cipher = getCipher(Cipher.DECRYPT_MODE, "MCUpdater");
+			byte[] dec = Base64.decodeBase64(property);
+			byte[] utf8 = cipher.doFinal(dec);
+			
+			return new String(utf8, "UTF8");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}		
+		return null;
+	}
+	
 	@Override
 	public boolean requestLogin() {
 		if (this.loginData.getUserName().isEmpty()) {
@@ -967,6 +1007,9 @@ public class MainForm extends MCUApp {
 			login.setSessionId(arrayOfString[3].trim());
 			setLoginData(login);
 			getConfig().setProperty("userName", username);
+			if (getConfig().getProperty("storePassword").toLowerCase().equals("true")) {
+				getConfig().setProperty("password", encrypt(password));
+			}
 			writeConfig(getConfig());
 			return login;
 
