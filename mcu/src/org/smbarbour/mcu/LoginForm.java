@@ -6,8 +6,6 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.util.HashMap;
-
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.JButton;
@@ -20,7 +18,6 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
 
-import org.smbarbour.mcu.MCLoginException.ResponseType;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -161,11 +158,7 @@ public class LoginForm extends JDialog {
 						public void actionPerformed(ActionEvent arg0) {
 							try {
 								getContentPane().setEnabled(false);
-								LoginData response = login(txtUsername.getText(), String.valueOf(txtPassword.getPassword()));
-								parent.setLoginData(response);
-								parent.getConfig().setProperty("userName", txtUsername.getText());
-								parent.writeConfig(parent.getConfig());
-								parent.setPlayerName(response.getUserName());
+								parent.login(txtUsername.getText(), String.valueOf(txtPassword.getPassword()));
 								window.dispose();
 								
 							} catch (MCLoginException e) {
@@ -219,51 +212,5 @@ public class LoginForm extends JDialog {
 	protected void onCancel(LoginForm window) {
 		window.dispose();		
 	}
-
-	public LoginData login(String username, String password) throws MCLoginException {
-	    try {
-	      HashMap<String, Object> localHashMap = new HashMap<String, Object>();
-	      localHashMap.put("user", username);
-	      localHashMap.put("password", password);
-	      localHashMap.put("version", Integer.valueOf(13));
-	      String str = HTTPSUtils.executePost("https://login.minecraft.net/", localHashMap);
-	      if (str == null) {
-	        //showError("Can't connect to minecraft.net");
-	    	throw new MCLoginException(ResponseType.NOCONNECTION);
-	      }
-	      if (!str.contains(":")) {
-	        if (str.trim().equals("Bad login")) {
-	        	throw new MCLoginException(ResponseType.BADLOGIN);
-	        } else if (str.trim().equals("Old version")) {
-	        	throw new MCLoginException(ResponseType.OLDVERSION);
-	        } else if (str.trim().equals("User not premium")) {
-	        	throw new MCLoginException(ResponseType.OLDLAUNCHER);
-	        } else {
-	        	throw new MCLoginException(str);
-	        }
-	      }
-	      String[] arrayOfString = str.split(":");
-
-/*
-	      HashMap<String,String> loginParams = new HashMap<String, String>();
-	      loginParams.put("userName", arrayOfString[2].trim());
-	      loginParams.put("latestVersion", arrayOfString[0].trim());
-	      loginParams.put("downloadTicket", arrayOfString[1].trim());
-	      loginParams.put("sessionId", arrayOfString[3].trim());
-	      return loginParams;
-	      */
-	      LoginData login = new LoginData();
-	      login.setUserName(arrayOfString[2].trim());
-	      login.setLatestVersion(arrayOfString[0].trim());
-	      login.setSessionId(arrayOfString[3].trim());
-	      return login;
-	      
-	    } catch (MCLoginException mcle) {
-	    	throw mcle;
-	    } catch (Exception localException) {
-	    	localException.printStackTrace();
-	    	throw localException;
-	    }
-	  }
 }
 

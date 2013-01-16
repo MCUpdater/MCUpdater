@@ -1,10 +1,16 @@
 package org.smbarbour.mcu;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.PBEParameterSpec;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import java.awt.AWTException;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Frame;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
@@ -34,6 +40,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -42,14 +50,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 import org.smbarbour.mcu.MCUApp;
+import org.smbarbour.mcu.MCLoginException.ResponseType;
 import org.smbarbour.mcu.util.InstanceManager;
 import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.Module;
@@ -108,6 +119,8 @@ public class MainForm extends MCUApp {
 	private JLabel lblPlayerName2;
 
 	private LoginData loginData = new LoginData();
+
+	private JLabel lblAvatar;
 	
 	public ResourceBundle getCustomization(){
 		return Customization;
@@ -563,6 +576,16 @@ public class MainForm extends MCUApp {
 		JLabel lblPlayerName1 = new JLabel("Player name:  ");
 		toolBar.add(lblPlayerName1);
 		
+		lblAvatar = new JLabel();
+		lblAvatar.setOpaque(true);
+		lblAvatar.setHorizontalAlignment(JLabel.CENTER);
+		lblAvatar.setVerticalAlignment(JLabel.CENTER);
+		lblAvatar.setBackground(Color.WHITE);
+		toolBar.add(lblAvatar);
+		
+		Component hStrut3 = Box.createHorizontalStrut(5);
+		toolBar.add(hStrut3);
+		
 		lblPlayerName2 = new JLabel("Not Logged In");
 		toolBar.add(lblPlayerName2);
 		
@@ -913,8 +936,68 @@ public class MainForm extends MCUApp {
 		frmMain.setVisible(true);
 		frmMain.setState(Frame.NORMAL);
 	}
+
+	public LoginData login(String username, String password) throws MCLoginException {
+		try {
+			HashMap<String, Object> localHashMap = new HashMap<String, Object>();
+			localHashMap.put("user", username);
+			localHashMap.put("password", password);
+			localHashMap.put("version", Integer.valueOf(13));
+			String str = HTTPSUtils.executePost("https://login.minecraft.net/", localHashMap);
+			if (str == null) {
+				//showError("Can't connect to minecraft.net");
+				throw new MCLoginException(ResponseType.NOCONNECTION);
+			}
+			if (!str.contains(":")) {
+				if (str.trim().equals("Bad login")) {
+					throw new MCLoginException(ResponseType.BADLOGIN);
+				} else if (str.trim().equals("Old version")) {
+					throw new MCLoginException(ResponseType.OLDVERSION);
+				} else if (str.trim().equals("User not premium")) {
+					throw new MCLoginException(ResponseType.OLDLAUNCHER);
+				} else {
+					throw new MCLoginException(str);
+				}
+			}
+			String[] arrayOfString = str.split(":");
+
+			LoginData login = new LoginData();
+			login.setUserName(arrayOfString[2].trim());
+			login.setLatestVersion(arrayOfString[0].trim());
+			login.setSessionId(arrayOfString[3].trim());
+			setLoginData(login);
+			getConfig().setProperty("userName", username);
+			writeConfig(getConfig());
+			return login;
+
+		} catch (MCLoginException mcle) {
+			throw mcle;
+		} catch (Exception localException) {
+			localException.printStackTrace();
+			throw localException;
+		}
+	}
+
 	public void setLoginData(LoginData response) {
 		this.loginData = response;
+		setPlayerName(response.getUserName());
+		try {
+			this.lblAvatar.setIcon(new ImageIcon(new URL("http://cravatar.tomheinan.com/" + response.getUserName() + "/16")));
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private Cipher getCipher(int mode, String password) throws Exception {
+		Random random = new Random(92845025L);
+		byte[] salt = new byte[8];
+		random.nextBytes(salt);
+		PBEParameterSpec pbeParamSpec = new PBEParameterSpec(salt, 5);
+
+		SecretKey pbeKey = SecretKeyFactory.getInstance("PBEWithMD5AndDES").generateSecret(new PBEKeySpec(password.toCharArray()));
+		Cipher cipher = Cipher.getInstance("PBEWithMD5AndDES");
+		cipher.init(mode, pbeKey, pbeParamSpec);
+		return cipher;
 	}
 }
 
