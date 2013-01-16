@@ -6,6 +6,7 @@ import java.util.Locale;
 
 public class Module {
 	private String name;
+	private String id;
 	private String url;
 	private Boolean required;
 	private Boolean inJar;
@@ -16,13 +17,14 @@ public class Module {
 	private String md5;
 	private List<ConfigFile> configs;
 	
-	public Module(String name, String url, Boolean required, Boolean inJar, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs)
+	public Module(String name, String id, String url, Boolean required, Boolean inJar, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs)
 	{
-		this.name=name;
-		this.url=url;
-		this.required=required;
-		this.inJar=inJar;
-		this.isDefault=isDefault;
+		this.setName(name);
+		this.setId(id);
+		this.setUrl(url);
+		this.setRequired(required);
+		this.setInJar(inJar);
+		this.setIsDefault(isDefault);
 		this.setExtract(extract);
 		this.setInRoot(inRoot);
 		this.setCoreMod(coreMod);
@@ -103,6 +105,10 @@ public class Module {
 	public Boolean getIsDefault() {
 		return isDefault;
 	}
+	
+	public void setIsDefault(Boolean isDefault) {
+		this.isDefault = isDefault;
+	}
 
 	public List<ConfigFile> getConfigs()
 	{
@@ -120,6 +126,14 @@ public class Module {
 
 	public void setCoreMod(Boolean coreMod) {
 		this.coreMod = coreMod;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
 	}
 }
 

@@ -60,7 +60,7 @@ public class MainForm {
 	 */
 	private void initialize() {
 		frame = new JFrame();
-		frame.setBounds(100, 100, 450, 286);
+		frame.setBounds(100, 100, 450, 50);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		GridBagLayout gridBagLayout = new GridBagLayout();
 		gridBagLayout.columnWidths = new int[]{0, 0, 0, 0, 0};
@@ -254,6 +254,8 @@ public class MainForm {
 		gbc_btnApplyPatch.gridx = 1;
 		gbc_btnApplyPatch.gridy = 11;
 		frame.getContentPane().add(btnApplyPatch, gbc_btnApplyPatch);
+		
+		frame.setSize(frame.getWidth(),frame.getHeight()+(int)frame.getContentPane().getMinimumSize().getHeight());
 	}
 
 }

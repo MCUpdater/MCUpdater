@@ -329,6 +329,7 @@ public class MCUpdater {
 	private Module getModule(Element modEl)
 	{
 		String name = modEl.getAttribute("name");
+		String id = modEl.getAttribute("id");
 		String url = getTextValue(modEl,"URL");
 		Boolean required = getBooleanValue(modEl,"Required");
 		Boolean isDefault = getBooleanValue(modEl,"IsDefault");
@@ -346,7 +347,7 @@ public class MCUpdater {
 			ConfigFile cf = getConfigFile(el);
 			configs.add(cf);
 		}
-		Module m = new Module(name, url, required, inJar, extract, inRoot, isDefault, coreMod, md5, configs);
+		Module m = new Module(name, id, url, required, inJar, extract, inRoot, isDefault, coreMod, md5, configs);
 		return m;
 	}
 	
