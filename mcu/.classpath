@@ -6,5 +6,6 @@
 	<classpathentry kind="lib" path="resources/famfamfam_silk_icons_v013.zip"/>
 	<classpathentry kind="lib" path="resources/assets.zip"/>
 	<classpathentry kind="lib" path="log4j-1.2.16.jar"/>
+	<classpathentry kind="lib" path="commons-codec-1.6.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
