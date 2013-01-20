@@ -6,11 +6,12 @@ public class ConfigFile {
 	private String url;
 	private String path;
 	private String md5;
+	private String parentID;
 	
 	public ConfigFile(String url, String path, String md5)
 	{
-		this.url = url;
-		this.path = path;
+		setUrl(url);
+		setPath(path);
 		setMD5(md5);
 	}
 	
@@ -44,4 +45,18 @@ public class ConfigFile {
 		if( md5 != null )
 			this.md5 = md5.toLowerCase(Locale.ENGLISH);
 	}
+
+	public String getParentID() {
+		return parentID;
+	}
+
+	public void setParentID(String parentID) {
+		this.parentID = parentID;
+	}
+
+	@Override
+	public String toString() {
+		return path;
+	}
+
 }

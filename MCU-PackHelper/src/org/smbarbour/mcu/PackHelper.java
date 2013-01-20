@@ -21,6 +21,8 @@ import javax.swing.SwingConstants;
 import java.awt.Component;
 import javax.swing.Box;
 
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
 import argo.jdom.JsonNode;
 import argo.jdom.JdomParser;
 import argo.jdom.JsonRootNode;
@@ -30,7 +32,9 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -156,7 +160,11 @@ public class PackHelper {
 	protected void processFile(File file) {
 		String modID = file.toPath().getFileName().toString();
 		String name = file.toPath().getFileName().toString();
+		String md5 = "";
 		try {
+			InputStream is = new FileInputStream(file);
+			byte[] hash = DigestUtils.md5(is);
+			md5 = new String(Hex.encodeHex(hash));
 			ZipFile zf = new ZipFile(file);
 			System.out.println(zf.size() + " entries in file.");
 			JdomParser parser = new JdomParser();
@@ -180,6 +188,17 @@ public class PackHelper {
 			e.printStackTrace();
 		} finally {
 			System.out.println("id:" + modID + " - name:" + name);
+			StringBuilder modText = new StringBuilder();
+			modText.append("<Module name=\"" + name + "\" id=\"" + modID + "\">\n");
+			modText.append("\t<URL>" + txtBaseUrl.getText() + file.getName() + "</URL>\n");
+			modText.append("\t<MD5>" + md5 + "</MD5>\n");
+			modText.append("\t<Required>true</Required>\n");
+			modText.append("\t<InJar>false</InJar>\n");
+			modText.append("\t<CoreMod>false</CoreMod>\n");
+			modText.append("\t<Extract>false</Extract>\n");
+			modText.append("\t<InRoot>false</InRoot>\n");
+			modText.append("</Module>\n");
+			txtAreaModule.setText(modText.toString());
 		}
 	}
 

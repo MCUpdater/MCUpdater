@@ -145,5 +145,10 @@ public class Module {
 	public void setDepends(String depends) {
 		this.depends = depends;
 	}
+	
+	@Override
+	public String toString() {
+		return id;
+	}
 }
 
