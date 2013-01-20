@@ -6,8 +6,6 @@ import javax.swing.JPanel;
 import org.smbarbour.mcu.util.ConfigFile;
 import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.Module;
-import org.smbarbour.mcu.util.ServerList;
-
 import javax.swing.JMenuBar;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -23,7 +21,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.border.TitledBorder;
-import javax.swing.DefaultComboBoxModel;
+import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
@@ -36,14 +34,19 @@ import javax.swing.JCheckBox;
 import javax.swing.SwingConstants;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.BufferedWriter;
+import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.filechooser.FileFilter;
 
 public class ServerForm extends MCUApp {
 
@@ -58,7 +61,6 @@ public class ServerForm extends MCUApp {
 	private JTextField txtConfigURL;
 	private JTextField txtConfigPath;
 	private JTextField txtVersion;
-	private ServerList serverInfo = new ServerList(null, null, null, null, null, null, null, false, null);
 	private JTextField txtIconURL;
 	private JTextField txtRevision;
 	private JTextField txtMCUVersion;
@@ -80,7 +82,7 @@ public class ServerForm extends MCUApp {
 	private JCheckBox chkRequired;
 	private JButton btnModMoveUp;
 	private JButton btnModMoveDown;
-	private DefaultComboBoxModel<String> modelParentId;
+	private ModIdListModel modelParentId;
 	
 	public ServerForm() {
 		initialize();
@@ -105,6 +107,9 @@ public class ServerForm extends MCUApp {
 		JMenuItem mnuNew = new JMenuItem("New");
 		mnuNew.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				modelModule.clear();
+				modelConfig.clear();
+				modelParentId.clear();
 			}
 		});
 		mnuFile.add(mnuNew);
@@ -114,6 +119,7 @@ public class ServerForm extends MCUApp {
 			public void actionPerformed(ActionEvent e) {
 			}
 		});
+		mnuOpen.setEnabled(false);
 		mnuFile.add(mnuOpen);
 		
 		JMenuItem mnuSave = new JMenuItem("Save");
@@ -121,14 +127,14 @@ public class ServerForm extends MCUApp {
 			public void actionPerformed(ActionEvent e) {
 			}
 		});
-		
+		mnuSave.setEnabled(false);		
 		JMenuItem mntmScanFolder = new JMenuItem("Scan Folder...");
 		mntmScanFolder.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				modelModule.clear();
 				modelConfig.clear();
-				lstConfigFiles.removeAll();
-				lstParentId.addItem("");
+				modelParentId.clear();
+				modelParentId.add("");
 				JFileChooser jfc = new JFileChooser();
 				jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				jfc.showOpenDialog(frmMain);
@@ -143,6 +149,7 @@ public class ServerForm extends MCUApp {
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
+				modelParentId.sort();
 			}
 		});
 		mnuFile.add(mntmScanFolder);
@@ -151,6 +158,95 @@ public class ServerForm extends MCUApp {
 		JMenuItem mnuSaveAs = new JMenuItem("Save As...");
 		mnuSaveAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				JFileChooser saveDialog = new JFileChooser();
+				saveDialog.setFileFilter(new FileFilter() {
+					@Override
+					public boolean accept(File f) {
+						if (f.isDirectory()) {
+							return true;
+						}
+						
+						String extension = getExtension(f);
+						if (extension != null && extension.equalsIgnoreCase("xml")) {
+							return true;
+						} else {
+							return false;
+						}
+					}
+					
+					@Override
+					public String getDescription() {
+						return "XML Files";
+					}
+					
+					private String getExtension(File f) {
+				        String ext = null;
+				        String s = f.getName();
+				        int i = s.lastIndexOf('.');
+
+				        if (i > 0 &&  i < s.length() - 1) {
+				            ext = s.substring(i+1).toLowerCase();
+				        }
+				        return ext;
+				    }
+
+				});
+				saveDialog.showSaveDialog(frmMain);
+				Path outputFile = saveDialog.getSelectedFile().toPath();
+				
+				try {
+					BufferedWriter fileWriter = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+					fileWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+					fileWriter.newLine();
+					fileWriter.write("<ServerPack version=\"" + txtMCUVersion.getText() + "\" xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://raw.github.com/smbarbour/MCUpdater/master/MCU-API/ServerPack.xsd'>");
+					fileWriter.newLine();
+					fileWriter.write("\t<Server id=\"" + txtServerID.getText() + "\" name=\"" + txtServerName.getText() + "\" newsUrl=\"" + txtNewsUrl.getText() + "\" iconUrl=\"" + txtIconURL.getText() + "\" version=\"" + txtVersion.getText() + "\" serverAddress=\"" + txtServerAddress.getText() + "\" revision=\"" + txtRevision.getText() + "\">");
+					fileWriter.newLine();
+					for (Module entry : modelModule.getContents()) {
+						fileWriter.write("\t\t<Module name=\"" + entry.getName() + "\" id=\"" + entry.getId() + "\" depends=\"" + entry.getDepends() + "\">");
+						fileWriter.newLine();
+						fileWriter.write("\t\t\t<URL>" + entry.getUrl() + "</URL>");
+						fileWriter.newLine();
+						fileWriter.write("\t\t\t<Required>" + (entry.getRequired() == true ? "true" : "false") + "</Required>");
+						fileWriter.newLine();
+						fileWriter.write("\t\t\t<InJar>" + (entry.getInJar() == true ? "true" : "false") + "</InJar>");
+						fileWriter.newLine();
+						fileWriter.write("\t\t\t<IsDefault>" + (entry.getIsDefault() == true ? "true" : "false") + "</IsDefault>");
+						fileWriter.newLine();
+						fileWriter.write("\t\t\t<Extract>" + (entry.getExtract() == true ? "true" : "false") + "</Extract>");
+						fileWriter.newLine();
+						fileWriter.write("\t\t\t<InRoot>" + (entry.getInRoot() == true ? "true" : "false") + "</InRoot>");
+						fileWriter.newLine();
+						fileWriter.write("\t\t\t<CoreMod>" + (entry.getCoreMod() == true ? "true" : "false") + "</CoreMod>");
+						fileWriter.newLine();
+						fileWriter.write("\t\t\t<MD5>" + entry.getMD5() + "</MD5>");
+						fileWriter.newLine();
+						for (ConfigFileWrapper cfw : modelConfig.getContents()) {
+							if (cfw.getParentId().equals(entry.getId())) {
+								fileWriter.write("\t\t\t\t<ConfigFile>");
+								fileWriter.newLine();
+								fileWriter.write("\t\t\t\t\t<URL>" + cfw.getConfigFile().getUrl() + "</URL>");
+								fileWriter.newLine();
+								fileWriter.write("\t\t\t\t\t<Path>" + cfw.getConfigFile().getPath() + "</Path>");
+								fileWriter.newLine();
+								fileWriter.write("\t\t\t\t\t<MD5>" + cfw.getConfigFile().getMD5() + "</MD5>");
+								fileWriter.newLine();
+								fileWriter.write("\t\t\t\t</ConfigFile>");
+								fileWriter.newLine();
+							}
+						}
+						fileWriter.write("\t\t</Module>");
+						fileWriter.newLine();
+					}
+					fileWriter.write("\t</Server>");
+					fileWriter.newLine();
+					fileWriter.write("</ServerPack>");
+					fileWriter.newLine();
+					fileWriter.close();
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		});
 		mnuFile.add(mnuSaveAs);
@@ -384,7 +480,7 @@ public class ServerForm extends MCUApp {
 						chkExtract.setSelected(selected.getExtract());
 						chkInRoot.setSelected(selected.getInRoot());
 						btnModMoveUp.setEnabled(lstModules.getSelectedIndex() == 0 ? false : true);
-						btnModMoveDown.setEnabled(lstModules.getSelectedIndex() == lstModules.getComponentCount() ? false : true);
+						btnModMoveDown.setEnabled(lstModules.getSelectedIndex() == modelModule.getSize()-1 ? false : true);
 					}
 				}
 			}
@@ -653,6 +749,8 @@ public class ServerForm extends MCUApp {
 					public void actionPerformed(ActionEvent e) {
 						Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkRequired.isSelected(), chkInJar.isSelected(), chkExtract.isSelected(), chkInRoot.isSelected(), chkIsDefault.isSelected(), chkCoreMod.isSelected(), txtModMD5.getText(), null);
 						modelModule.add(newMod);
+						modelParentId.add(newMod.getId());
+						modelParentId.sort();
 					}
 				});
 				GridBagConstraints gbc_btnModAdd = new GridBagConstraints();
@@ -665,6 +763,7 @@ public class ServerForm extends MCUApp {
 				JButton btnModRemove = new JButton("Remove");
 				btnModRemove.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
+						modelParentId.remove(modelParentId.find(lstModules.getSelectedValue().getId()));
 						modelModule.remove(lstModules.getSelectedIndex());
 					}
 				});
@@ -678,6 +777,7 @@ public class ServerForm extends MCUApp {
 				JButton btnModUpdate = new JButton("Update");
 				btnModUpdate.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
+						modelParentId.replaceEntry(lstModules.getSelectedValue().getId(), txtModId.getText());
 						Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkRequired.isSelected(), chkInJar.isSelected(), chkExtract.isSelected(), chkInRoot.isSelected(), chkIsDefault.isSelected(), chkCoreMod.isSelected(), txtModMD5.getText(), null);
 						modelModule.replace(lstModules.getSelectedIndex(), newMod);
 					}
@@ -766,7 +866,9 @@ public class ServerForm extends MCUApp {
 				if (e.getValueIsAdjusting() == false) {
 					if (lstConfigFiles.getSelectedIndex() > -1) {
 						ConfigFileWrapper selected = lstConfigFiles.getSelectedValue();
-						lstParentId.setSelectedIndex(modelParentId.getIndexOf(selected.getParentId()));
+						System.out.println(selected.getParentId() + ": " + modelParentId.find(selected.getParentId()));
+						lstParentId.setSelectedIndex(modelParentId.find(selected.getParentId()));
+						lstParentId.repaint();
 						txtConfigMD5.setText(selected.getConfigFile().getMD5());
 						txtConfigURL.setText(selected.getConfigFile().getUrl());
 						txtConfigPath.setText(selected.getConfigFile().getPath());
@@ -812,7 +914,7 @@ public class ServerForm extends MCUApp {
 			gbc_lblParentId.gridy = row;
 			configDetailPanel.add(lblParentId, gbc_lblParentId);
 			
-			modelParentId = new DefaultComboBoxModel<String>();
+			modelParentId = new ModIdListModel();
 			lstParentId = new JComboBox<String>(modelParentId);
 			GridBagConstraints gbc_lstParentId = new GridBagConstraints();
 			gbc_lstParentId.gridwidth = 3;
@@ -943,7 +1045,7 @@ public class ServerForm extends MCUApp {
 
 	public void AddModule(Module newMod) {
 		modelModule.add(newMod);
-		lstParentId.addItem(newMod.getId());
+		modelParentId.add(newMod.getId());
 	}
 	
 	public void AddConfig(ConfigFileWrapper newConfig) {
@@ -959,19 +1061,6 @@ public class ServerForm extends MCUApp {
 	public void setProgressBar(int i) {
 		
 	}
-	
-	protected String getServerName() {
-		return txtServerName.getText();
-	}
-	protected String getNewsUrl() {
-		return txtNewsUrl.getText();
-	}
-	protected String getServerAddress() {
-		return txtServerAddress.getText();
-	}
-	protected String getVersion() {
-		return txtVersion.getText();
-	}
 
 	@Override
 	public void log(String msg) {
@@ -981,7 +1070,6 @@ public class ServerForm extends MCUApp {
 
 	@Override
 	public boolean requestLogin() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 }
@@ -991,7 +1079,7 @@ class ModuleListModel extends AbstractListModel<Module> {
 	 * 
 	 */
 	private static final long serialVersionUID = 8669589670935830304L;
-	List<Module> modules = new ArrayList<Module>();
+	private List<Module> modules = new ArrayList<Module>();
 	
 	public ModuleListModel(List<Module> modList) {
 		this.modules = modList;
@@ -1048,7 +1136,7 @@ class ConfigFileListModel extends AbstractListModel<ConfigFileWrapper> {
 	 * 
 	 */
 	private static final long serialVersionUID = 4310927230482995630L;
-	List<ConfigFileWrapper> configs = new ArrayList<ConfigFileWrapper>();
+	private List<ConfigFileWrapper> configs = new ArrayList<ConfigFileWrapper>();
 	
 	public ConfigFileListModel(List<ConfigFileWrapper> configList) {
 		this.configs = configList;
@@ -1086,4 +1174,66 @@ class ConfigFileListModel extends AbstractListModel<ConfigFileWrapper> {
 	public ConfigFileWrapper getElementAt(int index) {
 		return this.configs.get(index);
 	}
+}
+
+class ModIdListModel extends AbstractListModel<String> implements ComboBoxModel<String> {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1133359312481243116L;
+	private List<String> list = new ArrayList<String>();
+	private String selected;
+
+	public void clear() {
+		int current = list.size() - 1;
+		this.list.clear();
+		this.fireContentsChanged(this, 0, current);
+	}
+	
+	public int find(String parentId) {
+		return this.list.indexOf(parentId);
+	}
+
+	public void add(String entry) {
+		this.list.add(entry);
+		sort();
+	}
+	
+	public void remove(int index) {
+		this.list.remove(index);
+		sort();
+	}
+	
+	public void replaceEntry(String oldEntry, String newEntry) {
+		this.list.remove(oldEntry);
+		this.list.add(newEntry);
+		sort();
+	}
+	
+	public void sort() {
+		Collections.sort(this.list);
+		this.fireContentsChanged(this, 0, this.list.size()-1);		
+	}
+	
+	@Override
+	public int getSize() {
+		return this.list.size();
+	}
+
+	@Override
+	public String getElementAt(int index) {
+		return this.list.get(index);
+	}
+
+	@Override
+	public void setSelectedItem(Object anItem) {
+		this.selected = this.list.get(this.list.indexOf(anItem));
+	}
+
+	@Override
+	public Object getSelectedItem() {
+		return this.selected;
+	}
+	
 }

@@ -43,6 +43,8 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		String md5 = new String(Hex.encodeHex(hash));
 		String name = file.getFileName().toString();
 		String id = file.getFileName().toString();
+		name = name.substring(0,name.length()-4);
+		id = name.replace(" ", "");
 		String depends = "";
 		Boolean required = true;
 		Boolean inJar = false;
