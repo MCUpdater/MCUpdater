@@ -7,5 +7,6 @@
 	<classpathentry kind="lib" path="lib/commons-codec-1.6.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/argo-small-3.2.jar"/>
+	<classpathentry kind="lib" path="resources/assets.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
