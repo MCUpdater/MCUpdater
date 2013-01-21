@@ -46,8 +46,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
@@ -125,6 +127,7 @@ public class ServerForm extends MCUApp {
 
 	};
 	private JCheckBox chkServerGenerateList;
+	private JButton btnModSort;
 	
 	public ServerForm() {
 		initialize();
@@ -156,7 +159,7 @@ public class ServerForm extends MCUApp {
 		});
 		mnuFile.add(mnuNew);
 		
-		JMenuItem mnuOpen = new JMenuItem("Open...");http://mcupdater.com/doku.php?id=serverpack
+		JMenuItem mnuOpen = new JMenuItem("Open...");
 		mnuOpen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				modelModule.clear();
@@ -966,7 +969,20 @@ public class ServerForm extends MCUApp {
 				gbc_btnModMoveDown.gridx = 2;
 				gbc_btnModMoveDown.gridy = row;
 				modDetailPanel.add(btnModMoveDown, gbc_btnModMoveDown);
-				
+
+				btnModSort = new JButton("IntelliSort");
+				btnModSort.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						modelModule.sort();
+					}
+				});
+				GridBagConstraints gbc_btnModSort = new GridBagConstraints();
+				gbc_btnModSort.fill = GridBagConstraints.HORIZONTAL;
+				gbc_btnModSort.insets = new Insets(0, 0, 5, 5);
+				gbc_btnModSort.gridx = 3;
+				gbc_btnModSort.gridy = row;
+				modDetailPanel.add(btnModSort, gbc_btnModSort);
+
 				row++;
 			}
 			{
@@ -1327,6 +1343,11 @@ class ModuleListModel extends AbstractListModel<Module> {
 		Collections.swap(modules, current, current+1);
 		this.fireContentsChanged(this, current, current+1);
 	}
+	
+	public void sort() {
+		Collections.sort(this.modules, new SortModules());
+		this.fireContentsChanged(this, 0, this.modules.size());				
+	}
 
 	public void clear() {
 		int current = modules.size() - 1;
@@ -1447,7 +1468,7 @@ class ModIdListModel extends AbstractListModel<String> implements ComboBoxModel<
 	}
 	
 	public void sort() {
-		Collections.sort(this.list);
+		Collections.sort(this.list, new SortIgnoreCase());
 		this.fireContentsChanged(this, 0, this.list.size()-1);		
 	}
 	
@@ -1517,6 +1538,28 @@ class ServerListModel extends AbstractListModel<ServerDefinition> {
 	
 	public List<ServerDefinition> getContents() {
 		return this.servers;
+	}
+}
+
+class SortIgnoreCase implements Comparator<String> {
+
+	@Override
+	public int compare(String arg0, String arg1) {
+		return arg0.compareToIgnoreCase(arg1.toLowerCase());
+	}
+}
+
+class SortModules implements Comparator<Module> {
+
+	@Override
+	public int compare(Module o1, Module o2) {
+		Integer o1weight = (o1.getInJar() ? 0 : (o1.getCoreMod() ? 1 : 2));
+		Integer o2weight = (o2.getInJar() ? 0 : (o2.getCoreMod() ? 1 : 2));
+		if (o1weight == o2weight) {
+			return o1.getName().compareToIgnoreCase(o2.getName());
+		} else {
+			return o1weight.compareTo(o2weight);
+		}
 	}
 	
 }
