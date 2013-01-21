@@ -6,6 +6,8 @@ import javax.swing.JPanel;
 import org.smbarbour.mcu.util.ConfigFile;
 import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.Module;
+import org.smbarbour.mcu.util.ServerList;
+
 import javax.swing.JMenuBar;
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
@@ -63,7 +65,6 @@ public class ServerForm extends MCUApp {
 	private JTextField txtVersion;
 	private JTextField txtIconURL;
 	private JTextField txtRevision;
-	private JTextField txtMCUVersion;
 	private JTextField txtServerID;
 	private JTextField txtModMD5;
 	private JTextField txtModId;
@@ -71,8 +72,10 @@ public class ServerForm extends MCUApp {
 	private JComboBox<String> lstParentId;
 	private JList<ConfigFileWrapper> lstConfigFiles;
 	private JList<Module> lstModules;
+	private ServerListModel modelServer;
 	private ModuleListModel modelModule;
 	private ConfigFileListModel modelConfig;
+	private ModIdListModel modelParentId;
 	private JTextField txtModDepends;
 	private JCheckBox chkInRoot;
 	private JCheckBox chkExtract;
@@ -82,7 +85,43 @@ public class ServerForm extends MCUApp {
 	private JCheckBox chkRequired;
 	private JButton btnModMoveUp;
 	private JButton btnModMoveDown;
-	private ModIdListModel modelParentId;
+	private JMenuItem mnuSave;
+	private JList<ServerDefinition> lstServers;
+
+	protected Path currentFile;
+	protected FileFilter xmlFilter = new FileFilter() {
+		@Override
+		public boolean accept(File f) {
+			if (f.isDirectory()) {
+				return true;
+			}
+			
+			String extension = getExtension(f);
+			if (extension != null && extension.equalsIgnoreCase("xml")) {
+				return true;
+			} else {
+				return false;
+			}
+		}
+		
+		@Override
+		public String getDescription() {
+			return "XML Files";
+		}
+		
+		private String getExtension(File f) {
+	        String ext = null;
+	        String s = f.getName();
+	        int i = s.lastIndexOf('.');
+
+	        if (i > 0 &&  i < s.length() - 1) {
+	            ext = s.substring(i+1).toLowerCase();
+	        }
+	        return ext;
+	    }
+
+	};
+	private JCheckBox chkGenerateList;
 	
 	public ServerForm() {
 		initialize();
@@ -117,17 +156,23 @@ public class ServerForm extends MCUApp {
 		JMenuItem mnuOpen = new JMenuItem("Open...");
 		mnuOpen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				modelModule.clear();
+				modelConfig.clear();
+				modelParentId.clear();
+				modelParentId.add("");
+				JFileChooser jfc = new JFileChooser();
+				jfc.setFileFilter(xmlFilter);
+				jfc.showOpenDialog(frmMain);
+				
+				currentFile = jfc.getSelectedFile().toPath();
+				mnuSave.setEnabled(true);
+				
+				//List<Module> = MCUpdater.getInstance().loadFromFile(currentFile.toFile(), serverId)
 			}
 		});
 		mnuOpen.setEnabled(false);
 		mnuFile.add(mnuOpen);
-		
-		JMenuItem mnuSave = new JMenuItem("Save");
-		mnuSave.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
-		mnuSave.setEnabled(false);		
+
 		JMenuItem mntmScanFolder = new JMenuItem("Scan Folder...");
 		mntmScanFolder.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -153,100 +198,28 @@ public class ServerForm extends MCUApp {
 			}
 		});
 		mnuFile.add(mntmScanFolder);
+		
+		mnuSave = new JMenuItem("Save");
+		mnuSave.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				doSave(currentFile);
+			}
+		});
+		mnuSave.setEnabled(false);		
 		mnuFile.add(mnuSave);
 		
 		JMenuItem mnuSaveAs = new JMenuItem("Save As...");
 		mnuSaveAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser saveDialog = new JFileChooser();
-				saveDialog.setFileFilter(new FileFilter() {
-					@Override
-					public boolean accept(File f) {
-						if (f.isDirectory()) {
-							return true;
-						}
-						
-						String extension = getExtension(f);
-						if (extension != null && extension.equalsIgnoreCase("xml")) {
-							return true;
-						} else {
-							return false;
-						}
-					}
-					
-					@Override
-					public String getDescription() {
-						return "XML Files";
-					}
-					
-					private String getExtension(File f) {
-				        String ext = null;
-				        String s = f.getName();
-				        int i = s.lastIndexOf('.');
-
-				        if (i > 0 &&  i < s.length() - 1) {
-				            ext = s.substring(i+1).toLowerCase();
-				        }
-				        return ext;
-				    }
-
-				});
+				saveDialog.setFileFilter(xmlFilter );
 				saveDialog.showSaveDialog(frmMain);
 				Path outputFile = saveDialog.getSelectedFile().toPath();
 				
-				try {
-					BufferedWriter fileWriter = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
-					fileWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-					fileWriter.newLine();
-					fileWriter.write("<ServerPack version=\"" + txtMCUVersion.getText() + "\" xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://raw.github.com/smbarbour/MCUpdater/master/MCU-API/ServerPack.xsd'>");
-					fileWriter.newLine();
-					fileWriter.write("\t<Server id=\"" + txtServerID.getText() + "\" name=\"" + txtServerName.getText() + "\" newsUrl=\"" + txtNewsUrl.getText() + "\" iconUrl=\"" + txtIconURL.getText() + "\" version=\"" + txtVersion.getText() + "\" serverAddress=\"" + txtServerAddress.getText() + "\" revision=\"" + txtRevision.getText() + "\">");
-					fileWriter.newLine();
-					for (Module entry : modelModule.getContents()) {
-						fileWriter.write("\t\t<Module name=\"" + entry.getName() + "\" id=\"" + entry.getId() + "\" depends=\"" + entry.getDepends() + "\">");
-						fileWriter.newLine();
-						fileWriter.write("\t\t\t<URL>" + entry.getUrl() + "</URL>");
-						fileWriter.newLine();
-						fileWriter.write("\t\t\t<Required>" + (entry.getRequired() == true ? "true" : "false") + "</Required>");
-						fileWriter.newLine();
-						fileWriter.write("\t\t\t<InJar>" + (entry.getInJar() == true ? "true" : "false") + "</InJar>");
-						fileWriter.newLine();
-						fileWriter.write("\t\t\t<IsDefault>" + (entry.getIsDefault() == true ? "true" : "false") + "</IsDefault>");
-						fileWriter.newLine();
-						fileWriter.write("\t\t\t<Extract>" + (entry.getExtract() == true ? "true" : "false") + "</Extract>");
-						fileWriter.newLine();
-						fileWriter.write("\t\t\t<InRoot>" + (entry.getInRoot() == true ? "true" : "false") + "</InRoot>");
-						fileWriter.newLine();
-						fileWriter.write("\t\t\t<CoreMod>" + (entry.getCoreMod() == true ? "true" : "false") + "</CoreMod>");
-						fileWriter.newLine();
-						fileWriter.write("\t\t\t<MD5>" + entry.getMD5() + "</MD5>");
-						fileWriter.newLine();
-						for (ConfigFileWrapper cfw : modelConfig.getContents()) {
-							if (cfw.getParentId().equals(entry.getId())) {
-								fileWriter.write("\t\t\t\t<ConfigFile>");
-								fileWriter.newLine();
-								fileWriter.write("\t\t\t\t\t<URL>" + cfw.getConfigFile().getUrl() + "</URL>");
-								fileWriter.newLine();
-								fileWriter.write("\t\t\t\t\t<Path>" + cfw.getConfigFile().getPath() + "</Path>");
-								fileWriter.newLine();
-								fileWriter.write("\t\t\t\t\t<MD5>" + cfw.getConfigFile().getMD5() + "</MD5>");
-								fileWriter.newLine();
-								fileWriter.write("\t\t\t\t</ConfigFile>");
-								fileWriter.newLine();
-							}
-						}
-						fileWriter.write("\t\t</Module>");
-						fileWriter.newLine();
-					}
-					fileWriter.write("\t</Server>");
-					fileWriter.newLine();
-					fileWriter.write("</ServerPack>");
-					fileWriter.newLine();
-					fileWriter.close();
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
+				currentFile = outputFile;
+				mnuSave.setEnabled(true);
+				
+				doSave(currentFile);				
 			}
 		});
 		mnuFile.add(mnuSaveAs);
@@ -259,11 +232,119 @@ public class ServerForm extends MCUApp {
 			}
 		});
 		mnuFile.add(mnuExit);
+		
 		frmMain.getContentPane().setLayout(new BorderLayout(0, 0));
+		
+		JPanel serverListPanel = new JPanel();
+		serverListPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
+		frmMain.getContentPane().add(serverListPanel, BorderLayout.WEST);
+		/*
+		GridBagLayout gbl_serverListPanel = new GridBagLayout();		
+		gbl_serverListPanel.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0};
+		gbl_serverListPanel.rowHeights = new int[]{0, 0, 0, 0, 0};
+		gbl_serverListPanel.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
+		gbl_serverListPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+		*/
+		serverListPanel.setLayout(new BorderLayout(0,0));
+		{
+			lstServers = new JList<ServerDefinition>();
+			lstServers.addListSelectionListener(new ListSelectionListener() {
+				public void valueChanged(ListSelectionEvent e) {
+					ServerDefinition changeTo = lstServers.getSelectedValue();
+					txtServerName.setText(changeTo.getServer().getName());
+					txtServerID.setText(changeTo.getServer().getServerId());
+					txtServerAddress.setText(changeTo.getServer().getAddress());
+					txtNewsUrl.setText(changeTo.getServer().getNewsUrl());
+					txtIconURL.setText(changeTo.getServer().getIconUrl());
+					txtRevision.setText(changeTo.getServer().getRevision());
+					txtVersion.setText(changeTo.getServer().getVersion());
+					chkGenerateList.setSelected(changeTo.getServer().isGenerateList());
+					modelModule.clear();
+					modelParentId.clear();
+					for (Module entry : changeTo.getModules()) {
+						modelModule.add(entry);
+						modelParentId.add(entry.getId());
+					}
+					modelParentId.sort();
+					modelConfig.clear();
+					for (ConfigFileWrapper entry : changeTo.getConfigs()) {
+						modelConfig.add(entry);
+					}
+				}
+			});
+			modelServer = new ServerListModel();
+			lstServers.setModel(modelServer);
+			serverListPanel.add(lstServers, BorderLayout.CENTER);
+			
+			JPanel pnlSLCommands = new JPanel();
+			GridBagLayout gbl_pnlSLCommands = new GridBagLayout();
+			pnlSLCommands.setLayout(gbl_pnlSLCommands);
+			serverListPanel.add(pnlSLCommands, BorderLayout.SOUTH);
+			{
+				Component SLCTopLeft = Box.createRigidArea(new Dimension(3,3));
+				GridBagConstraints gbc_SLCTopLeft = new GridBagConstraints();
+				gbc_SLCTopLeft.insets=new Insets(0, 0, 5, 5);
+				gbc_SLCTopLeft.gridx=0;
+				gbc_SLCTopLeft.gridy=0;
+				pnlSLCommands.add(SLCTopLeft, gbc_SLCTopLeft);
 				
+				JButton btnServerNew = new JButton("New");
+				btnServerNew.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						modelServer.add(new ServerDefinition(new ServerList("newServer","New Server","","","","","",true,"1"), new ArrayList<Module>(), new ArrayList<ConfigFileWrapper>()));
+					}
+				});
+				GridBagConstraints gbc_btnServerNew = new GridBagConstraints();
+				gbc_btnServerNew.insets=new Insets(0, 0, 5, 5);
+				gbc_btnServerNew.gridx=1;
+				gbc_btnServerNew.gridy=1;
+				pnlSLCommands.add(btnServerNew, gbc_btnServerNew);
+				
+				JButton btnServerRemove = new JButton("Remove");
+				btnServerRemove.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						modelServer.remove(lstServers.getSelectedIndex());
+					}
+				});
+				GridBagConstraints gbc_btnServerRemove = new GridBagConstraints();
+				gbc_btnServerRemove.insets=new Insets(0, 0, 5, 5);
+				gbc_btnServerRemove.gridx=2;
+				gbc_btnServerRemove.gridy=1;
+				pnlSLCommands.add(btnServerRemove, gbc_btnServerRemove);
+				
+				JButton btnServerUpdate = new JButton("Update");
+				btnServerUpdate.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						ServerList entry = new ServerList(txtServerID.getText(),txtServerName.getText(),"",txtNewsUrl.getText(),txtIconURL.getText(),txtVersion.getText(),txtServerAddress.getText(),chkGenerateList.isSelected(),txtRevision.getText());
+						List<Module> newModules = new ArrayList<Module>();
+						newModules.addAll(modelModule.getContents());
+						List<ConfigFileWrapper> newConfigs = new ArrayList<ConfigFileWrapper>();
+						newConfigs.addAll(modelConfig.getContents());
+						modelServer.replace(lstServers.getSelectedIndex(), new ServerDefinition(entry, newModules, newConfigs));
+					}
+				});
+				GridBagConstraints gbc_btnServerUpdate = new GridBagConstraints();
+				gbc_btnServerUpdate.insets=new Insets(0, 0, 5, 5);
+				gbc_btnServerUpdate.gridx=3;
+				gbc_btnServerUpdate.gridy=1;
+				pnlSLCommands.add(btnServerUpdate, gbc_btnServerUpdate);
+
+				Component SLCBottomRight = Box.createRigidArea(new Dimension(3,3));
+				GridBagConstraints gbc_SLCBottomRight = new GridBagConstraints();
+				gbc_SLCBottomRight.insets=new Insets(0, 0, 5, 5);
+				gbc_SLCBottomRight.gridx=4;
+				gbc_SLCBottomRight.gridy=2;
+				pnlSLCommands.add(SLCBottomRight, gbc_SLCBottomRight);
+			}
+		}
+
+		JPanel serverDetailPanel = new JPanel();
+		serverDetailPanel.setLayout(new BorderLayout(0,0));
+		frmMain.getContentPane().add(serverDetailPanel, BorderLayout.CENTER);
+		
 		JPanel serverPanel = new JPanel();
 		serverPanel.setBorder(new EtchedBorder(EtchedBorder.LOWERED, null, null));
-		frmMain.getContentPane().add(serverPanel, BorderLayout.NORTH);
+		serverDetailPanel.add(serverPanel, BorderLayout.NORTH);
 		GridBagLayout gbl_serverPanel = new GridBagLayout();
 		gbl_serverPanel.columnWidths = new int[]{0, 0, 0, 0, 0, 0, 0};
 		gbl_serverPanel.rowHeights = new int[]{0, 0, 0, 0, 0};
@@ -280,42 +361,6 @@ public class ServerForm extends MCUApp {
 			gbc_rigidArea.gridx = 0;
 			gbc_rigidArea.gridy = row;
 			serverPanel.add(rigidArea, gbc_rigidArea);
-
-			row++;
-
-			JLabel lblMCUVersion = new JLabel("MCU Version:");
-			GridBagConstraints gbc_lblMCUVersion = new GridBagConstraints();
-			gbc_lblMCUVersion.insets = new Insets(0, 0, 5, 5);
-			gbc_lblMCUVersion.anchor = GridBagConstraints.EAST;
-			gbc_lblMCUVersion.gridx = 1;
-			gbc_lblMCUVersion.gridy = row;
-			serverPanel.add(lblMCUVersion, gbc_lblMCUVersion);
-
-			txtMCUVersion = new JTextField();
-			GridBagConstraints gbc_txtMCUVersion = new GridBagConstraints();
-			gbc_txtMCUVersion.insets = new Insets(0, 0, 5, 5);
-			gbc_txtMCUVersion.fill = GridBagConstraints.HORIZONTAL;
-			gbc_txtMCUVersion.gridx = 2;
-			gbc_txtMCUVersion.gridy = row;
-			serverPanel.add(txtMCUVersion, gbc_txtMCUVersion);
-			txtMCUVersion.setColumns(10);
-
-			JLabel lblServerID = new JLabel("Server ID:");
-			GridBagConstraints gbc_lblServerID = new GridBagConstraints();
-			gbc_lblServerID.anchor = GridBagConstraints.EAST;
-			gbc_lblServerID.insets = new Insets(0, 0, 5, 5);
-			gbc_lblServerID.gridx = 3;
-			gbc_lblServerID.gridy = row;
-			serverPanel.add(lblServerID, gbc_lblServerID);
-
-			txtServerID = new JTextField();
-			GridBagConstraints gbc_txtServerID = new GridBagConstraints();
-			gbc_txtServerID.insets = new Insets(0, 0, 5, 5);
-			gbc_txtServerID.fill = GridBagConstraints.HORIZONTAL;
-			gbc_txtServerID.gridx = 4;
-			gbc_txtServerID.gridy = row;
-			serverPanel.add(txtServerID, gbc_txtServerID);
-			txtServerID.setColumns(10);
 
 			row++;
 
@@ -336,22 +381,22 @@ public class ServerForm extends MCUApp {
 			serverPanel.add(txtServerName, gbc_txtServerName);
 			txtServerName.setColumns(10);
 
-			JLabel lblNewsUrl = new JLabel("News URL:");
-			GridBagConstraints gbc_lblNewsUrl = new GridBagConstraints();
-			gbc_lblNewsUrl.anchor = GridBagConstraints.EAST;
-			gbc_lblNewsUrl.insets = new Insets(0, 0, 5, 5);
-			gbc_lblNewsUrl.gridx = 3;
-			gbc_lblNewsUrl.gridy = row;
-			serverPanel.add(lblNewsUrl, gbc_lblNewsUrl);
+			JLabel lblServerID = new JLabel("Server ID:");
+			GridBagConstraints gbc_lblServerID = new GridBagConstraints();
+			gbc_lblServerID.anchor = GridBagConstraints.EAST;
+			gbc_lblServerID.insets = new Insets(0, 0, 5, 5);
+			gbc_lblServerID.gridx = 3;
+			gbc_lblServerID.gridy = row;
+			serverPanel.add(lblServerID, gbc_lblServerID);
 
-			txtNewsUrl = new JTextField();
-			GridBagConstraints gbc_txtNewsUrl = new GridBagConstraints();
-			gbc_txtNewsUrl.insets = new Insets(0, 0, 5, 5);
-			gbc_txtNewsUrl.fill = GridBagConstraints.HORIZONTAL;
-			gbc_txtNewsUrl.gridx = 4;
-			gbc_txtNewsUrl.gridy = row;
-			serverPanel.add(txtNewsUrl, gbc_txtNewsUrl);
-			txtNewsUrl.setColumns(10);
+			txtServerID = new JTextField();
+			GridBagConstraints gbc_txtServerID = new GridBagConstraints();
+			gbc_txtServerID.insets = new Insets(0, 0, 5, 5);
+			gbc_txtServerID.fill = GridBagConstraints.HORIZONTAL;
+			gbc_txtServerID.gridx = 4;
+			gbc_txtServerID.gridy = row;
+			serverPanel.add(txtServerID, gbc_txtServerID);
+			txtServerID.setColumns(10);
 
 			row++;
 
@@ -372,6 +417,42 @@ public class ServerForm extends MCUApp {
 			serverPanel.add(txtServerAddress, gbc_txtServerAddress);
 			txtServerAddress.setColumns(10);
 
+			JLabel lblNewsUrl = new JLabel("News URL:");
+			GridBagConstraints gbc_lblNewsUrl = new GridBagConstraints();
+			gbc_lblNewsUrl.anchor = GridBagConstraints.EAST;
+			gbc_lblNewsUrl.insets = new Insets(0, 0, 5, 5);
+			gbc_lblNewsUrl.gridx = 3;
+			gbc_lblNewsUrl.gridy = row;
+			serverPanel.add(lblNewsUrl, gbc_lblNewsUrl);
+
+			txtNewsUrl = new JTextField();
+			GridBagConstraints gbc_txtNewsUrl = new GridBagConstraints();
+			gbc_txtNewsUrl.insets = new Insets(0, 0, 5, 5);
+			gbc_txtNewsUrl.fill = GridBagConstraints.HORIZONTAL;
+			gbc_txtNewsUrl.gridx = 4;
+			gbc_txtNewsUrl.gridy = row;
+			serverPanel.add(txtNewsUrl, gbc_txtNewsUrl);
+			txtNewsUrl.setColumns(10);
+
+			row++;
+
+			JLabel lblIconURL = new JLabel("Icon URL:");
+			GridBagConstraints gbc_lblIconURL = new GridBagConstraints();
+			gbc_lblIconURL.anchor = GridBagConstraints.EAST;
+			gbc_lblIconURL.insets = new Insets(0, 0, 5, 5);
+			gbc_lblIconURL.gridx = 1;
+			gbc_lblIconURL.gridy = row;
+			serverPanel.add(lblIconURL, gbc_lblIconURL);
+
+			txtIconURL = new JTextField();
+			GridBagConstraints gbc_txtIconURL = new GridBagConstraints();
+			gbc_txtIconURL.insets = new Insets(0, 0, 5, 5);
+			gbc_txtIconURL.fill = GridBagConstraints.HORIZONTAL;
+			gbc_txtIconURL.gridx = 2;
+			gbc_txtIconURL.gridy = row;
+			serverPanel.add(txtIconURL, gbc_txtIconURL);
+			txtIconURL.setColumns(10);
+
 			JLabel lblVersion = new JLabel("Minecraft Version:");
 			GridBagConstraints gbc_lblVersion = new GridBagConstraints();
 			gbc_lblVersion.anchor = GridBagConstraints.EAST;
@@ -391,28 +472,11 @@ public class ServerForm extends MCUApp {
 
 			row++;
 			
-			JLabel lblIconURL = new JLabel("Icon URL:");
-			GridBagConstraints gbc_lblIconURL = new GridBagConstraints();
-			gbc_lblIconURL.anchor = GridBagConstraints.EAST;
-			gbc_lblIconURL.insets = new Insets(0, 0, 5, 5);
-			gbc_lblIconURL.gridx = 1;
-			gbc_lblIconURL.gridy = row;
-			serverPanel.add(lblIconURL, gbc_lblIconURL);
-
-			txtIconURL = new JTextField();
-			GridBagConstraints gbc_txtIconURL = new GridBagConstraints();
-			gbc_txtIconURL.insets = new Insets(0, 0, 5, 5);
-			gbc_txtIconURL.fill = GridBagConstraints.HORIZONTAL;
-			gbc_txtIconURL.gridx = 2;
-			gbc_txtIconURL.gridy = row;
-			serverPanel.add(txtIconURL, gbc_txtIconURL);
-			txtIconURL.setColumns(10);
-
 			JLabel lblRevision = new JLabel("ServerPack Revision:");
 			GridBagConstraints gbc_lblRevision = new GridBagConstraints();
 			gbc_lblRevision.anchor = GridBagConstraints.EAST;
 			gbc_lblRevision.insets = new Insets(0, 0, 5, 5);
-			gbc_lblRevision.gridx = 3;
+			gbc_lblRevision.gridx = 1;
 			gbc_lblRevision.gridy = row;
 			serverPanel.add(lblRevision, gbc_lblRevision);
 
@@ -420,10 +484,27 @@ public class ServerForm extends MCUApp {
 			GridBagConstraints gbc_txtRevision = new GridBagConstraints();
 			gbc_txtRevision.insets = new Insets(0, 0, 5, 5);
 			gbc_txtRevision.fill = GridBagConstraints.HORIZONTAL;
-			gbc_txtRevision.gridx = 4;
+			gbc_txtRevision.gridx = 2;
 			gbc_txtRevision.gridy = row;
 			serverPanel.add(txtRevision, gbc_txtRevision);
 			txtRevision.setColumns(10);
+			
+			JLabel lblGenerateList = new JLabel("Generate List:");
+			lblGenerateList.setHorizontalAlignment(SwingConstants.TRAILING);
+			GridBagConstraints gbc_lblGenerateList = new GridBagConstraints();
+			gbc_lblGenerateList.fill = GridBagConstraints.HORIZONTAL;
+			gbc_lblGenerateList.insets = new Insets(0, 0, 5, 5);
+			gbc_lblGenerateList.gridx = 3;
+			gbc_lblGenerateList.gridy = row;
+			serverPanel.add(lblGenerateList, gbc_lblGenerateList);
+
+			chkGenerateList = new JCheckBox("");
+			GridBagConstraints gbc_chkGenerateList = new GridBagConstraints();
+			gbc_chkGenerateList.insets = new Insets(0, 0, 5, 5);
+			gbc_chkGenerateList.anchor = GridBagConstraints.WEST;
+			gbc_chkGenerateList.gridx = 4;
+			gbc_chkGenerateList.gridy = row;
+			serverPanel.add(chkGenerateList, gbc_chkGenerateList);
 			
 			row++;
 
@@ -437,7 +518,7 @@ public class ServerForm extends MCUApp {
 		serverPanel.setSize(serverPanel.getWidth(), (int)serverPanel.getMinimumSize().getHeight());
 		
 		JPanel detailPanel = new JPanel();
-		frmMain.getContentPane().add(detailPanel, BorderLayout.CENTER);
+		serverDetailPanel.add(detailPanel, BorderLayout.CENTER);
 		detailPanel.setLayout(new GridLayout(1, 0, 0, 0));
 		
 		JPanel modulePanel = new JPanel();
@@ -1043,6 +1124,63 @@ public class ServerForm extends MCUApp {
 		}
 	}
 
+	protected void doSave(Path outputFile) {
+		try {
+			BufferedWriter fileWriter = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+			fileWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+			fileWriter.newLine();
+			fileWriter.write("<ServerPack version=\"" + Version.API_VERSION + "\" xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://raw.github.com/smbarbour/MCUpdater/master/MCU-API/ServerPack.xsd'>");
+			fileWriter.newLine();
+			for (ServerDefinition server : modelServer.getContents()) {
+				fileWriter.write("\t<Server id=\"" + server.getServer().getServerId() + "\" name=\"" + server.getServer().getName() + "\" newsUrl=\"" + server.getServer().getNewsUrl() + "\" iconUrl=\"" + server.getServer().getIconUrl() + "\" version=\"" + server.getServer().getVersion() + "\" serverAddress=\"" + server.getServer().getAddress()   + "\" revision=\"" + server.getServer().getRevision() + "\" generateList=\"" + server.getServer().isGenerateList() + "\">");
+				fileWriter.newLine();
+				for (Module entry : server.getModules()) {
+					fileWriter.write("\t\t<Module name=\"" + entry.getName() + "\" id=\"" + entry.getId() + "\" depends=\"" + entry.getDepends() + "\">");
+					fileWriter.newLine();
+					fileWriter.write("\t\t\t<URL>" + entry.getUrl() + "</URL>");
+					fileWriter.newLine();
+					fileWriter.write("\t\t\t<Required>" + (entry.getRequired() == true ? "true" : "false") + "</Required>");
+					fileWriter.newLine();
+					fileWriter.write("\t\t\t<InJar>" + (entry.getInJar() == true ? "true" : "false") + "</InJar>");
+					fileWriter.newLine();
+					fileWriter.write("\t\t\t<IsDefault>" + (entry.getIsDefault() == true ? "true" : "false") + "</IsDefault>");
+					fileWriter.newLine();
+					fileWriter.write("\t\t\t<Extract>" + (entry.getExtract() == true ? "true" : "false") + "</Extract>");
+					fileWriter.newLine();
+					fileWriter.write("\t\t\t<InRoot>" + (entry.getInRoot() == true ? "true" : "false") + "</InRoot>");
+					fileWriter.newLine();
+					fileWriter.write("\t\t\t<CoreMod>" + (entry.getCoreMod() == true ? "true" : "false") + "</CoreMod>");
+					fileWriter.newLine();
+					fileWriter.write("\t\t\t<MD5>" + entry.getMD5() + "</MD5>");
+					fileWriter.newLine();
+					for (ConfigFileWrapper cfw : server.getConfigs()) {
+						if (cfw.getParentId().equals(entry.getId())) {
+							fileWriter.write("\t\t\t\t<ConfigFile>");
+							fileWriter.newLine();
+							fileWriter.write("\t\t\t\t\t<URL>" + cfw.getConfigFile().getUrl() + "</URL>");
+							fileWriter.newLine();
+							fileWriter.write("\t\t\t\t\t<Path>" + cfw.getConfigFile().getPath() + "</Path>");
+							fileWriter.newLine();
+							fileWriter.write("\t\t\t\t\t<MD5>" + cfw.getConfigFile().getMD5() + "</MD5>");
+							fileWriter.newLine();
+							fileWriter.write("\t\t\t\t</ConfigFile>");
+							fileWriter.newLine();
+						}
+					}
+					fileWriter.write("\t\t</Module>");
+					fileWriter.newLine();
+				}
+				fileWriter.write("\t</Server>");
+				fileWriter.newLine();
+			}
+			fileWriter.write("</ServerPack>");
+			fileWriter.newLine();
+			fileWriter.close();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}		
+	}
+
 	public void AddModule(Module newMod) {
 		modelModule.add(newMod);
 		modelParentId.add(newMod.getId());
@@ -1064,7 +1202,6 @@ public class ServerForm extends MCUApp {
 
 	@Override
 	public void log(String msg) {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -1100,7 +1237,7 @@ class ModuleListModel extends AbstractListModel<Module> {
 		modules.clear();
 		this.fireContentsChanged(this, 0, current);
 	}
-	
+
 	public void replace(int index, Module newModule) {
 		this.modules.set(index, newModule);
 		this.fireContentsChanged(this, index, index);
@@ -1147,7 +1284,7 @@ class ConfigFileListModel extends AbstractListModel<ConfigFileWrapper> {
 		this.configs.clear();
 		this.fireContentsChanged(this, 0, current);
 	}
-	
+		
 	public void add(ConfigFileWrapper newConfig) {
 		this.configs.add(newConfig);
 		this.fireContentsChanged(this, 0, configs.size());
@@ -1155,10 +1292,12 @@ class ConfigFileListModel extends AbstractListModel<ConfigFileWrapper> {
 	
 	public void replace(int index, ConfigFileWrapper newConfig) {
 		this.configs.set(index, newConfig);
+		this.fireContentsChanged(this, 0, configs.size());
 	}
 	
 	public void remove(int index) {
 		this.configs.remove(index);
+		this.fireContentsChanged(this, 0, configs.size());
 	}
 	
 	public List<ConfigFileWrapper> getContents() {
@@ -1234,6 +1373,49 @@ class ModIdListModel extends AbstractListModel<String> implements ComboBoxModel<
 	@Override
 	public Object getSelectedItem() {
 		return this.selected;
+	}	
+}
+
+class ServerListModel extends AbstractListModel<ServerDefinition> {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1724821606072665288L;
+	private List<ServerDefinition> servers = new ArrayList<ServerDefinition>();
+	@Override
+	public int getSize() {
+		return this.servers.size();
+	}
+
+	public void clear() {
+		int current = servers.size() - 1;
+		this.servers.clear();
+		this.fireContentsChanged(this, 0, current);
+	}
+	
+	public void add(ServerDefinition newServer) {
+		this.servers.add(newServer);
+		this.fireContentsChanged(this, 0, servers.size());
+	}
+	
+	public void replace(int index, ServerDefinition newServer) {
+		this.servers.set(index, newServer);
+		this.fireContentsChanged(this, 0, servers.size());
+	}
+	
+	public void remove(int index) {
+		this.servers.remove(index);
+		this.fireContentsChanged(this, 0, servers.size());
+	}
+	
+	@Override
+	public ServerDefinition getElementAt(int index) {
+		return this.servers.get(index);
+	}
+	
+	public List<ServerDefinition> getContents() {
+		return this.servers;
 	}
 	
 }

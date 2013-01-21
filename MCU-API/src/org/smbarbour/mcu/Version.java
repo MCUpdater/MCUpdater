@@ -24,6 +24,7 @@ public class Version {
 	
 	public static final int MAJOR_VERSION = 2;
 	public static final int MINOR_VERSION = 2;
+	public static final String API_VERSION = MAJOR_VERSION + "." + MINOR_VERSION;
 	public static final String VERSION = "v"+MAJOR_VERSION+"."+MINOR_VERSION+"."+BUILD_VERSION;
 	
 	public static boolean isVersionOld(String packVersion) {

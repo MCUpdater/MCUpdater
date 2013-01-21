@@ -108,4 +108,8 @@ public class ServerList {
 	public void setMCUVersion(String mcuVersion) {
 		this.mcuVersion = mcuVersion;
 	}
+	
+	public String toString() {
+		return this.name;
+	}
 }
