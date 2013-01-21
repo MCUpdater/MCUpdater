@@ -135,8 +135,8 @@ public class ServerForm extends MCUApp {
 	
 	private void initialize() {
 		frmMain = new JFrame();
-		frmMain.setTitle("MCUpdater - ServerPack Utility (Implementing MCU-API " + Version.VERSION + ")");
-		frmMain.setBounds(100,100,800,600);
+		frmMain.setTitle("MCUpdater - ServerPack Utility build " + Version.BUILD_VERSION + " (Implementing MCU-API " + Version.API_VERSION + ")");
+		frmMain.setBounds(100,100,900,700);
 		frmMain.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		JMenuBar menuBar = new JMenuBar();
@@ -156,7 +156,7 @@ public class ServerForm extends MCUApp {
 		});
 		mnuFile.add(mnuNew);
 		
-		JMenuItem mnuOpen = new JMenuItem("Open...");
+		JMenuItem mnuOpen = new JMenuItem("Open...");http://mcupdater.com/doku.php?id=serverpack
 		mnuOpen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				modelModule.clear();

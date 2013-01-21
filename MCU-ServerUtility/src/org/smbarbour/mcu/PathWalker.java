@@ -3,6 +3,7 @@ package org.smbarbour.mcu;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URLEncoder;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,7 +38,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 	@Override
 	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 		Path relativePath = rootPath.relativize(file);
-		String downloadURL = urlBase + "/" + relativePath.toString().replace("\\","/");
+		String downloadURL = urlBase + "/" + relativePath.toString().replace("\\","/").replace(" ", "%20");
 		InputStream is = Files.newInputStream(file);
 		byte[] hash = DigestUtils.md5(is);
 		String md5 = new String(Hex.encodeHex(hash));

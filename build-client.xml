@@ -39,7 +39,7 @@
 			</manifest>
 			<fileset dir="${MCUpdater.location}/bin"/>
 			<zipfileset excludes="META-INF/*.SF" src="${MCUpdater.location}/log4j-1.2.16.jar"/>
-			<fileset dir="${MCU-API.location}/bin"/>
+			<fileset excludes="version.properties" dir="${MCU-API.location}/bin"/>
 			<zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/commons-codec-1.6.jar"/>
 			<zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/commons-io-2.1.jar"/>
 			<zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/jbeat-1.0.jar"/>
