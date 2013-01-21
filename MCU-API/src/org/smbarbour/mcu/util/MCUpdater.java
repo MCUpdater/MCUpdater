@@ -223,7 +223,7 @@ public class MCUpdater {
 		return slList;
 	}
 	
-	public boolean parseBoolean(String attribute) {
+	public static boolean parseBoolean(String attribute) {
 		if (attribute.equalsIgnoreCase("false")) {
 			return false;
 		} else {

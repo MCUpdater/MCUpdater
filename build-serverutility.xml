@@ -1,50 +1,50 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project default="package" name="Create Runnable Jar for Project MCU-ServerUtility">
-    <property name="MCU-API.location" value="MCU-API"/>
-    <property name="MCU-ServerUtility.location" value="MCU-ServerUtility"/>
-	
+	<property name="MCU-API.location" value="MCU-API"/>
+	<property name="MCU-ServerUtility.location" value="MCU-ServerUtility"/>
+
 	<property environment="ENV"/>
 	<property name="ENV.BUILD_NUMBER" value="0"/>
 
 	<!--this file was created by Eclipse Runnable JAR Export Wizard-->
-    <!--ANT 1.7 is required                                        -->
-    <target name="build-API">
-	<ant antfile="build.xml" dir="${MCU-API.location}" inheritAll="false" target="build-project">
-		<propertyset>
-			<propertyref name="build.compiler"/>
-		</propertyset>
-	</ant>
-    </target>
-    <target name="build-Client">
-	<ant antfile="build.xml" dir="${MCU-ServerUtility.location}" inheritAll="false" target="build-project">
-		<propertyset>
-			<propertyref name="build.compiler"/>
-		</propertyset>
-	</ant>
-    </target>
-    <target name="package" depends="build-API,build-Client">
-    	<property name="git_branch" value="${ENV.GIT_BRANCH}"/>
-    	<echo message="git_branch = ${git_branch}"/>
-    	<propertyfile file="${MCU-ServerUtility.location}/bin/version.properties" comment="MCUpdater automatic build version">
-    		<entry key="build_version" value="${ENV.BUILD_NUMBER}"/>
-    		<entry key="git_branch" value="${git_branch}"/>
-    		<entry key="git_commit" value="${ENV.GIT_COMMIT}"/>
-    	</propertyfile>
+	<!--ANT 1.7 is required                                        -->
+	<target name="build-API">
+		<ant antfile="build.xml" dir="${MCU-API.location}" inheritAll="false" target="build-project">
+			<propertyset>
+				<propertyref name="build.compiler"/>
+			</propertyset>
+		</ant>
+	</target>
+	<target name="build-Client">
+		<ant antfile="build.xml" dir="${MCU-ServerUtility.location}" inheritAll="false" target="build-project">
+			<propertyset>
+				<propertyref name="build.compiler"/>
+			</propertyset>
+		</ant>
+	</target>
+	<target name="package" depends="build-API,build-Client">
+		<property name="git_branch" value="${ENV.GIT_BRANCH}"/>
+		<echo message="git_branch = ${git_branch}"/>
+		<propertyfile file="${MCU-ServerUtility.location}/bin/version.properties" comment="MCUpdater automatic build version">
+			<entry key="build_version" value="${ENV.BUILD_NUMBER}"/>
+			<entry key="git_branch" value="${git_branch}"/>
+			<entry key="git_commit" value="${ENV.GIT_COMMIT}"/>
+		</propertyfile>
 
-        <jar destfile="dist/MCU-ServerUtility.jar" filesetmanifest="mergewithoutmain">
-            <manifest>
-                <attribute name="Main-Class" value="org.smbarbour.mcu.Main"/>
-                <attribute name="Class-Path" value="."/>
-            	<attribute name="SplashScreen-Image" value="mcu-splash.png"/>
-            </manifest>
-            <fileset dir="${MCU-ServerUtility.location}/bin"/>
-            <fileset dir="${MCU-API.location}/bin"/>
-	    <zipfileset excludes="META-INF/*.SF" src="${MCU-ServerUtility.location}/lib/argo-small-3.2.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/commons-codec-1.6.jar"/>
-	    <zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/commons-io-2.1.jar"/>
-            <zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/jbeat-1.0.jar"/>
-	    <zipfileset src="${MCU-ServerUtility.location}/resources/famfamfam_silk_icons_v013.zip"/>
-	    <zipfileset src="${MCU-API.location}/assets-API.zip"/>
-        </jar>
-    </target>
+		<jar destfile="dist/MCU-ServerUtility.jar" filesetmanifest="mergewithoutmain">
+			<manifest>
+				<attribute name="Main-Class" value="org.smbarbour.mcu.Main"/>
+				<attribute name="Class-Path" value="."/>
+				<attribute name="SplashScreen-Image" value="mcu-splash.png"/>
+			</manifest>
+			<fileset dir="${MCU-ServerUtility.location}/bin"/>
+			<fileset dir="${MCU-API.location}/bin"/>
+			<zipfileset excludes="META-INF/*.SF" src="${MCU-ServerUtility.location}/lib/argo-small-3.2.jar"/>
+			<zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/commons-codec-1.6.jar"/>
+			<zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/commons-io-2.1.jar"/>
+			<zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/jbeat-1.0.jar"/>
+			<zipfileset src="${MCU-ServerUtility.location}/resources/famfamfam_silk_icons_v013.zip"/>
+			<zipfileset src="${MCU-API.location}/assets-API.zip"/>
+		</jar>
+	</target>
 </project>
