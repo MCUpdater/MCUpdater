@@ -38,7 +38,7 @@
 				<attribute name="SplashScreen-Image" value="mcu-splash.png"/>
 			</manifest>
 			<fileset dir="${MCU-ServerUtility.location}/bin"/>
-			<fileset dir="${MCU-API.location}/bin"/>
+			<fileset excludes="version.properties" dir="${MCU-API.location}/bin"/>
 			<zipfileset excludes="META-INF/*.SF" src="${MCU-ServerUtility.location}/lib/argo-small-3.2.jar"/>
 			<zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/commons-codec-1.6.jar"/>
 			<zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/commons-io-2.1.jar"/>
