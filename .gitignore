@@ -1,5 +1,6 @@
 *.class
 mcu/bin/
+MCU-API/bin/
 
 /.metadata
 /dist/MCUpdater.jar
