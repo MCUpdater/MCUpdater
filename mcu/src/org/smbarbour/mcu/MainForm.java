@@ -42,6 +42,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -331,30 +333,14 @@ public class MainForm extends MCUApp {
 		btnLaunchMinecraft = new JButton("Launch Minecraft");
 		btnLaunchMinecraft.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (!requestLogin()) {					
-					if (loginData.getUserName().isEmpty()) {
-						JOptionPane.showMessageDialog(null,"You must login first.","MCUpdater",JOptionPane.ERROR_MESSAGE);
-						return;
+				if (!System.getProperty("os.name").startsWith("Mac")){
+					if (!requestLogin()) {					
+						if (loginData.getUserName().isEmpty()) {
+							JOptionPane.showMessageDialog(null,"You must login first.","MCUpdater",JOptionPane.ERROR_MESSAGE);
+							return;
+						}
 					}
 				}
-/*
-				File launcher = new File(mcu.getMCFolder() + MCUpdater.sep + "minecraft.jar");
-				if(!launcher.exists())
-				{
-					try {
-						URL launcherURL = new URL("http://s3.amazonaws.com/MinecraftDownload/launcher/minecraft.jar");
-						ReadableByteChannel rbc = Channels.newChannel(launcherURL.openStream());
-						FileOutputStream fos = new FileOutputStream(launcher);
-						fos.getChannel().transferFrom(rbc, 0, 1 << 24);
-						fos.close();
-					} catch (MalformedURLException mue) {
-						mue.printStackTrace();
-
-					} catch (IOException ioe) {
-						ioe.printStackTrace();
-					}
-				}
-*/
 				File outFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "client-log.txt");
 				outFile.delete();
 				btnLaunchMinecraft.setEnabled(false);
@@ -368,9 +354,32 @@ public class MainForm extends MCUApp {
 						break;
 					}
 				}
-				//LauncherThread thread = LauncherThread.launch(launcher, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), Boolean.parseBoolean(config.getProperty("suppressUpdates")), outFile, console);
-				NativeLauncherThread thread = NativeLauncherThread.launch(window, loginData, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), outFile, console);
-				thread.register( btnLaunchMinecraft, killItem );
+
+				GenericLauncherThread thread;
+				if (System.getProperty("os.name").startsWith("Mac")) {
+
+					File launcher = new File(mcu.getMCFolder() + MCUpdater.sep + "minecraft.jar");
+					if(!launcher.exists())
+					{
+						try {
+							URL launcherURL = new URL("http://s3.amazonaws.com/MinecraftDownload/launcher/minecraft.jar");
+							ReadableByteChannel rbc = Channels.newChannel(launcherURL.openStream());
+							FileOutputStream fos = new FileOutputStream(launcher);
+							fos.getChannel().transferFrom(rbc, 0, 1 << 24);
+							fos.close();
+						} catch (MalformedURLException mue) {
+							mue.printStackTrace();
+
+						} catch (IOException ioe) {
+							ioe.printStackTrace();
+						}
+					}
+					thread = LauncherThread.launch(launcher, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), Boolean.parseBoolean(config.getProperty("suppressUpdates")), outFile, console);
+
+				} else {
+					thread = NativeLauncherThread.launch(window, loginData, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), outFile, console);
+				}
+				thread.register(window, btnLaunchMinecraft, killItem );
 				thread.start();
 			}
 		});

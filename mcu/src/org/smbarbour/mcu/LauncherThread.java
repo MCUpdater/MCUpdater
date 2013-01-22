@@ -17,7 +17,7 @@ import javax.swing.JOptionPane;
 
 import org.smbarbour.mcu.util.MCUpdater;
 
-public class LauncherThread implements Runnable {
+public class LauncherThread implements Runnable, GenericLauncherThread {
 	private File launcher;
 	private String minMem;
 	private String maxMem;
@@ -53,11 +53,13 @@ public class LauncherThread implements Runnable {
 		return me;
 	}
 	
+	@Override
 	public void start() {
 		thread = new Thread(this);
 		thread.start();
 	}
 	
+	@Override
 	public void stop() {
 		if( task != null ) {
 			final int confirm = JOptionPane.showConfirmDialog(null,
@@ -176,6 +178,7 @@ public class LauncherThread implements Runnable {
 		}
 	}
 
+	@Override
 	public void register(MainForm form, JButton btnLaunchMinecraft, MenuItem killItem) {
 		launchButton = btnLaunchMinecraft;
 		this.killItem = killItem;

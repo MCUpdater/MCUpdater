@@ -20,7 +20,7 @@ import javax.swing.JOptionPane;
 
 import org.smbarbour.mcu.util.MCUpdater;
 
-public class NativeLauncherThread implements Runnable {
+public class NativeLauncherThread implements Runnable, GenericLauncherThread {
 
 	private MainForm parent;
 	private String jrePath;
@@ -52,11 +52,13 @@ public class NativeLauncherThread implements Runnable {
 		return me;
 	}
 	
+	@Override
 	public void start() {
 		thread = new Thread(this);
 		thread.start();
 	}
 
+	@Override
 	public void stop() {
 		if( task != null ) {
 			final int confirm = JOptionPane.showConfirmDialog(null,
@@ -212,7 +214,8 @@ public class NativeLauncherThread implements Runnable {
 		}
 	}
 
-	public void register(JButton btnLaunchMinecraft, MenuItem killItem) {
+	@Override
+	public void register(MainForm form, JButton btnLaunchMinecraft, MenuItem killItem) {
 		launchButton = btnLaunchMinecraft;
 		this.killItem = killItem;
 		if( ready ) {
