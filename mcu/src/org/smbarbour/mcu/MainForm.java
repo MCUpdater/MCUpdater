@@ -631,7 +631,7 @@ public class MainForm extends MCUApp {
 			try {
 				Document serverHeader = MCUpdater.readXmlFromUrl(packUrl);
 				Element docEle = serverHeader.getDocumentElement();
-				ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), mcu.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
+				ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), MCUpdater.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
 				List<ServerList> servers = new ArrayList<ServerList>();
 				servers.add(sl);
 				mcu.writeServerList(servers);

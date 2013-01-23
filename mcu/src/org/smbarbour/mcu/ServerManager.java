@@ -84,7 +84,7 @@ public class ServerManager extends JFrame {
 				try {
 					Document serverHeader = MCUpdater.readXmlFromUrl(packURL);
 					Element docEle = serverHeader.getDocumentElement();
-					ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packURL, docEle.getAttribute("newsUrl"), docEle.getAttribute("logoUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), mcu.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
+					ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packURL, docEle.getAttribute("newsUrl"), docEle.getAttribute("logoUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), MCUpdater.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
 					model.add(sl);
 				} catch (Exception x) {
 					x.printStackTrace();
