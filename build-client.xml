@@ -7,9 +7,9 @@
 	<property name="VER.MAJOR" value="2"/>
 	<property name="VER.MINOR" value="2"/>
 	<property name="ENV.BUILD_NUMBER" value="0"/>
-	<condition property="BRANCH-TAG" value="-${git_branch}">
+	<condition property="BRANCH-TAG" value="-${ENV.GIT_BRANCH}">
 		<not>
-			<equals arg1="${git_branch}" arg2="master"/>
+			<equals arg1="${ENV.GIT_BRANCH}" arg2="master"/>
 		</not>
 	</condition>
 	<property name="BRANCH-TAG" value=""/>
