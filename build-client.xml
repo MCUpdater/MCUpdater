@@ -4,8 +4,16 @@
 	<property name="MCUpdater.location" value="mcu"/>
 
 	<property environment="ENV"/>
+	<property name="VER.MAJOR" value="2"/>
+	<property name="VER.MINOR" value="2"/>
 	<property name="ENV.BUILD_NUMBER" value="0"/>
-
+	<condition property="BRANCH-TAG" value="-${git_branch}">
+		<not>
+			<equals arg1="${git_branch}" arg2="master"/>
+		</not>
+	</condition>
+	<property name="BRANCH-TAG" value=""/>
+	
 	<!--this file was created by Eclipse Runnable JAR Export Wizard-->
 	<!--ANT 1.7 is required                                        -->
 	<target name="build-API">
@@ -26,12 +34,14 @@
 		<property name="git_branch" value="${ENV.GIT_BRANCH}"/>
 		<echo message="git_branch = ${git_branch}"/>
 		<propertyfile file="${MCUpdater.location}/bin/version.properties" comment="MCUpdater automatic build version">
+			<entry key="major" value="${VER.MAJOR}"/>
+			<entry key="minor" value="${VER.MINOR}"/>
 			<entry key="build_version" value="${ENV.BUILD_NUMBER}"/>
 			<entry key="git_branch" value="${git_branch}"/>
 			<entry key="git_commit" value="${ENV.GIT_COMMIT}"/>
 		</propertyfile>
 
-		<jar destfile="dist/MCUpdater.jar" filesetmanifest="mergewithoutmain">
+		<jar destfile="dist/MCUpdater${BRANCH-TAG}.${VER.MAJOR}.${VER.MINOR}.${ENV.BUILD_NUMBER}.jar" filesetmanifest="mergewithoutmain">
 			<manifest>
 				<attribute name="Main-Class" value="org.smbarbour.mcu.Main"/>
 				<attribute name="Class-Path" value="."/>
