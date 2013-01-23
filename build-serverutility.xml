@@ -4,8 +4,7 @@
 	<property name="MCU-ServerUtility.location" value="MCU-ServerUtility"/>
 
 	<property environment="ENV"/>
-	<property name="VER.MAJOR" value="2"/>
-	<property name="VER.MINOR" value="2"/>
+	<include file="version.xml"/> <!-- Version data import -->
 	<property name="ENV.BUILD_NUMBER" value="0"/>
 	<condition property="BRANCH-TAG" value="-${ENV.GIT_BRANCH}">
 		<not>
