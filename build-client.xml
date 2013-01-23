@@ -40,6 +40,9 @@
 			<entry key="git_branch" value="${git_branch}"/>
 			<entry key="git_commit" value="${ENV.GIT_COMMIT}"/>
 		</propertyfile>
+		<delete>
+			<fileset dir="dist" includes="**/MCUpdater.*"/>;
+		</delete>
 
 		<jar destfile="dist/MCUpdater${BRANCH-TAG}.${VER.MAJOR}.${VER.MINOR}.${ENV.BUILD_NUMBER}.jar" filesetmanifest="mergewithoutmain">
 			<manifest>
