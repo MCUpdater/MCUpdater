@@ -36,6 +36,7 @@ public class ClientConfig extends JDialog {
 	private JCheckBox chckbxMinimize;
 	//private JCheckBox chckbxSuppressVanillaUpdate;
 	private JTextField txtInstanceRoot;
+	private JCheckBox chckbxSuppressVanillaUpdate;
 
 	/**
 	 * Create the dialog.
@@ -222,7 +223,18 @@ public class ClientConfig extends JDialog {
 		}
 		{
 			JButton btnInstanceRoot = new JButton("Browse");
-			btnInstanceRoot.setEnabled(false);
+			btnInstanceRoot.addActionListener(new ActionListener(){
+
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+					JFileChooser jfc = new JFileChooser();
+					jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					jfc.showOpenDialog(contentPanel);
+					
+					txtInstanceRoot.setText(jfc.getSelectedFile().getAbsolutePath());
+				}
+				
+			});
 			GridBagConstraints gbc_btnInstanceRoot = new GridBagConstraints();
 			gbc_btnInstanceRoot.anchor = GridBagConstraints.WEST;
 			gbc_btnInstanceRoot.insets = new Insets(0, 0, 5, 5);
@@ -255,21 +267,23 @@ public class ClientConfig extends JDialog {
 			contentPanel.add(chckbxMinimize, gbc_chckbxMinimize);
 		}
 		
-		/* This option is obsolete with native launcher
+		/* This option is obsolete with native launcher */
 		// Suppress update
-		++row;
-		{
-			chckbxSuppressVanillaUpdate = new JCheckBox("Suppress vanilla update check");
-			GridBagConstraints gbc_chckbxSuppressVanillaUpdate = new GridBagConstraints();
-			gbc_chckbxSuppressVanillaUpdate.anchor = GridBagConstraints.WEST;
-			gbc_chckbxSuppressVanillaUpdate.gridwidth = 3;
-			gbc_chckbxSuppressVanillaUpdate.insets = new Insets(0, 0, 5, 5);
-			gbc_chckbxSuppressVanillaUpdate.gridx = 1;
-			gbc_chckbxSuppressVanillaUpdate.gridy = row;
-			chckbxSuppressVanillaUpdate.setSelected(Boolean.parseBoolean(parent.getConfig().getProperty("suppressUpdates")));
-			contentPanel.add(chckbxSuppressVanillaUpdate, gbc_chckbxSuppressVanillaUpdate);
+		if (System.getProperty("os.name").startsWith("Mac")) {
+			++row;
+			{
+				chckbxSuppressVanillaUpdate = new JCheckBox("Suppress vanilla update check");
+				GridBagConstraints gbc_chckbxSuppressVanillaUpdate = new GridBagConstraints();
+				gbc_chckbxSuppressVanillaUpdate.anchor = GridBagConstraints.WEST;
+				gbc_chckbxSuppressVanillaUpdate.gridwidth = 3;
+				gbc_chckbxSuppressVanillaUpdate.insets = new Insets(0, 0, 5, 5);
+				gbc_chckbxSuppressVanillaUpdate.gridx = 1;
+				gbc_chckbxSuppressVanillaUpdate.gridy = row;
+				chckbxSuppressVanillaUpdate.setSelected(Boolean.parseBoolean(parent.getConfig().getProperty("suppressUpdates")));
+				contentPanel.add(chckbxSuppressVanillaUpdate, gbc_chckbxSuppressVanillaUpdate);
+			}
 		}
-		*/
+		/* --- */
 		
 		// Stretch to make room for the content panel
 		setSize(this.getWidth(), this.getHeight() + (int)contentPanel.getMinimumSize().getHeight());
