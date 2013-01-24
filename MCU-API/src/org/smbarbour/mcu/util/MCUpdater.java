@@ -44,6 +44,7 @@ public class MCUpdater {
 	public MessageDigest md5;
 	public ImageIcon defaultIcon;
 	private String newestMC = "";
+	private Map<String,String> versionMap = new HashMap<String,String>();
 	
 	private static MCUpdater INSTANCE;
 
@@ -91,6 +92,31 @@ public class MCUpdater {
 			DownloadCache.init(new File(archiveFolder,"cache"));
 		} catch (IllegalArgumentException e) {
 			_debug( "Suppressed attempt to re-init download cache?!" );
+		}
+		try {
+			long start = System.currentTimeMillis();
+			URL md5s = new URL("http://files.mcupdater.com/md5.dat");
+			InputStreamReader input = new InputStreamReader(md5s.openStream());
+			BufferedReader buffer = new BufferedReader(input);
+			String currentLine = null;
+			while(true){
+				currentLine = buffer.readLine();
+				if(currentLine != null){
+					String entry[] = currentLine.split("\\|");
+					versionMap.put(entry[0], entry[1]);
+					newestMC = entry[1]; // Most recent entry in md5.dat is the current release
+				} else {
+					break;
+				}
+			}
+			buffer.close();
+			input.close();
+			_debug("Took "+(System.currentTimeMillis()-start)+"ms to load md5.dat");
+			_debug("newest Minecraft in md5.dat: " + newestMC);
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -424,33 +450,7 @@ public class MCUpdater {
 	}
 
 	private String lookupHash(String hash) {
-		Map<String,String> map = new HashMap<String,String>();
-		try {
-			long start = System.currentTimeMillis();
-			URL md5s = new URL("http://files.mcupdater.com/md5.dat");
-			InputStreamReader input = new InputStreamReader(md5s.openStream());
-			BufferedReader buffer = new BufferedReader(input);
-			String currentLine = null;
-			while(true){
-				currentLine = buffer.readLine();
-				if(currentLine != null){
-					String entry[] = currentLine.split("\\|");
-					map.put(entry[0], entry[1]);
-					newestMC = entry[1]; // Most recent entry in md5.dat is the current release
-				} else {
-					break;
-				}
-			}
-			buffer.close();
-			input.close();
-			_debug("Took "+(System.currentTimeMillis()-start)+"ms to load md5.dat");
-			_debug("newest Minecraft in md5.dat: " + newestMC);
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		String out = map.get(hash);
+		String out = versionMap.get(hash);
 		if (out == null) {
 			out = "";
 		}
