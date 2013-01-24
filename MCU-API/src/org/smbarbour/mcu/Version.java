@@ -36,10 +36,10 @@ public class Version {
 			int mcuParts[] = { MAJOR_VERSION, MINOR_VERSION, BUILD_VERSION };
 			for( int q = 0; q < mcuParts.length && q < parts.length; ++q ) {
 				int packPart = Integer.valueOf(parts[q]);
-				if( packPart < mcuParts[q] )
-					return false;
+				if( packPart > mcuParts[q] )
+					return true;
 			}
-			return true;
+			return false;
 		} catch( NumberFormatException e ) {
 			log("Got non-numerical pack format version '"+packVersion+"'");
 		} catch( ArrayIndexOutOfBoundsException e ) {
