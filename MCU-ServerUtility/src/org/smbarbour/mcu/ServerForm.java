@@ -50,9 +50,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 
 public class ServerForm extends MCUApp {
 
@@ -91,6 +96,9 @@ public class ServerForm extends MCUApp {
 	private JButton btnModMoveDown;
 	private JMenuItem mnuSave;
 	private JList<ServerDefinition> lstServers;
+	private boolean serverDirty = false;
+	private boolean moduleDirty = false;
+	private boolean configDirty = false;
 
 	protected Path currentFile;
 	protected FileFilter xmlFilter = new FileFilter() {
@@ -383,6 +391,7 @@ public class ServerForm extends MCUApp {
 						List<ConfigFileWrapper> newConfigs = new ArrayList<ConfigFileWrapper>();
 						newConfigs.addAll(modelConfig.getContents());
 						modelServer.replace(lstServers.getSelectedIndex(), new ServerDefinition(entry, newModules, newConfigs));
+						serverDirty = false;
 					}
 				});
 				GridBagConstraints gbc_btnServerUpdate = new GridBagConstraints();
@@ -415,6 +424,23 @@ public class ServerForm extends MCUApp {
 		serverPanel.setLayout(gbl_serverPanel);
 		
 		{ // serverPanel
+			DocumentListener serverDocumentListener = new DocumentListener(){
+
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					serverDirty = true;
+				}
+
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					serverDirty = true;				}
+
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					serverDirty = true;				}
+				
+			};
+			
 			int row = 0;
 
 			Component rigidArea = Box.createRigidArea(new Dimension(3, 3));
@@ -435,6 +461,7 @@ public class ServerForm extends MCUApp {
 			serverPanel.add(lblServerName, gbc_lblServerName);
 
 			txtServerName = new JTextField();
+			txtServerName.getDocument().addDocumentListener(serverDocumentListener);
 			GridBagConstraints gbc_txtServerName = new GridBagConstraints();
 			gbc_txtServerName.insets = new Insets(0, 0, 5, 5);
 			gbc_txtServerName.fill = GridBagConstraints.HORIZONTAL;
@@ -452,6 +479,7 @@ public class ServerForm extends MCUApp {
 			serverPanel.add(lblServerID, gbc_lblServerID);
 
 			txtServerID = new JTextField();
+			txtServerID.getDocument().addDocumentListener(serverDocumentListener);
 			GridBagConstraints gbc_txtServerID = new GridBagConstraints();
 			gbc_txtServerID.insets = new Insets(0, 0, 5, 5);
 			gbc_txtServerID.fill = GridBagConstraints.HORIZONTAL;
@@ -471,6 +499,7 @@ public class ServerForm extends MCUApp {
 			serverPanel.add(lblServerAddress, gbc_lblServerAddress);
 
 			txtServerAddress = new JTextField();
+			txtServerAddress.getDocument().addDocumentListener(serverDocumentListener);
 			GridBagConstraints gbc_txtServerAddress = new GridBagConstraints();
 			gbc_txtServerAddress.insets = new Insets(0, 0, 5, 5);
 			gbc_txtServerAddress.fill = GridBagConstraints.HORIZONTAL;
@@ -488,6 +517,7 @@ public class ServerForm extends MCUApp {
 			serverPanel.add(lblNewsUrl, gbc_lblNewsUrl);
 
 			txtServerNewsUrl = new JTextField();
+			txtServerNewsUrl.getDocument().addDocumentListener(serverDocumentListener);
 			GridBagConstraints gbc_txtNewsUrl = new GridBagConstraints();
 			gbc_txtNewsUrl.insets = new Insets(0, 0, 5, 5);
 			gbc_txtNewsUrl.fill = GridBagConstraints.HORIZONTAL;
@@ -507,6 +537,7 @@ public class ServerForm extends MCUApp {
 			serverPanel.add(lblIconURL, gbc_lblIconURL);
 
 			txtServerIconUrl = new JTextField();
+			txtServerIconUrl.getDocument().addDocumentListener(serverDocumentListener);
 			GridBagConstraints gbc_txtIconURL = new GridBagConstraints();
 			gbc_txtIconURL.insets = new Insets(0, 0, 5, 5);
 			gbc_txtIconURL.fill = GridBagConstraints.HORIZONTAL;
@@ -524,6 +555,7 @@ public class ServerForm extends MCUApp {
 			serverPanel.add(lblVersion, gbc_lblVersion);
 
 			txtServerMCVersion = new JTextField();
+			txtServerMCVersion.getDocument().addDocumentListener(serverDocumentListener);
 			GridBagConstraints gbc_txtVersion = new GridBagConstraints();
 			gbc_txtVersion.insets = new Insets(0, 0, 5, 5);
 			gbc_txtVersion.fill = GridBagConstraints.HORIZONTAL;
@@ -543,6 +575,7 @@ public class ServerForm extends MCUApp {
 			serverPanel.add(lblRevision, gbc_lblRevision);
 
 			txtServerRevision = new JTextField();
+			txtServerRevision.getDocument().addDocumentListener(serverDocumentListener);
 			GridBagConstraints gbc_txtRevision = new GridBagConstraints();
 			gbc_txtRevision.insets = new Insets(0, 0, 5, 5);
 			gbc_txtRevision.fill = GridBagConstraints.HORIZONTAL;
@@ -561,6 +594,11 @@ public class ServerForm extends MCUApp {
 			serverPanel.add(lblGenerateList, gbc_lblGenerateList);
 
 			chkServerGenerateList = new JCheckBox("");
+			chkServerGenerateList.addChangeListener(new ChangeListener() {
+				public void stateChanged(ChangeEvent e) {
+					serverDirty = true;
+				}
+			});
 			GridBagConstraints gbc_chkGenerateList = new GridBagConstraints();
 			gbc_chkGenerateList.insets = new Insets(0, 0, 5, 5);
 			gbc_chkGenerateList.anchor = GridBagConstraints.WEST;
@@ -1208,6 +1246,7 @@ public class ServerForm extends MCUApp {
 		txtConfigPath.setText("");
 		txtConfigUrl.setText("");
 		txtConfigMD5.setText("");
+		configDirty = false;
 	}
 
 	protected void clearModuleDetailPane() {
@@ -1222,6 +1261,7 @@ public class ServerForm extends MCUApp {
 		chkModInRoot.setSelected(false);
 		chkModIsDefault.setSelected(false);
 		chkModRequired.setSelected(false);
+		moduleDirty = false;
 	}
 
 	protected void clearServerDetailPane() {
@@ -1233,6 +1273,7 @@ public class ServerForm extends MCUApp {
 		txtServerMCVersion.setText("");
 		txtServerRevision.setText("");
 		chkServerGenerateList.setSelected(false);
+		serverDirty = false;
 	}
 
 	protected void doSave(Path outputFile) {
