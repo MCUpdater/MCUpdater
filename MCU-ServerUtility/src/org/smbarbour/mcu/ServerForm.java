@@ -39,6 +39,8 @@ import javax.swing.JCheckBox;
 import javax.swing.SwingConstants;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -99,6 +101,9 @@ public class ServerForm extends MCUApp {
 	private boolean serverDirty = false;
 	private boolean moduleDirty = false;
 	private boolean configDirty = false;
+	private int serverCurrentSelection;
+	private int moduleCurrentSelection;
+	private int configCurrentSelection;
 
 	protected Path currentFile;
 	protected FileFilter xmlFilter = new FileFilter() {
@@ -156,15 +161,15 @@ public class ServerForm extends MCUApp {
 		mnuFile.setMnemonic('F');
 		menuBar.add(mnuFile);
 		
-		JMenuItem mnuNew = new JMenuItem("New");
-		mnuNew.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				modelModule.clear();
-				modelConfig.clear();
-				modelParentId.clear();
-			}
-		});
-		mnuFile.add(mnuNew);
+//		JMenuItem mnuNew = new JMenuItem("New");
+//		mnuNew.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				modelModule.clear();
+//				modelConfig.clear();
+//				modelParentId.clear();
+//			}
+//		});
+//		mnuFile.add(mnuNew);
 		
 		JMenuItem mnuOpen = new JMenuItem("Open...");
 		mnuOpen.addActionListener(new ActionListener() {
@@ -231,6 +236,8 @@ public class ServerForm extends MCUApp {
 		JMenuItem mntmScanFolder = new JMenuItem("Scan Folder...");
 		mntmScanFolder.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				int confirm = JOptionPane.showConfirmDialog(frmMain, "This will clear all existing modules and configurations.\n\nDo you wish to continue?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
+				if (!(confirm == JOptionPane.YES_OPTION)) return;
 				modelModule.clear();
 				modelConfig.clear();
 				modelParentId.clear();
@@ -307,6 +314,14 @@ public class ServerForm extends MCUApp {
 			lstServers.addListSelectionListener(new ListSelectionListener() {
 				public void valueChanged(ListSelectionEvent e) {
 					if (e.getValueIsAdjusting() == false) {
+						if (serverDirty || moduleDirty || configDirty) {
+							int confirm = JOptionPane.showConfirmDialog(frmMain, "Changes to the current selection(s) have been made.  Do you wish to save these changes?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
+							if (confirm == JOptionPane.YES_OPTION) {
+								if (configDirty) updateConfigEntry();
+								if (moduleDirty) updateModuleEntry();
+								updateServerEntry();
+							}
+						}
 						if (lstServers.getSelectedIndex() > -1) {
 							ServerDefinition changeTo = lstServers.getSelectedValue();
 							txtServerName.setText(changeTo.getServer().getName());
@@ -328,7 +343,11 @@ public class ServerForm extends MCUApp {
 							for (ConfigFileWrapper entry : changeTo.getConfigs()) {
 								modelConfig.add(entry);
 							}
+							serverCurrentSelection = lstServers.getSelectedIndex();
 						}
+						serverDirty=false;
+						moduleDirty=false;
+						configDirty=false;
 					}
 				}
 			});
@@ -363,7 +382,7 @@ public class ServerForm extends MCUApp {
 				JButton btnServerRemove = new JButton("Remove");
 				btnServerRemove.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						modelServer.remove(lstServers.getSelectedIndex());
+						modelServer.remove(serverCurrentSelection);
 						lstServers.clearSelection();
 						lstModules.clearSelection();
 						lstConfigFiles.clearSelection();
@@ -385,13 +404,7 @@ public class ServerForm extends MCUApp {
 				JButton btnServerUpdate = new JButton("Update");
 				btnServerUpdate.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						ServerList entry = new ServerList(txtServerID.getText(),txtServerName.getText(),"",txtServerNewsUrl.getText(),txtServerIconUrl.getText(),txtServerMCVersion.getText(),txtServerAddress.getText(),chkServerGenerateList.isSelected(),txtServerRevision.getText());
-						List<Module> newModules = new ArrayList<Module>();
-						newModules.addAll(modelModule.getContents());
-						List<ConfigFileWrapper> newConfigs = new ArrayList<ConfigFileWrapper>();
-						newConfigs.addAll(modelConfig.getContents());
-						modelServer.replace(lstServers.getSelectedIndex(), new ServerDefinition(entry, newModules, newConfigs));
-						serverDirty = false;
+						updateServerEntry();
 					}
 				});
 				GridBagConstraints gbc_btnServerUpdate = new GridBagConstraints();
@@ -660,8 +673,10 @@ public class ServerForm extends MCUApp {
 						chkModIsDefault.setSelected(selected.getIsDefault());
 						chkModExtract.setSelected(selected.getExtract());
 						chkModInRoot.setSelected(selected.getInRoot());
-						btnModMoveUp.setEnabled(lstModules.getSelectedIndex() == 0 ? false : true);
-						btnModMoveDown.setEnabled(lstModules.getSelectedIndex() == modelModule.getSize()-1 ? false : true);
+						btnModMoveUp.setEnabled(moduleCurrentSelection == 0 ? false : true);
+						btnModMoveDown.setEnabled(moduleCurrentSelection == modelModule.getSize()-1 ? false : true);
+						moduleDirty=false;
+						moduleCurrentSelection = lstModules.getSelectedIndex();
 					}
 				}
 			}
@@ -686,6 +701,22 @@ public class ServerForm extends MCUApp {
 		modDetailPanel.setLayout(gbl_modDetailPanel);
 		
 		{ // modDetailPanel
+			DocumentListener moduleDocumentListener = new DocumentListener(){
+				@Override
+				public void insertUpdate(DocumentEvent e) {moduleDirty = true;}
+
+				@Override
+				public void removeUpdate(DocumentEvent e) {moduleDirty = true;}
+
+				@Override
+				public void changedUpdate(DocumentEvent e) {moduleDirty = true;}				
+			};
+			
+			ChangeListener moduleChangeListener = new ChangeListener() {
+				public void stateChanged(ChangeEvent e) {
+					moduleDirty = true;
+				}
+			};
 
 			int row = 0;
 
@@ -711,6 +742,7 @@ public class ServerForm extends MCUApp {
 				modDetailPanel.add(lblModName, gbc_lblModName);
 
 				txtModName = new JTextField();
+				txtModName.getDocument().addDocumentListener(moduleDocumentListener);
 				GridBagConstraints gbc_txtModName = new GridBagConstraints();
 				gbc_txtModName.gridwidth = 3;
 				gbc_txtModName.insets = new Insets(0, 0, 5, 5);
@@ -734,6 +766,7 @@ public class ServerForm extends MCUApp {
 				modDetailPanel.add(lblModId, gbc_lblModId);
 
 				txtModId = new JTextField();
+				txtModId.getDocument().addDocumentListener(moduleDocumentListener);
 				GridBagConstraints gbc_txtModId = new GridBagConstraints();
 				gbc_txtModId.gridwidth = 3;
 				gbc_txtModId.insets = new Insets(0, 0, 5, 5);
@@ -757,6 +790,7 @@ public class ServerForm extends MCUApp {
 				modDetailPanel.add(lblModDepends, gbc_lblModDepends);
 
 				txtModDepends = new JTextField();
+				txtModDepends.getDocument().addDocumentListener(moduleDocumentListener);
 				GridBagConstraints gbc_txtModDepends = new GridBagConstraints();
 				gbc_txtModDepends.gridwidth = 3;
 				gbc_txtModDepends.insets = new Insets(0, 0, 5, 5);
@@ -780,6 +814,7 @@ public class ServerForm extends MCUApp {
 				modDetailPanel.add(lblModUrl, gbc_lblModUrl);
 
 				txtModUrl = new JTextField();
+				txtModUrl.getDocument().addDocumentListener(moduleDocumentListener);
 				GridBagConstraints gbc_txtModUrl = new GridBagConstraints();
 				gbc_txtModUrl.gridwidth = 3;
 				gbc_txtModUrl.insets = new Insets(0, 0, 5, 5);
@@ -802,6 +837,7 @@ public class ServerForm extends MCUApp {
 				modDetailPanel.add(lblMD5, gbc_lblMD5);
 
 				txtModMD5 = new JTextField();
+				txtModMD5.getDocument().addDocumentListener(moduleDocumentListener);
 				GridBagConstraints gbc_txtMD5 = new GridBagConstraints();
 				gbc_txtMD5.gridwidth = 3;
 				gbc_txtMD5.insets = new Insets(0, 0, 5, 5);
@@ -824,6 +860,7 @@ public class ServerForm extends MCUApp {
 				modDetailPanel.add(lblRequired, gbc_lblRequired);
 
 				chkModRequired = new JCheckBox("");
+				chkModRequired.addChangeListener(moduleChangeListener);
 				GridBagConstraints gbc_chkRequired = new GridBagConstraints();
 				gbc_chkRequired.insets = new Insets(0, 0, 5, 5);
 				gbc_chkRequired.anchor = GridBagConstraints.WEST;
@@ -841,6 +878,7 @@ public class ServerForm extends MCUApp {
 				modDetailPanel.add(lblInJar, gbc_lblInJar);
 
 				chkModInJar = new JCheckBox("");
+				chkModInJar.addChangeListener(moduleChangeListener);
 				GridBagConstraints gbc_chkInJar = new GridBagConstraints();
 				gbc_chkInJar.insets = new Insets(0, 0, 5, 5);
 				gbc_chkInJar.anchor = GridBagConstraints.WEST;
@@ -861,6 +899,7 @@ public class ServerForm extends MCUApp {
 				modDetailPanel.add(lblCoreMod, gbc_lblCoreMod);
 
 				chkModCoreMod = new JCheckBox("");
+				chkModCoreMod.addChangeListener(moduleChangeListener);
 				GridBagConstraints gbc_chkCoreMod = new GridBagConstraints();
 				gbc_chkCoreMod.insets = new Insets(0, 0, 5, 5);
 				gbc_chkCoreMod.anchor = GridBagConstraints.WEST;
@@ -878,6 +917,7 @@ public class ServerForm extends MCUApp {
 				modDetailPanel.add(lblIsDefault, gbc_lblIsDefault);
 
 				chkModIsDefault = new JCheckBox("");
+				chkModIsDefault.addChangeListener(moduleChangeListener);
 				GridBagConstraints gbc_chkIsDefault = new GridBagConstraints();
 				gbc_chkIsDefault.insets = new Insets(0, 0, 5, 5);
 				gbc_chkIsDefault.anchor = GridBagConstraints.WEST;
@@ -898,6 +938,7 @@ public class ServerForm extends MCUApp {
 				modDetailPanel.add(lblExtract, gbc_lblExtract);
 
 				chkModExtract = new JCheckBox("");
+				chkModExtract.addChangeListener(moduleChangeListener);
 				GridBagConstraints gbc_chkExtract = new GridBagConstraints();
 				gbc_chkExtract.insets = new Insets(0, 0, 5, 5);
 				gbc_chkExtract.anchor = GridBagConstraints.WEST;
@@ -915,6 +956,7 @@ public class ServerForm extends MCUApp {
 				modDetailPanel.add(lblInRoot, gbc_lblInRoot);
 
 				chkModInRoot = new JCheckBox("");
+				chkModInRoot.addChangeListener(moduleChangeListener);
 				GridBagConstraints gbc_chkInRoot = new GridBagConstraints();
 				gbc_chkInRoot.insets = new Insets(0, 0, 5, 5);
 				gbc_chkInRoot.anchor = GridBagConstraints.WEST;
@@ -945,7 +987,7 @@ public class ServerForm extends MCUApp {
 				btnModRemove.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						modelParentId.remove(modelParentId.find(lstModules.getSelectedValue().getId()));
-						modelModule.remove(lstModules.getSelectedIndex());
+						modelModule.remove(moduleCurrentSelection);
 						clearModuleDetailPane();
 						lstModules.clearSelection();
 					}
@@ -960,9 +1002,7 @@ public class ServerForm extends MCUApp {
 				JButton btnModUpdate = new JButton("Update");
 				btnModUpdate.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						modelParentId.replaceEntry(lstModules.getSelectedValue().getId(), txtModId.getText());
-						Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null);
-						modelModule.replace(lstModules.getSelectedIndex(), newMod);
+						updateModuleEntry();
 					}
 				});
 				GridBagConstraints gbc_btnModUpdate = new GridBagConstraints();
@@ -979,7 +1019,7 @@ public class ServerForm extends MCUApp {
 				btnModMoveUp.setEnabled(false);
 				btnModMoveUp.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						int current = lstModules.getSelectedIndex();
+						int current = moduleCurrentSelection;
 						modelModule.moveUp(current);
 						lstModules.setSelectedIndex(current-1);
 					}
@@ -995,7 +1035,7 @@ public class ServerForm extends MCUApp {
 				btnModMoveDown.setEnabled(false);
 				btnModMoveDown.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						int current = lstModules.getSelectedIndex();
+						int current = moduleCurrentSelection;
 						modelModule.moveDown(current);
 						lstModules.setSelectedIndex(current+1);
 					}
@@ -1067,6 +1107,8 @@ public class ServerForm extends MCUApp {
 						txtConfigMD5.setText(selected.getConfigFile().getMD5());
 						txtConfigUrl.setText(selected.getConfigFile().getUrl());
 						txtConfigPath.setText(selected.getConfigFile().getPath());
+						configDirty=false;
+						configCurrentSelection = lstConfigFiles.getSelectedIndex();
 					}
 				}
 			}
@@ -1088,6 +1130,17 @@ public class ServerForm extends MCUApp {
 		configDetailPanel.setLayout(gbl_configDetailPanel);
 		
 		{ // configDetailPanel
+			DocumentListener configDocumentListener = new DocumentListener(){
+				@Override
+				public void insertUpdate(DocumentEvent e) {configDirty = true;}
+
+				@Override
+				public void removeUpdate(DocumentEvent e) {configDirty = true;}
+
+				@Override
+				public void changedUpdate(DocumentEvent e) {configDirty = true;}				
+			};
+
 			int row = 0;
 
 			Component rigidArea_2 = Box.createRigidArea(new Dimension(3, 3));
@@ -1111,6 +1164,12 @@ public class ServerForm extends MCUApp {
 			
 			modelParentId = new ModIdListModel();
 			lstConfigParentId = new JComboBox<String>(modelParentId);
+			lstConfigParentId.addItemListener(new ItemListener(){
+				@Override
+				public void itemStateChanged(ItemEvent e) {
+					configDirty=true;
+				}		
+			});
 			GridBagConstraints gbc_lstParentId = new GridBagConstraints();
 			gbc_lstParentId.gridwidth = 3;
 			gbc_lstParentId.insets = new Insets(0, 0, 5, 5);
@@ -1133,6 +1192,7 @@ public class ServerForm extends MCUApp {
 			configDetailPanel.add(lblConfigURL, gbc_lblConfigURL);
 
 			txtConfigUrl = new JTextField();
+			txtConfigUrl.getDocument().addDocumentListener(configDocumentListener);
 			GridBagConstraints gbc_txtConfigURL = new GridBagConstraints();
 			gbc_txtConfigURL.gridwidth = 3;
 			gbc_txtConfigURL.insets = new Insets(0, 0, 5, 5);
@@ -1154,6 +1214,7 @@ public class ServerForm extends MCUApp {
 			configDetailPanel.add(lblConfigPath, gbc_lblConfigPath);
 
 			txtConfigPath = new JTextField();
+			txtConfigPath.getDocument().addDocumentListener(configDocumentListener);
 			GridBagConstraints gbc_txtConfigPath = new GridBagConstraints();
 			gbc_txtConfigPath.gridwidth = 3;
 			gbc_txtConfigPath.insets = new Insets(0, 0, 5, 5);
@@ -1175,6 +1236,7 @@ public class ServerForm extends MCUApp {
 			configDetailPanel.add(lblConfigMD5, gbc_lblConfigMD5);
 
 			txtConfigMD5 = new JTextField();
+			txtConfigMD5.getDocument().addDocumentListener(configDocumentListener);
 			GridBagConstraints gbc_txtConfigMD5 = new GridBagConstraints();
 			gbc_txtConfigMD5.gridwidth = 3;
 			gbc_txtConfigMD5.insets = new Insets(0, 0, 5, 5);
@@ -1203,7 +1265,7 @@ public class ServerForm extends MCUApp {
 			JButton btnConfigRemove = new JButton("Remove");
 			btnConfigRemove.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					modelConfig.remove(lstConfigFiles.getSelectedIndex());
+					modelConfig.remove(configCurrentSelection);
 					clearConfigDetailPane();
 					lstConfigParentId.setSelectedIndex(-1);
 					lstConfigFiles.clearSelection();
@@ -1219,8 +1281,7 @@ public class ServerForm extends MCUApp {
 			JButton btnConfigUpdate = new JButton("Update");
 			btnConfigUpdate.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					ConfigFileWrapper newConfig = new ConfigFileWrapper(lstConfigParentId.getSelectedItem().toString(), new ConfigFile(txtConfigUrl.getText(), txtConfigPath.getText(), txtConfigMD5.getText()));
-					modelConfig.replace(lstConfigFiles.getSelectedIndex(), newConfig);
+					updateConfigEntry();
 				}
 			});
 			GridBagConstraints gbc_btnConfigUpdate = new GridBagConstraints();
@@ -1360,6 +1421,35 @@ public class ServerForm extends MCUApp {
 	@Override
 	public boolean requestLogin() {
 		return false;
+	}
+
+	private void updateServerEntry() {
+		ServerList entry = new ServerList(txtServerID.getText(),txtServerName.getText(),"",txtServerNewsUrl.getText(),txtServerIconUrl.getText(),txtServerMCVersion.getText(),txtServerAddress.getText(),chkServerGenerateList.isSelected(),txtServerRevision.getText());
+		List<Module> newModules = new ArrayList<Module>();
+		newModules.addAll(modelModule.getContents());
+		List<ConfigFileWrapper> newConfigs = new ArrayList<ConfigFileWrapper>();
+		newConfigs.addAll(modelConfig.getContents());
+		modelServer.replace(serverCurrentSelection, new ServerDefinition(entry, newModules, newConfigs));
+		serverDirty = false;
+	}
+
+	private void updateModuleEntry() {
+		modelParentId.replaceEntry(lstModules.getSelectedValue().getId(), txtModId.getText());
+		Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null);
+		modelModule.replace(moduleCurrentSelection, newMod);
+		moduleDirty = false;
+		serverDirty = true;
+	}
+
+	private void updateConfigEntry() {
+		String modId = "";
+		try {
+			modId = lstConfigParentId.getSelectedItem().toString();
+		} catch (Exception e) { /* no op */ }
+		ConfigFileWrapper newConfig = new ConfigFileWrapper(modId, new ConfigFile(txtConfigUrl.getText(), txtConfigPath.getText(), txtConfigMD5.getText()));
+		modelConfig.replace(configCurrentSelection, newConfig);
+		configDirty = false;
+		serverDirty = true;
 	}
 }
 
