@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE project>
 <project basedir="." default="build" name="MCU-API">
     <property environment="env"/>
     <property name="MCU-ServerUtility.location" value="../MCU-ServerUtility"/>

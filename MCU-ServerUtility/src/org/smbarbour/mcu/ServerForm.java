@@ -37,10 +37,14 @@ import javax.swing.JScrollPane;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -98,6 +102,7 @@ public class ServerForm extends MCUApp {
 	private JButton btnModMoveDown;
 	private JMenuItem mnuSave;
 	private JList<ServerDefinition> lstServers;
+	private boolean packDirty = false;
 	private boolean serverDirty = false;
 	private boolean moduleDirty = false;
 	private boolean configDirty = false;
@@ -152,7 +157,13 @@ public class ServerForm extends MCUApp {
 		frmMain = new JFrame();
 		frmMain.setTitle("MCUpdater - ServerPack Utility build " + Version.BUILD_VERSION + " (Implementing MCU-API " + Version.API_VERSION + ")");
 		frmMain.setBounds(100,100,900,700);
-		frmMain.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frmMain.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+		frmMain.addWindowListener(new WindowAdapter(){
+			@Override
+			public void windowClosing(WindowEvent ev) {
+				doExit();
+			}
+		});
 
 		JMenuBar menuBar = new JMenuBar();
 		frmMain.setJMenuBar(menuBar);
@@ -180,8 +191,9 @@ public class ServerForm extends MCUApp {
 				modelParentId.add("");
 				JFileChooser jfc = new JFileChooser();
 				jfc.setFileFilter(xmlFilter);
-				jfc.showOpenDialog(frmMain);
-				
+				int result = jfc.showOpenDialog(frmMain);
+				if (!(result == JFileChooser.APPROVE_OPTION)) { return; }				
+				if (modelServer.getSize() > 0) { packDirty=true; }
 				currentFile = jfc.getSelectedFile().toPath();
 				mnuSave.setEnabled(true);
 				
@@ -257,6 +269,8 @@ public class ServerForm extends MCUApp {
 					e1.printStackTrace();
 				}
 				modelParentId.sort();
+				serverDirty = true;
+				packDirty = true;
 			}
 		});
 		mnuFile.add(mntmScanFolder);
@@ -273,15 +287,7 @@ public class ServerForm extends MCUApp {
 		JMenuItem mnuSaveAs = new JMenuItem("Save As...");
 		mnuSaveAs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JFileChooser saveDialog = new JFileChooser();
-				saveDialog.setFileFilter(xmlFilter );
-				saveDialog.showSaveDialog(frmMain);
-				Path outputFile = saveDialog.getSelectedFile().toPath();
-				
-				currentFile = outputFile;
-				mnuSave.setEnabled(true);
-				
-				doSave(currentFile);				
+				doSaveRequest();				
 			}
 		});
 		mnuFile.add(mnuSaveAs);
@@ -291,7 +297,7 @@ public class ServerForm extends MCUApp {
 		JMenuItem mnuExit = new JMenuItem("Exit");
 		mnuExit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				System.exit(0);				
+				doExit();				
 			}
 		});
 		mnuFile.add(mnuExit);
@@ -371,6 +377,7 @@ public class ServerForm extends MCUApp {
 				btnServerNew.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						modelServer.add(new ServerDefinition(new ServerList("newServer","New Server","","","","","",true,"1"), new ArrayList<Module>(), new ArrayList<ConfigFileWrapper>()));
+						packDirty = true;
 					}
 				});
 				GridBagConstraints gbc_btnServerNew = new GridBagConstraints();
@@ -393,6 +400,7 @@ public class ServerForm extends MCUApp {
 						clearServerDetailPane();
 						clearModuleDetailPane();
 						clearConfigDetailPane();
+						packDirty = true;
 					}
 				});
 				GridBagConstraints gbc_btnServerRemove = new GridBagConstraints();
@@ -660,6 +668,12 @@ public class ServerForm extends MCUApp {
 		lstModules.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
 				if (e.getValueIsAdjusting() == false) {
+					if (moduleDirty) {
+						int confirm = JOptionPane.showConfirmDialog(frmMain, "Changes to the currently selected module have been made.  Do you wish to save these changes?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
+						if (confirm == JOptionPane.YES_OPTION) {
+							updateModuleEntry();
+						}
+					}
 					if (lstModules.getSelectedIndex() > -1) {
 						Module selected = lstModules.getSelectedValue();
 						txtModName.setText(selected.getName());
@@ -974,6 +988,8 @@ public class ServerForm extends MCUApp {
 						modelModule.add(newMod);
 						modelParentId.add(newMod.getId());
 						modelParentId.sort();
+						serverDirty = true;
+						packDirty = true;
 					}
 				});
 				GridBagConstraints gbc_btnModAdd = new GridBagConstraints();
@@ -990,6 +1006,8 @@ public class ServerForm extends MCUApp {
 						modelModule.remove(moduleCurrentSelection);
 						clearModuleDetailPane();
 						lstModules.clearSelection();
+						serverDirty = true;
+						packDirty = true;
 					}
 				});
 				GridBagConstraints gbc_btnModRemove = new GridBagConstraints();
@@ -1100,6 +1118,12 @@ public class ServerForm extends MCUApp {
 		lstConfigFiles.addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
 				if (e.getValueIsAdjusting() == false) {
+					if (configDirty) {
+						int confirm = JOptionPane.showConfirmDialog(frmMain, "Changes to the currently selected configuration file have been made.  Do you wish to save these changes?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
+						if (confirm == JOptionPane.YES_OPTION) {
+							updateConfigEntry();
+						}
+					}
 					if (lstConfigFiles.getSelectedIndex() > -1) {
 						ConfigFileWrapper selected = lstConfigFiles.getSelectedValue();
 						lstConfigParentId.setSelectedIndex(modelParentId.find(selected.getParentId()));
@@ -1253,6 +1277,8 @@ public class ServerForm extends MCUApp {
 				public void actionPerformed(ActionEvent e) {
 					ConfigFileWrapper newConfig = new ConfigFileWrapper(lstConfigParentId.getSelectedItem().toString(), new ConfigFile(txtConfigUrl.getText(), txtConfigPath.getText(), txtConfigMD5.getText()));
 					modelConfig.add(newConfig);
+					serverDirty = true;
+					packDirty = true;
 				}
 			});
 			GridBagConstraints gbc_btnConfigAdd = new GridBagConstraints();
@@ -1269,6 +1295,8 @@ public class ServerForm extends MCUApp {
 					clearConfigDetailPane();
 					lstConfigParentId.setSelectedIndex(-1);
 					lstConfigFiles.clearSelection();
+					serverDirty = true;
+					packDirty = true;
 				}
 			});
 			GridBagConstraints gbc_btnConfigRemove = new GridBagConstraints();
@@ -1300,6 +1328,22 @@ public class ServerForm extends MCUApp {
 			configDetailPanel.add(rigidArea_3, gbc_rigidArea_3);
 
 		}
+	}
+
+	protected void doExit() {
+		if (packDirty) {
+			int confirm = JOptionPane.showConfirmDialog(frmMain, "Changes to the currently selected server pack have been made.  Do you wish to save these changes?", "MCU-ServerUtility", JOptionPane.YES_NO_CANCEL_OPTION);
+			if (confirm == JOptionPane.YES_OPTION) {
+				if (currentFile == null) {
+					if (!doSaveRequest()) return;
+				} else {
+					doSave(currentFile);
+				}
+			} else if (confirm == JOptionPane.CANCEL_OPTION) {
+				return;
+			}
+		}
+		frmMain.dispose();		
 	}
 
 	protected void clearConfigDetailPane() {
@@ -1339,6 +1383,9 @@ public class ServerForm extends MCUApp {
 
 	protected void doSave(Path outputFile) {
 		try {
+			if (configDirty) updateConfigEntry();
+			if (moduleDirty) updateModuleEntry();
+			if (serverDirty) updateServerEntry();
 			BufferedWriter fileWriter = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 			fileWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			fileWriter.newLine();
@@ -1389,6 +1436,7 @@ public class ServerForm extends MCUApp {
 			fileWriter.write("</ServerPack>");
 			fileWriter.newLine();
 			fileWriter.close();
+			packDirty = false;
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}		
@@ -1431,6 +1479,7 @@ public class ServerForm extends MCUApp {
 		newConfigs.addAll(modelConfig.getContents());
 		modelServer.replace(serverCurrentSelection, new ServerDefinition(entry, newModules, newConfigs));
 		serverDirty = false;
+		packDirty = true;
 	}
 
 	private void updateModuleEntry() {
@@ -1439,6 +1488,7 @@ public class ServerForm extends MCUApp {
 		modelModule.replace(moduleCurrentSelection, newMod);
 		moduleDirty = false;
 		serverDirty = true;
+		packDirty = true;
 	}
 
 	private void updateConfigEntry() {
@@ -1450,6 +1500,24 @@ public class ServerForm extends MCUApp {
 		modelConfig.replace(configCurrentSelection, newConfig);
 		configDirty = false;
 		serverDirty = true;
+		packDirty = true;
+	}
+
+	private boolean doSaveRequest() {
+		JFileChooser saveDialog = new JFileChooser();
+		saveDialog.setFileFilter(xmlFilter );
+		int result = saveDialog.showSaveDialog(frmMain);
+		if (result == JFileChooser.APPROVE_OPTION) {
+			Path outputFile = saveDialog.getSelectedFile().toPath();
+
+			currentFile = outputFile;
+			mnuSave.setEnabled(true);
+
+			doSave(currentFile);
+			return true;
+		} else {
+			return false;
+		}
 	}
 }
 
