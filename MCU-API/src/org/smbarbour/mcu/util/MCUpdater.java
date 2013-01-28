@@ -358,6 +358,7 @@ public class MCUpdater {
 		String id = modEl.getAttribute("id");
 		String url = getTextValue(modEl,"URL");
 		String depends = modEl.getAttribute("depends");
+		String side = modEl.getAttribute("side");
 		Boolean required = getBooleanValue(modEl,"Required");
 		Boolean isDefault = getBooleanValue(modEl,"IsDefault");
 		Boolean inJar = getBooleanValue(modEl,"InJar");
@@ -374,7 +375,7 @@ public class MCUpdater {
 			ConfigFile cf = getConfigFile(el);
 			configs.add(cf);
 		}
-		Module m = new Module(name, id, url, depends, required, inJar, extract, inRoot, isDefault, coreMod, md5, configs);
+		Module m = new Module(name, id, url, depends, required, inJar, extract, inRoot, isDefault, coreMod, md5, configs, side);	
 		return m;
 	}
 	

@@ -16,9 +16,10 @@ public class Module {
 	private Boolean isDefault;
 	private Boolean coreMod;
 	private String md5;
+	private ModSide side;
 	private List<ConfigFile> configs;
 	
-	public Module(String name, String id, String url, String depends, Boolean required, Boolean inJar, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs)
+	public Module(String name, String id, String url, String depends, Boolean required, Boolean inJar, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs, String side)
 	{
 		this.setName(name);
 		this.setId(id);
@@ -31,6 +32,7 @@ public class Module {
 		this.setInRoot(inRoot);
 		this.setCoreMod(coreMod);
 		this.setMD5(md5);
+		this.setSide(side);
 		if(configs != null)
 		{
 			this.configs = configs;
@@ -150,5 +152,33 @@ public class Module {
 	public String toString() {
 		return id;
 	}
+
+	public ModSide getSide() {
+		return side;
+	}
+
+	public void setSide(ModSide side) {
+		this.side = side;
+	}
+	public void setSide(String side) {
+		if( side == null || side.length() == 0 ) {
+			side = "BOTH";
+		} else {
+			side = side.toUpperCase();
+		}
+		try {
+			setSide( ModSide.valueOf(side) );
+		} catch( IllegalArgumentException e ) {
+			setSide( ModSide.BOTH );
+		}
+	}
+	
+	public boolean isClientSide() {
+		return side != ModSide.SERVER;
+	}
+	public boolean isServerSide() {
+		return side != ModSide.CLIENT;
+	}
+
 }
 
