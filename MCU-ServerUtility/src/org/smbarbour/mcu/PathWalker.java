@@ -53,6 +53,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		Boolean isDefault = true;
 		Boolean coreMod = false;
 		System.out.println(relativePath.toString());
+		if (relativePath.toString().contains(".DS_Store")) { return FileVisitResult.CONTINUE; }
 		if (relativePath.toString().indexOf(MCUpdater.sep) >= 0) {
 			switch (relativePath.toString().substring(0, relativePath.toString().indexOf(MCUpdater.sep))) {
 			case "jar": {
