@@ -56,7 +56,20 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		if (relativePath.toString().contains(".DS_Store")) { return FileVisitResult.CONTINUE; }
 		if (relativePath.toString().indexOf(MCUpdater.sep) >= 0) {
 			switch (relativePath.toString().substring(0, relativePath.toString().indexOf(MCUpdater.sep))) {
-			case "jar": {
+			// Ignore these folders
+			case "bin":
+			case "lib":
+			case "resources":
+			case "saves":
+			case "screenshots":
+			case "stats":
+			case "texturepacks":
+			case "texturepacks-mp-cache":
+				return FileVisitResult.CONTINUE;
+			//
+			case "instMods":
+			case "jar":
+			{
 				inJar = true;
 				break;
 			}
