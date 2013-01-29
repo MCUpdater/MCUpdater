@@ -40,7 +40,30 @@ public class Module {
 			this.configs = new ArrayList<ConfigFile>();
 		}
 	}
-	
+
+	@Deprecated
+	public Module(String name, String id, String url, String depends, Boolean required, Boolean inJar, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs)
+	{
+		this.setName(name);
+		this.setId(id);
+		this.setUrl(url);
+		this.setDepends(depends);
+		this.setRequired(required);
+		this.setInJar(inJar);
+		this.setIsDefault(isDefault);
+		this.setExtract(extract);
+		this.setInRoot(inRoot);
+		this.setCoreMod(coreMod);
+		this.setMD5(md5);
+		this.setSide("BOTH");
+		if(configs != null)
+		{
+			this.configs = configs;
+		} else {
+			this.configs = new ArrayList<ConfigFile>();
+		}
+	}
+
 	public String getName()
 	{
 		return name;
