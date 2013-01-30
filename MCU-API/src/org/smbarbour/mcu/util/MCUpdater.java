@@ -1,9 +1,11 @@
 package org.smbarbour.mcu.util;
 
 import java.net.*;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -36,11 +38,11 @@ import org.xml.sax.SAXException;
 public class MCUpdater {
 	
 	private List<Module> modList = new ArrayList<Module>();
-	private String MCFolder;
-	private File archiveFolder;
-	private File instanceRoot;
+	private Path MCFolder;
+	private Path archiveFolder;
+	private Path instanceRoot;
 	private MCUApp parent;
-	public final static String sep = System.getProperty("file.separator");
+	private String sep = System.getProperty("file.separator");
 	public MessageDigest md5;
 	public ImageIcon defaultIcon;
 	private String newestMC = "";
@@ -73,23 +75,23 @@ public class MCUpdater {
 		}
 		if(System.getProperty("os.name").startsWith("Windows"))
 		{
-			MCFolder = System.getenv("APPDATA") + sep + ".minecraft";
-			archiveFolder = new File(System.getenv("APPDATA") + sep + ".MCUpdater");
+			MCFolder = (new File(System.getenv("APPDATA")).toPath().resolve(".minecraft"));
+			archiveFolder = (new File(System.getenv("APPDATA")).toPath().resolve(".MCUpdater"));
 		} else if(System.getProperty("os.name").startsWith("Mac"))
 		{
-			MCFolder = System.getProperty("user.home") + sep + "Library" + sep + "Application Support" + sep + "minecraft";
-			archiveFolder = new File(System.getProperty("user.home") + sep + "Library" + sep + "Application Support" + sep + "MCUpdater");
+			MCFolder = (new File(System.getProperty("user.home")).toPath().resolve("Library").resolve("Application Support").resolve("minecraft"));
+			archiveFolder = (new File(System.getProperty("user.home")).toPath().resolve("Library").resolve("Application Support").resolve("MCUpdater"));
 		}
 		else
 		{
-			MCFolder = System.getProperty("user.home") + sep + ".minecraft";
-			archiveFolder = new File(System.getProperty("user.home") + sep + ".MCUpdater");
+			MCFolder = (new File(System.getProperty("user.home")).toPath().resolve(".minecraft"));
+			archiveFolder = (new File(System.getProperty("user.home")).toPath().resolve(".MCUpdater"));
 		}
 		//defaultIcon = new ImageIcon(new URL("http://www.minecraft.net/favicon.png"));
 		defaultIcon = new ImageIcon(MCUpdater.class.getResource("/minecraft.png"));
 		// configure the download cache
 		try {
-			DownloadCache.init(new File(archiveFolder,"cache"));
+			DownloadCache.init(archiveFolder.resolve("cache").toFile());
 		} catch (IllegalArgumentException e) {
 			_debug( "Suppressed attempt to re-init download cache?!" );
 		}
@@ -152,7 +154,7 @@ public class MCUpdater {
 	public List<Backup> loadBackupList() {
 		List<Backup> bList = new ArrayList<Backup>();
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(archiveFolder.getPath() + sep + "mcuBackups.dat"));
+			BufferedReader reader = Files.newBufferedReader(archiveFolder.resolve("mcuBackups.dat"), StandardCharsets.UTF_8);
 			
 			String entry = reader.readLine();
 			while(entry != null) {
@@ -173,7 +175,7 @@ public class MCUpdater {
 	
 	public void writeBackupList(List<Backup> backupList) {
 		try {
-			BufferedWriter writer = new BufferedWriter(new FileWriter((archiveFolder.getPath() + sep + "mcuBackups.dat"),false));
+			BufferedWriter writer = Files.newBufferedWriter(archiveFolder.resolve("mcuBackups.dat"), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 			
 			Iterator<Backup> it = backupList.iterator();
 			
@@ -196,7 +198,7 @@ public class MCUpdater {
 		{
 			Set<String> urls = new HashSet<String>();
 			urls.add(defaultUrl);
-			BufferedReader reader = new BufferedReader(new FileReader(archiveFolder.getPath() + sep + "mcuServers.dat"));
+			BufferedReader reader = Files.newBufferedReader(archiveFolder.resolve("mcuServers.dat"), StandardCharsets.UTF_8);
 
 			String entry = reader.readLine();
 			while(entry != null)
@@ -261,8 +263,8 @@ public class MCUpdater {
 	{
 		try
 		{
-			archiveFolder.mkdirs();
-			BufferedWriter writer = new BufferedWriter(new FileWriter((archiveFolder.getPath() + sep + "mcuServers.dat"),false));
+			archiveFolder.toFile().mkdirs();
+			BufferedWriter writer = Files.newBufferedWriter(archiveFolder.resolve("mcuServers.dat"), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 			
 			Iterator<ServerList> it = serverlist.iterator();
 			
@@ -405,25 +407,25 @@ public class MCUpdater {
 		return Boolean.parseBoolean(getTextValue(ele,tagName));
 	}
 	
-	public String getMCFolder()
+	public Path getMCFolder()
 	{
 		return MCFolder;
 	}
 
-	public File getArchiveFolder() {
+	public Path getArchiveFolder() {
 		return archiveFolder;
 	}
 
-	public File getInstanceRoot() {
+	public Path getInstanceRoot() {
 		return instanceRoot;
 	}
 
-	public void setInstanceRoot(File instanceRoot) {
+	public void setInstanceRoot(Path instanceRoot) {
 		this.instanceRoot = instanceRoot;
 	}
 
 	public String getMCVersion() {
-		File jar = new File(MCFolder + sep + "bin" + sep + "minecraft.jar");
+		File jar = MCFolder.resolve("bin").resolve("minecraft.jar").toFile();
 		byte[] hash;
 		try {
 			InputStream is = new FileInputStream(jar);
@@ -439,7 +441,7 @@ public class MCUpdater {
 		String hashString = new String(Hex.encodeHex(hash));
 		String version = lookupHash(hashString);
 		if(!version.isEmpty()) {
-			File backupJar = new File(archiveFolder.getPath() + sep + "mc-" + version + ".jar");
+			File backupJar = archiveFolder.resolve("mc-" + version + ".jar").toFile();
 			if(!backupJar.exists()) {
 				backupJar.getParentFile().mkdirs();
 				copyFile(jar, backupJar);
@@ -476,7 +478,7 @@ public class MCUpdater {
 	}
 
 	public void saveConfig(String description) {
-		File folder = new File(MCFolder);
+		File folder = MCFolder.toFile();
 		List<File> contents = recurseFolder(folder, false);
 		try {
 			String uniqueName = UUID.randomUUID().toString() + ".zip";
@@ -487,7 +489,7 @@ public class MCUpdater {
 					contents.remove(entry);
 				}
 			}
-			Archive.createZip(new File(archiveFolder.getPath() + sep + uniqueName), contents, (MCFolder + sep), parent);
+			Archive.createZip(archiveFolder.resolve(uniqueName).toFile(), contents, MCFolder, parent);
 			Backup entry = new Backup(description, uniqueName);
 			_debug("DEBUG: LoadBackupList");
 			List<Backup> bList = loadBackupList();
@@ -597,7 +599,7 @@ public class MCUpdater {
 	}
 	
 	public void restoreBackup(File archive) {
-		File folder = new File(MCFolder);
+		File folder = MCFolder.toFile();
 		List<File> contents = recurseFolder(folder, true);
 		Iterator<File> it = new ArrayList<File>(contents).iterator();
 		while(it.hasNext()) {
@@ -611,32 +613,31 @@ public class MCUpdater {
 			File entry = liClear.previous();
 			entry.delete();
 		}
-		Archive.extractZip(archive, new File(MCFolder));
+		Archive.extractZip(archive, MCFolder.toFile());
 	}
 
 	public boolean checkForBackup(ServerList server) {
-		File jar = new File(archiveFolder.getPath() + sep + "mc-" + server.getVersion() + ".jar");
+		File jar = archiveFolder.resolve("mc-" + server.getVersion() + ".jar").toFile();
 		return jar.exists();
 	}
 	
 	public void installMods(ServerList server, List<Module> toInstall, boolean clearExisting) throws FileNotFoundException {
 		File folder;
 		try {
-			folder = Files.readSymbolicLink(new File(MCFolder).toPath()).toFile();
-			System.out.println(MCFolder);
-			System.out.println(new File(MCFolder).getAbsolutePath());
-			System.out.println(new File(MCFolder).toPath().toString());
-			System.out.println((Files.readSymbolicLink(new File(MCFolder).toPath()).toString()));
+			folder = Files.readSymbolicLink(MCFolder).toFile();
+			System.out.println(MCFolder.toString());
+			System.out.println(MCFolder.toFile().getAbsolutePath());
+			System.out.println((Files.readSymbolicLink(MCFolder).toString()));
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
-			folder = new File(MCFolder);
+			folder = MCFolder.toFile();
 		} catch (UnsupportedOperationException uoe) {
-			folder = new File(MCFolder);
+			folder = MCFolder.toFile();
 		}
 		System.out.println(folder.getAbsolutePath());
 		List<File> contents = recurseFolder(folder, true);
-		File jar = new File(archiveFolder.getPath() + sep + "mc-" + server.getVersion() + ".jar");
+		File jar = archiveFolder.resolve("mc-" + server.getVersion() + ".jar").toFile();
 		if(!jar.exists()) {
 			parent.log("! Unable to find a backup copy of minecraft.jar for "+server.getVersion());
 			throw new FileNotFoundException("A backup copy of minecraft.jar for version " + server.getVersion() + " was not found.");
@@ -660,9 +661,9 @@ public class MCUpdater {
 		parent.setLblStatus("Preparing to build minecraft.jar");
 		parent.log("Preparing to build minecraft.jar...");
 		Iterator<Module> itMods = toInstall.iterator();
-		File tmpFolder = new File(archiveFolder, "temp");
+		File tmpFolder = archiveFolder.resolve("temp").toFile();
 		tmpFolder.mkdirs();
-		File buildJar = new File(archiveFolder, "build.jar");
+		File buildJar = archiveFolder.resolve("build.jar").toFile();
 		if(buildJar.exists()) {
 			buildJar.delete();
 		}
@@ -778,7 +779,7 @@ public class MCUpdater {
 					final String MD5 = cfEntry.getMD5(); 
 					_debug(cfEntry.getUrl());
 					URL configURL = new URL(cfEntry.getUrl());
-					final File confFile = new File(MCFolder + sep + cfEntry.getPath());
+					final File confFile = MCFolder.resolve(cfEntry.getPath()).toFile();
 					confFile.getParentFile().mkdirs();
 					if( MD5 != null ) {
 						final File cacheFile = DownloadCache.getFile(MD5);
@@ -906,8 +907,8 @@ public class MCUpdater {
 	}
 
 	public boolean checkVersionCache(MCUApp window, String version) {
-		File requestedJar = new File(archiveFolder, "mc-" + version + ".jar");
-		File newestJar = new File(archiveFolder, "mc-" + newestMC + ".jar");
+		File requestedJar = archiveFolder.resolve("mc-" + version + ".jar").toFile();
+		File newestJar = archiveFolder.resolve("mc-" + newestMC + ".jar").toFile();
 		if (requestedJar.exists()) return true;
 		if (newestJar.exists()) {
 			doPatch(requestedJar, newestJar, version);
@@ -933,7 +934,7 @@ public class MCUpdater {
 		try {
 			URL patchURL = new URL("http://mcupdater.net46.net/mcu_patches/" + newestMC.replace(".", "") + "to" + version.replace(".","") + ".patch");
 			_debug(patchURL.toString());
-			File patchFile = new File(archiveFolder, "temp.patch");
+			File patchFile = archiveFolder.resolve("temp.patch").toFile();
 			FileUtils.copyURLToFile(patchURL, patchFile);
 			Transmogrify.applyPatch(newestJar.toPath(), requestedJar.toPath(), patchFile.toPath());
 			patchFile.delete();

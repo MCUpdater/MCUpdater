@@ -64,7 +64,7 @@ public class DownloadCache {
 	}
 	
 	public static File getFile(String chksum) {
-		final File file = new File( getDir().getAbsolutePath() + MCUpdater.sep + chksum + ".bin");
+		final File file = getDir().toPath().resolve(chksum + ".bin").toFile();
 		return file;
 	}
 }

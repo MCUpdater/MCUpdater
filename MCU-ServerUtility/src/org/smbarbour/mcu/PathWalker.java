@@ -14,7 +14,6 @@ import java.util.zip.ZipFile;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.smbarbour.mcu.util.ConfigFile;
-import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.Module;
 
 import argo.jdom.JdomParser;
@@ -27,7 +26,8 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 	private Path rootPath;
 	private ServerForm parent;
 	private String urlBase;
-
+	private String sep = System.getProperty("file.separator");
+	
 	public PathWalker(ServerForm parent, Path rootPath, String urlBase) {
 		this.setParent(parent);
 		this.setRootPath(rootPath);
@@ -54,8 +54,8 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		Boolean coreMod = false;
 		System.out.println(relativePath.toString());
 		if (relativePath.toString().contains(".DS_Store")) { return FileVisitResult.CONTINUE; }
-		if (relativePath.toString().indexOf(MCUpdater.sep) >= 0) {
-			switch (relativePath.toString().substring(0, relativePath.toString().indexOf(MCUpdater.sep))) {
+		if (relativePath.toString().indexOf(sep) >= 0) {
+			switch (relativePath.toString().substring(0, relativePath.toString().indexOf(sep))) {
 			// Ignore these folders
 			case "bin":
 			case "lib":
@@ -79,7 +79,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 			}
 			case "config": {
 				String newPath = relativePath.toString();
-				if (MCUpdater.sep.equals("\\")) {
+				if (sep.equals("\\")) {
 					newPath = newPath.replace("\\", "/");
 				}
 				ConfigFile newConfig = new ConfigFile(downloadURL, newPath, md5);

@@ -34,7 +34,7 @@ public class InstanceManager {
 	
 	public Path createInstance(String instanceName) {
 		try {
-			Path instance = parent.getInstanceRoot().toPath().resolve(instanceName);
+			Path instance = parent.getInstanceRoot().resolve(instanceName);
 			Files.createDirectories(instance);
 			Path instanceFile = instance.resolve("instance.dat");
 			Files.createFile(instanceFile);

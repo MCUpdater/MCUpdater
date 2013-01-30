@@ -8,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -29,14 +30,14 @@ public class Archive {
 				String entryName = entry.getName();
 
 				if(entry.isDirectory()) {
-					File newDir = new File(destination.getPath() + MCUpdater.sep + entryName);
+					File newDir = destination.toPath().resolve(entryName).toFile();
 					newDir.mkdirs();
 					System.out.println("   Directory: " + newDir.getPath());
 				} else {
 					if (entryName.contains("aux.class")) {
 						entryName = "mojangDerpyClass1.class";
 					}
-					File outFile = new File(destination.getPath() + MCUpdater.sep + entryName);
+					File outFile = destination.toPath().resolve(entryName).toFile();
 					outFile.getParentFile().mkdirs();
 					System.out.println("   Extract: " + outFile.getPath());
 					FileOutputStream fos = new FileOutputStream(outFile);
@@ -60,7 +61,7 @@ public class Archive {
 		}
 	}
 
-	public static void createZip(File archive, List<File> files, String basePath, MCUApp parent) throws IOException
+	public static void createZip(File archive, List<File> files, Path mCFolder, MCUApp parent) throws IOException
 	{
 		if(!archive.getParentFile().exists()){
 			archive.getParentFile().mkdirs();
@@ -73,7 +74,7 @@ public class Archive {
 			File entry = iter.next();
 			filePos++;
 			parent.setLblStatus("Writing backup: (" + filePos + "/" + fileCount + ")");
-			String relPath = entry.getPath().replace(basePath, "");
+			String relPath = entry.getPath().replace(mCFolder.toString(), "");
 			System.out.println(relPath);
 			if(entry.isDirectory()) {
 				out.putNextEntry(new ZipEntry(relPath + "/"));

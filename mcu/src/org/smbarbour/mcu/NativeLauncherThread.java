@@ -11,6 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -87,19 +88,19 @@ public class NativeLauncherThread implements Runnable, GenericLauncherThread {
 	@Override
 	public void run() {
 		String javaBin = "java";
-		File binDir = new File(jrePath+MCUpdater.sep+"bin");
+		File binDir = (new File(jrePath)).toPath().resolve("bin").toFile();
 		if( binDir.exists() ) {
-			javaBin = binDir + MCUpdater.sep + "java";
+			javaBin = binDir.toPath().resolve("java").toString();
 		}
 
 		StringBuilder sbClassPath = new StringBuilder();
-		String mcBinPath = parent.mcu.getMCFolder() + MCUpdater.sep + "bin" + MCUpdater.sep;
-		sbClassPath.append(handleWhitespace(mcBinPath + "minecraft.jar"));
-		sbClassPath.append(MCUpdater.cpDelimiter() + handleWhitespace(mcBinPath + "lwjgl.jar"));
-		sbClassPath.append(MCUpdater.cpDelimiter() + handleWhitespace(mcBinPath + "lwjgl_util.jar"));
-		sbClassPath.append(MCUpdater.cpDelimiter() + handleWhitespace(mcBinPath + "jinput.jar"));
+		Path mcBinPath = parent.mcu.getMCFolder().resolve("bin");
+		sbClassPath.append(handleWhitespace(mcBinPath.resolve("minecraft.jar").toString()));
+		sbClassPath.append(MCUpdater.cpDelimiter() + handleWhitespace(mcBinPath.resolve("lwjgl.jar").toString()));
+		sbClassPath.append(MCUpdater.cpDelimiter() + handleWhitespace(mcBinPath.resolve("lwjgl_util.jar").toString()));
+		sbClassPath.append(MCUpdater.cpDelimiter() + handleWhitespace(mcBinPath.resolve("jinput.jar").toString()));
 		
-		String jlp = "-Djava.library.path=" + handleWhitespace(mcBinPath + "natives");
+		String jlp = "-Djava.library.path=" + handleWhitespace(mcBinPath.resolve("natives").toString());
 		String className = "net.minecraft.client.Minecraft";
 		
 		List<String> args = new ArrayList<String>();

@@ -15,8 +15,6 @@ import java.io.OutputStreamWriter;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 
-import org.smbarbour.mcu.util.MCUpdater;
-
 public class LauncherThread implements Runnable, GenericLauncherThread {
 	private File launcher;
 	private String minMem;
@@ -93,9 +91,9 @@ public class LauncherThread implements Runnable, GenericLauncherThread {
 		}
 		
 		String javaBin = "java";
-		File binDir = new File(jrePath+MCUpdater.sep+"bin");
+		File binDir = (new File(jrePath)).toPath().resolve("bin").toFile();
 		if( binDir.exists() ) {
-			javaBin = binDir + MCUpdater.sep + "java";
+			javaBin = binDir.toPath().resolve("java").toString();
 		}
 		
 		ProcessBuilder pb = new ProcessBuilder(javaBin,"-Xms"+minMem, "-Xmx"+maxMem, "-jar", launcher.getPath(), suppress);

@@ -153,7 +153,7 @@ public class MainForm extends MCUApp {
 	public void writeConfig(Properties newConfig)
 	{
 		System.out.println("Writing configuration file");
-		File configFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "config.properties");
+		File configFile = mcu.getArchiveFolder().resolve("config.properties").toFile();
 		try {
 			configFile.getParentFile().mkdirs();
 			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
@@ -173,7 +173,7 @@ public class MainForm extends MCUApp {
 		//newConfig.setProperty("currentConfig", "");
 		//newConfig.setProperty("packRevision","");
 		//newConfig.setProperty("suppressUpdates", "false");
-		newConfig.setProperty("instanceRoot", (new File(mcu.getArchiveFolder(),"instances")).getAbsolutePath());
+		newConfig.setProperty("instanceRoot", mcu.getArchiveFolder().resolve("instances").toString());
 		newConfig.setProperty("storePassword", "false");
 		try {
 			configFile.getParentFile().mkdirs();
@@ -194,7 +194,7 @@ public class MainForm extends MCUApp {
 		//if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; } // Made obsolete by instancing
 		if (current.getProperty("minimizeOnLaunch") == null) { current.setProperty("minimizeOnLaunch", "true"); hasChanged = true; }
 		//if (current.getProperty("suppressUpdates") == null) { current.setProperty("suppressUpdates", "false"); hasChanged = true; } // Made obsolete by native launcher
-		if (current.getProperty("instanceRoot") == null) { current.setProperty("instanceRoot", (new File(mcu.getArchiveFolder(),"instances")).getAbsolutePath()); }
+		if (current.getProperty("instanceRoot") == null) { current.setProperty("instanceRoot", mcu.getArchiveFolder().resolve("instances").toString()); }
 		if (current.getProperty("storePassword") == null) { current.setProperty("storePassword", "false"); hasChanged = true; }
 		return hasChanged;
 	}
@@ -203,7 +203,7 @@ public class MainForm extends MCUApp {
 	 * Initialize the contents of the frame.
 	 */
 	void initialize() {
-		File configFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "config.properties");
+		File configFile = mcu.getArchiveFolder().resolve("config.properties").toFile();
 		if (!configFile.exists())
 		{
 			createDefaultConfig(configFile);
@@ -214,7 +214,7 @@ public class MainForm extends MCUApp {
 			{
 				writeConfig(config);
 			}
-			mcu.setInstanceRoot(new File(config.getProperty("instanceRoot")));
+			mcu.setInstanceRoot(new File(config.getProperty("instanceRoot")).toPath());
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		} catch (IOException e1) {
@@ -270,7 +270,7 @@ public class MainForm extends MCUApp {
 						}
 						tabs.setSelectedIndex(tabs.getTabCount()-1);
 						Properties instData = new Properties();
-						Path instanceFile = new File(mcu.getMCFolder()).toPath().resolve("instance.dat");
+						Path instanceFile = mcu.getMCFolder().resolve("instance.dat");
 						try {
 							instData.load(Files.newInputStream(instanceFile));
 						} catch (IOException e1) {
@@ -340,7 +340,7 @@ public class MainForm extends MCUApp {
 						}
 					}
 				}
-				File outFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "client-log.txt");
+				File outFile = mcu.getArchiveFolder().resolve("client-log.txt").toFile();
 				outFile.delete();
 				btnLaunchMinecraft.setEnabled(false);
 				tabs.setSelectedIndex(tabs.getTabCount()-1);
@@ -357,7 +357,7 @@ public class MainForm extends MCUApp {
 				GenericLauncherThread thread;
 				if (System.getProperty("os.name").startsWith("Mac")) {
 
-					File launcher = new File(mcu.getMCFolder() + MCUpdater.sep + "minecraft.jar");
+					File launcher = mcu.getMCFolder().resolve("minecraft.jar").toFile();
 					if(!launcher.exists())
 					{
 						try {
@@ -432,7 +432,7 @@ public class MainForm extends MCUApp {
 					// check for server version update
 					Properties instData = new Properties();
 					try {
-						instData.load(Files.newInputStream(new File(mcu.getMCFolder()).toPath().resolve("instance.dat")));
+						instData.load(Files.newInputStream(mcu.getMCFolder().resolve("instance.dat")));
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -617,7 +617,7 @@ public class MainForm extends MCUApp {
 		Component horizontalStrut_1 = Box.createHorizontalStrut(5);
 		toolBar.add(horizontalStrut_1);
 
-		File serverFile = new File(mcu.getArchiveFolder() + MCUpdater.sep + "mcuServers.dat");
+		File serverFile = mcu.getArchiveFolder().resolve("mcuServers.dat").toFile();
 		String packUrl = Customization.getString("InitialServer.text");
 		while(!serverFile.exists() && !(serverFile.length() > 0)){
 			if(packUrl.isEmpty()) {
@@ -645,7 +645,7 @@ public class MainForm extends MCUApp {
 		updateServerList();
 		Properties instData = new Properties();
 		try {
-			instData.load(Files.newInputStream(new File(mcu.getMCFolder()).toPath().resolve("instance.dat")));
+			instData.load(Files.newInputStream(mcu.getMCFolder().resolve("instance.dat")));
 		} catch (NoSuchFileException nsfe) {
 			instData.setProperty("serverID", "unmanaged");
 		} catch (IOException e1) {
@@ -708,9 +708,9 @@ public class MainForm extends MCUApp {
 	}
 	
 	private void checkAccess() {
-		Path MCFolder = new File(mcu.getMCFolder()).toPath();
-		Path MCUFolder = mcu.getArchiveFolder().toPath();
-		Path InstancesFolder = mcu.getInstanceRoot().toPath();
+		Path MCFolder = mcu.getMCFolder();
+		Path MCUFolder = mcu.getArchiveFolder();
+		Path InstancesFolder = mcu.getInstanceRoot();
 		Path testMCFile = MCFolder.resolve("MCUTest.dat");
 		Path testMCUFile = MCUFolder.resolve("MCUTest.dat");
 		Path testInstancesFile = InstancesFolder.resolve("MCUTest.dat");
@@ -798,13 +798,13 @@ public class MainForm extends MCUApp {
 			
 			Path instancePath;
 			InstanceManager instance = new InstanceManager(mcu);
-			if ( Files.notExists( mcu.getInstanceRoot().toPath().resolve(selected.getServerId()) ) ) {
+			if ( Files.notExists( mcu.getInstanceRoot().resolve(selected.getServerId()) ) ) {
 				instancePath = instance.createInstance(selected.getServerId());
 			} else {
-				instancePath = mcu.getInstanceRoot().toPath().resolve(selected.getServerId());
+				instancePath = mcu.getInstanceRoot().resolve(selected.getServerId());
 			}
 			try {
-				Path MCPath = new File(mcu.getMCFolder()).toPath();
+				Path MCPath = mcu.getMCFolder();
 				if (Files.exists(MCPath)) {
 					if (Files.isSymbolicLink(MCPath)) {
 						Files.delete(MCPath);
@@ -814,10 +814,10 @@ public class MainForm extends MCUApp {
 						if (instanceDataExists) {
 							Properties instProp = new Properties();
 							instProp.load(Files.newInputStream(instDataPath));
-							Path oldInstance = mcu.getInstanceRoot().toPath().resolve(instProp.getProperty("serverID"));
+							Path oldInstance = mcu.getInstanceRoot().resolve(instProp.getProperty("serverID"));
 							removeAndPrepareFolder(MCPath, oldInstance, false);
 						} else {
-							removeAndPrepareFolder(MCPath, mcu.getInstanceRoot().toPath().resolve("unmanaged"), true);
+							removeAndPrepareFolder(MCPath, mcu.getInstanceRoot().resolve("unmanaged"), true);
 						}
 					}
 				}

@@ -305,7 +305,7 @@ public class ClientConfig extends JDialog {
 						//newConfig.setProperty("suppressUpdates", Boolean.toString(chckbxSuppressVanillaUpdate.isSelected()));
 						newConfig.setProperty("instanceRoot", txtInstanceRoot.getText());
 						parent.writeConfig(newConfig);
-						parent.mcu.setInstanceRoot(new File(txtInstanceRoot.getText()));
+						parent.mcu.setInstanceRoot(new File(txtInstanceRoot.getText()).toPath());
 						dispose();
 					}
 				});

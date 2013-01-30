@@ -86,7 +86,7 @@ public class BackupManager extends JFrame {
 				} else if(saveConfig == JOptionPane.CANCEL_OPTION){
 					return;
 				}
-				mcu.restoreBackup(new File(mcu.getArchiveFolder().getPath() + MCUpdater.sep + model.getEntry(table.getSelectedRow()).getFilename()));
+				mcu.restoreBackup(mcu.getArchiveFolder().resolve(model.getEntry(table.getSelectedRow()).getFilename()).toFile());
 			}
 		});
 		pnlButtons.add(btnLoad);
@@ -98,7 +98,7 @@ public class BackupManager extends JFrame {
 				if(response == JOptionPane.NO_OPTION){
 					return;
 				}
-				File backup = new File(mcu.getArchiveFolder().getPath() + MCUpdater.sep + model.getEntry(table.getSelectedRow()).getFilename());
+				File backup = mcu.getArchiveFolder().resolve(model.getEntry(table.getSelectedRow()).getFilename()).toFile();
 				backup.delete();
 				model.remove(table.getSelectedRow());
 			}
