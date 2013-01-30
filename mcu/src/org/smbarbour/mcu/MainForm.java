@@ -628,16 +628,18 @@ public class MainForm extends MCUApp {
 					System.exit(0);
 				}
 			}
-			try {
-				Document serverHeader = MCUpdater.readXmlFromUrl(packUrl);
-				Element docEle = serverHeader.getDocumentElement();
-				ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), MCUpdater.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
-				List<ServerList> servers = new ArrayList<ServerList>();
-				servers.add(sl);
-				mcu.writeServerList(servers);
-			} catch (Exception x) {
-				x.printStackTrace();
-				packUrl = "";
+			if (!(packUrl.equals("http://www.example.org/ServerPack.xml"))) {
+				try {
+					Document serverHeader = MCUpdater.readXmlFromUrl(packUrl);
+					Element docEle = serverHeader.getDocumentElement();
+					ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), MCUpdater.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
+					List<ServerList> servers = new ArrayList<ServerList>();
+					servers.add(sl);
+					mcu.writeServerList(servers);
+				} catch (Exception x) {
+					x.printStackTrace();
+					packUrl = "";
+				}
 			}
 		}
 
