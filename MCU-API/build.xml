@@ -11,7 +11,6 @@
         <pathelement location="bin"/>
         <pathelement location="commons-codec-1.6.jar"/>
 		<pathelement location="commons-io-2.1.jar"/>
-		<pathelement location="log4j-1.2.16.jar"/>
     	<pathelement location="jbeat-1.0.jar"/>
     </path>
     <target name="init">
