@@ -59,8 +59,6 @@ import java.util.Properties;
 import java.util.Random;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 import org.smbarbour.mcu.MCUApp;
 import org.smbarbour.mcu.MCLoginException.ResponseType;
@@ -79,6 +77,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
+
 import javax.swing.JList;
 import javax.swing.AbstractListModel;
 import javax.swing.JToolBar;
@@ -132,9 +132,8 @@ public class MainForm extends MCUApp {
 	 * Create the application.
 	 */
 	public MainForm() {
-		this.baseLogger = Logger.getLogger(MainForm.class);
+		this.baseLogger = Logger.getLogger("MCUpdater");
 		Version.setApp(this);
-		PropertyConfigurator.configure(config);
 		window = this;
 		mcu.setParent(window);
 		initialize();

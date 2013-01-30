@@ -1,6 +1,6 @@
 package org.smbarbour.mcu;
 
-import org.apache.log4j.Logger;
+import java.util.logging.*;
 
 public abstract class MCUApp {
 	
