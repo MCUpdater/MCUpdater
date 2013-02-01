@@ -64,6 +64,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
+import javax.swing.JCheckBoxMenuItem;
 
 public class ServerForm extends MCUApp {
 
@@ -301,6 +302,12 @@ public class ServerForm extends MCUApp {
 			}
 		});
 		mnuFile.add(mnuExit);
+		
+		JMenu mnOptions = new JMenu("Options");
+		menuBar.add(mnOptions);
+		
+		JCheckBoxMenuItem mnuAutosave = new JCheckBoxMenuItem("Auto-save updates");
+		mnOptions.add(mnuAutosave);
 		
 		frmMain.getContentPane().setLayout(new BorderLayout(0, 0));
 		
