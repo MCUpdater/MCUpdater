@@ -60,11 +60,13 @@
 			<zipfileset src="${MCUpdater.location}/resources/assets.zip"/>
 			<zipfileset src="${MCU-API.location}/assets-API.zip"/>
 		</jar>
+		<!--
 		<launch4j
 			configFile="launch4j-assets/MCUpdater-launch4j.xml"
 			jar="dist/MCUpdater${BRANCH-TAG}.${VER.MAJOR}.${VER.MINOR}.${ENV.BUILD_NUMBER}.jar"
 			outFile="dist/MCUpdater${BRANCH-TAG}.${VER.MAJOR}.${VER.MINOR}.${ENV.BUILD_NUMBER}.exe"
 			productVersion="${BRANCH-TAG}.${VER.MAJOR}.${VER.MINOR}.${ENV.BUILD_NUMBER}"
 		/>
+		-->
 	</target>
 </project>
