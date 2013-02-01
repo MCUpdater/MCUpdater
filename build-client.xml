@@ -64,7 +64,6 @@
 			configFile="launch4j-assets/MCUpdater-launch4j.xml"
 			jar="dist/MCUpdater${BRANCH-TAG}.${VER.MAJOR}.${VER.MINOR}.${ENV.BUILD_NUMBER}.jar"
 			outFile="dist/MCUpdater${BRANCH-TAG}.${VER.MAJOR}.${VER.MINOR}.${ENV.BUILD_NUMBER}.exe"
-			manifest="launch4j-assets/admin_required.manifest"
 			productVersion="${BRANCH-TAG}.${VER.MAJOR}.${VER.MINOR}.${ENV.BUILD_NUMBER}"
 		/>
 	</target>

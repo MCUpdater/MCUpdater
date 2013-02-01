@@ -11,7 +11,7 @@
   <supportUrl></supportUrl>
   <customProcName>false</customProcName>
   <stayAlive>false</stayAlive>
-  <manifest>E:\launch4j\launch4j\manifest\admin_required.manifest</manifest>
+  <manifest>launch4j-assets/admin_required.manifest</manifest>
   <icon></icon>
   <jre>
     <path></path>
