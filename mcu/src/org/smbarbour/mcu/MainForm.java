@@ -225,6 +225,7 @@ public class MainForm extends MCUApp {
 		if (canCreateLinks == false) {
 			JOptionPane.showMessageDialog(null, "MCUpdater has detected that symbolic linking cannot be performed.\nTrue instancing will be disabled and switching between instances will take considerably longer.\n\nOn Windows, this can be caused by not running MCUpdater as Administrator.", "MCUpdater", JOptionPane.WARNING_MESSAGE);
 		}
+		System.out.println("Start building GUI");
 		frmMain = new JFrame();
 		frmMain.setTitle("[No Server Selected] - MCUpdater " + Version.VERSION + Version.BUILD_LABEL);
 		frmMain.setResizable(false);
@@ -616,9 +617,12 @@ public class MainForm extends MCUApp {
 		
 		Component horizontalStrut_1 = Box.createHorizontalStrut(5);
 		toolBar.add(horizontalStrut_1);
-
+		System.out.println("Finished building GUI");
 		File serverFile = mcu.getArchiveFolder().resolve("mcuServers.dat").toFile();
 		String packUrl = Customization.getString("InitialServer.text");
+		if (packUrl.equals("http://www.example.org/ServerPack.xml")){
+			packUrl="";
+		}
 		while(!serverFile.exists() && !(serverFile.length() > 0)){
 			if(packUrl.isEmpty()) {
 				packUrl = (String) JOptionPane.showInputDialog(null, "No default server defined.\nPlease enter URL to ServerPack.xml: ", "MCUpdater", JOptionPane.INFORMATION_MESSAGE, null, null, "http://www.example.com/ServerPack.xml");
@@ -627,18 +631,16 @@ public class MainForm extends MCUApp {
 					System.exit(0);
 				}
 			}
-			if (!(packUrl.equals("http://www.example.org/ServerPack.xml"))) {
-				try {
-					Document serverHeader = MCUpdater.readXmlFromUrl(packUrl);
-					Element docEle = serverHeader.getDocumentElement();
-					ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), MCUpdater.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
-					List<ServerList> servers = new ArrayList<ServerList>();
-					servers.add(sl);
-					mcu.writeServerList(servers);
-				} catch (Exception x) {
-					x.printStackTrace();
-					packUrl = "";
-				}
+			try {
+				Document serverHeader = MCUpdater.readXmlFromUrl(packUrl);
+				Element docEle = serverHeader.getDocumentElement();
+				ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), MCUpdater.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
+				List<ServerList> servers = new ArrayList<ServerList>();
+				servers.add(sl);
+				mcu.writeServerList(servers);
+			} catch (Exception x) {
+				x.printStackTrace();
+				packUrl = "";
 			}
 		}
 

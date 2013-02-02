@@ -100,7 +100,7 @@ public class NativeLauncherThread implements Runnable, GenericLauncherThread {
 		sbClassPath.append(MCUpdater.cpDelimiter() + handleWhitespace(mcBinPath.resolve("lwjgl_util.jar").toString()));
 		sbClassPath.append(MCUpdater.cpDelimiter() + handleWhitespace(mcBinPath.resolve("jinput.jar").toString()));
 		
-		String jlp = "-Djava.library.path=" + handleWhitespace(mcBinPath.resolve("natives").toString());
+		String jlp = "-Djava.library.path=" + mcBinPath.resolve("natives").toString();
 		String className = "net.minecraft.client.Minecraft";
 		
 		List<String> args = new ArrayList<String>();
