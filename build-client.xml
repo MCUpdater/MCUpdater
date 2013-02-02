@@ -2,6 +2,7 @@
 <project default="package" name="Create Runnable Jar for Project MCUpdater">
 	<property name="MCU-API.location" value="MCU-API"/>
 	<property name="MCUpdater.location" value="mcu"/>
+	<property name="launch4j.dir" location="e:\\launch4j\\launch4j" />
 
 	<property environment="ENV"/>
 	<include file="version.xml"/> <!-- Version data import -->
@@ -12,6 +13,7 @@
 		</not>
 	</condition>
 	<property name="BRANCH-TAG" value=""/>
+	<taskdef name="launch4j" classname="net.sf.launch4j.ant.Launch4jTask" classpath="${launch4j.dir}/launch4j.jar:${launch4j.dir}/lib/xstream.jar" />
 	
 	<!--this file was created by Eclipse Runnable JAR Export Wizard-->
 	<!--ANT 1.7 is required                                        -->
@@ -58,5 +60,13 @@
 			<zipfileset src="${MCUpdater.location}/resources/assets.zip"/>
 			<zipfileset src="${MCU-API.location}/assets-API.zip"/>
 		</jar>
+		<!--
+		<launch4j
+			configFile="launch4j-assets/MCUpdater-launch4j.xml"
+			jar="dist/MCUpdater${BRANCH-TAG}.${VER.MAJOR}.${VER.MINOR}.${ENV.BUILD_NUMBER}.jar"
+			outFile="dist/MCUpdater${BRANCH-TAG}.${VER.MAJOR}.${VER.MINOR}.${ENV.BUILD_NUMBER}.exe"
+			productVersion="${BRANCH-TAG}.${VER.MAJOR}.${VER.MINOR}.${ENV.BUILD_NUMBER}"
+		/>
+		-->
 	</target>
 </project>
