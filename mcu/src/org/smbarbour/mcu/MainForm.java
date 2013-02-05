@@ -35,12 +35,19 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.Socket;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -67,6 +74,7 @@ import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.Module;
 import org.smbarbour.mcu.util.ServerList;
 import org.smbarbour.mcu.util.ServerListPacket;
+import org.smbarbour.mcu.util.ServerStatus;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -792,10 +800,17 @@ public class MainForm extends MCUApp {
 				pnlModList.setVisible(true);
 				pnlRight.setVisible(true);
 				btnUpdate.setEnabled(true);
+				ServerStatus status = ServerStatus.getStatus(selected.getAddress());
+				if (status != null) {
+					setLblStatus("Idle - Server status: " + status.getMOTD() + " (" + status.getPlayers() + "/" + status.getMaxPlayers() + ")");
+				} else {
+					setLblStatus("Idle - Server status: Unable to connect!");
+				}
 			} else {
 				pnlModList.removeAll();
 				pnlRight.setVisible(false);
 				btnUpdate.setEnabled(false);
+				setLblStatus("Idle");
 			}
 			
 			Path instancePath;
