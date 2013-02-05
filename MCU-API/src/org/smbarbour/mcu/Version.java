@@ -36,8 +36,8 @@ public class Version {
 			int mcuParts[] = { MAJOR_VERSION, MINOR_VERSION, BUILD_VERSION };
 			for( int q = 0; q < mcuParts.length && q < parts.length; ++q ) {
 				int packPart = Integer.valueOf(parts[q]);
-				if( packPart > mcuParts[q] )
-					return true;
+				if( packPart > mcuParts[q] ) return true;
+				if( packPart < mcuParts[q] ) return false; // Since we check major, then minor, then build, if the required value < current value, we can stop checking.
 			}
 			return false;
 		} catch( NumberFormatException e ) {

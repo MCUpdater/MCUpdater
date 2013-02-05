@@ -761,17 +761,34 @@ public class MainForm extends MCUApp {
 	
 	protected void changeSelectedServer(ServerList entry) {
 		try {
+			btnUpdate.setEnabled(true);
 			selected = entry;
 			browser.setPage(entry.getNewsUrl());
 			frmMain.setTitle(entry.getName() + " - MCUpdater " + Version.VERSION + Version.BUILD_LABEL);
+			// switching servers should show news
+			if( tabs != null ) {
+				tabs.setSelectedIndex(0);
+			}
 			if (!selected.getServerId().equals("unmanaged")) {
 				List<Module> modules = mcu.loadFromURL(entry.getPackUrl(), entry.getServerId());
 				Iterator<Module> itMods = modules.iterator();
 				pnlModList.setVisible(false);
 				pnlModList.removeAll();
+				List<String> modIds = new ArrayList<String>();
 				while(itMods.hasNext())
 				{
 					Module modEntry = itMods.next();
+					if (modEntry.getId().equals("")) {
+						modEntry.setId(modEntry.getName().replace(" ", ""));
+					}
+					if (modIds.contains(modEntry.getId())) {
+						tabs.setSelectedIndex(tabs.getTabCount()-1);
+						this.log("The " + selected.getName() + " ServerPack contains multiple mods with id (" + modEntry.getId() + ").  This is an invalid ServerPack.  Please contact the server operator.");
+						//JOptionPane.showMessageDialog(frmMain, "This ServerPack contains multiple mods with id (" + modEntry.getId() + ").  This is an invalid ServerPack.  Please contact the server operator.", "MCUpdater", JOptionPane.ERROR_MESSAGE);
+						btnUpdate.setEnabled(false);
+					} else {
+						modIds.add(modEntry.getId());
+					}
 					JModuleCheckBox chkModule = new JModuleCheckBox(modEntry.getName());
 					if(modEntry.getInJar())
 					{
@@ -791,7 +808,7 @@ public class MainForm extends MCUApp {
 				}
 				pnlModList.setVisible(true);
 				pnlRight.setVisible(true);
-				btnUpdate.setEnabled(true);
+				//btnUpdate.setEnabled(true);
 			} else {
 				pnlModList.removeAll();
 				pnlRight.setVisible(false);
@@ -833,12 +850,7 @@ public class MainForm extends MCUApp {
 				e.printStackTrace();
 				return;
 			}
-			
-			// switching servers should show news
-			if( tabs != null ) {
-				tabs.setSelectedIndex(0);
-			}
-			
+						
 			this.frmMain.repaint();
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
