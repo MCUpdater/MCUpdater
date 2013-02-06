@@ -111,7 +111,7 @@ public class ServerManager extends JFrame {
 			@Override
 			public void windowClosing(WindowEvent arg0) {
 				mcu.writeServerList(model.getList());
-				parent.updateServerList();
+				parent.updateInstanceList();
 			}
 		});
 

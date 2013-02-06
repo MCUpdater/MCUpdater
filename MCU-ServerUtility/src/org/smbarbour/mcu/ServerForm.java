@@ -1460,7 +1460,7 @@ public class ServerForm extends MCUApp {
 	}
 	
 	@Override
-	public void setLblStatus(String string) {
+	public void setStatus(String string) {
 		
 	}
 

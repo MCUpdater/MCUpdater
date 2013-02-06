@@ -8,7 +8,7 @@ import org.smbarbour.mcu.util.ModSide;
 
 public class MCUCLI extends MCUApp {
 	@Override
-	public void setLblStatus(String string) {
+	public void setStatus(String string) {
 		log("Status: "+string);
 	}
 	@Override

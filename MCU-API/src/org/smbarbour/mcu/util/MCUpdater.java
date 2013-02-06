@@ -491,7 +491,7 @@ public class MCUpdater {
 			throw new FileNotFoundException("A backup copy of minecraft.jar for version " + server.getVersion() + " was not found.");
 		}
 		if (clearExisting){
-			parent.setLblStatus("Clearing existing configuration");
+			parent.setStatus("Clearing existing configuration");
 			parent.log("Clearing existing configuration...");
 			Iterator<File> it = new ArrayList<File>(contents).iterator();
 			while(it.hasNext()) {
@@ -506,7 +506,7 @@ public class MCUpdater {
 				entry.delete();
 			}
 		}
-		parent.setLblStatus("Preparing to build minecraft.jar");
+		parent.setStatus("Preparing to build minecraft.jar");
 		parent.log("Preparing to build minecraft.jar...");
 		Iterator<Module> itMods = toInstall.iterator();
 		File tmpFolder = archiveFolder.resolve("temp").toFile();
@@ -535,7 +535,7 @@ public class MCUpdater {
 		
 		while(itMods.hasNext()) {
 			Module entry = itMods.next();
-			parent.setLblStatus("Mod: " + entry.getName());
+			parent.setStatus("Mod: " + entry.getName());
 			parent.log("Mod: "+entry.getName());
 			try {
 				_debug("Mod @ "+entry.getUrl());
@@ -754,7 +754,7 @@ public class MCUpdater {
 		System.out.println(msg);
 	}
 
-	public boolean checkVersionCache(MCUApp window, String version) {
+	public boolean checkVersionCache(String version) {
 		File requestedJar = archiveFolder.resolve("mc-" + version + ".jar").toFile();
 		File newestJar = archiveFolder.resolve("mc-" + newestMC + ".jar").toFile();
 		if (requestedJar.exists()) return true;
@@ -762,7 +762,7 @@ public class MCUpdater {
 			doPatch(requestedJar, newestJar, version);
 			return true;
 		} else {
-			if (window.requestLogin()) {
+			if (this.getParent().requestLogin()) {
 				try {
 					FileUtils.copyURLToFile(new URL("http://assets.minecraft.net/" + newestMC.replace(".","_") + "/minecraft.jar"), newestJar);
 				} catch (MalformedURLException e) {

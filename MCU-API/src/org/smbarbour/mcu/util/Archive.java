@@ -73,7 +73,7 @@ public class Archive {
 		while(iter.hasNext()) {
 			File entry = iter.next();
 			filePos++;
-			parent.setLblStatus("Writing backup: (" + filePos + "/" + fileCount + ")");
+			parent.setStatus("Writing backup: (" + filePos + "/" + fileCount + ")");
 			String relPath = entry.getPath().replace(mCFolder.toString(), "");
 			System.out.println(relPath);
 			if(entry.isDirectory()) {
@@ -93,7 +93,7 @@ public class Archive {
 			}
 		}
 		out.close();
-		parent.setLblStatus("Backup written");
+		parent.setStatus("Backup written");
 	}
 
 	public static void addToZip(File archive, List<File> files, File basePath) throws IOException

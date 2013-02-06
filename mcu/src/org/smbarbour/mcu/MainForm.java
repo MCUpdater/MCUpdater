@@ -205,28 +205,8 @@ public class MainForm extends MCUApp {
 	 * Initialize the contents of the frame.
 	 */
 	void initialize() {
-		File configFile = mcu.getArchiveFolder().resolve("config.properties").toFile();
-		if (!configFile.exists())
-		{
-			createDefaultConfig(configFile);
-		}
-		try {
-			config.load(new FileInputStream(configFile));
-			if (validateConfig(config))
-			{
-				writeConfig(config);
-			}
-			mcu.setInstanceRoot(new File(config.getProperty("instanceRoot")).toPath());
-		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+		loadConfig();
 		checkAccess();
-		System.out.println("Access checks: MC-" + canWriteMinecraft + " MCU-" + canWriteMCUpdater + " Instance-" + canWriteInstances + " SymLink-" + canCreateLinks);
-		if (canCreateLinks == false) {
-			JOptionPane.showMessageDialog(null, "MCUpdater has detected that symbolic linking cannot be performed.\nTrue instancing will be disabled and switching between instances will take considerably longer.\n\nOn Windows, this can be caused by not running MCUpdater as Administrator.", "MCUpdater", JOptionPane.WARNING_MESSAGE);
-		}
 		System.out.println("Start building GUI");
 		frmMain = new JFrame();
 		frmMain.setTitle("[No Server Selected] - MCUpdater " + Version.VERSION + Version.BUILD_LABEL);
@@ -247,87 +227,7 @@ public class MainForm extends MCUApp {
 		btnUpdate = new JButton("Update");
 		btnUpdate.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				new Thread() {
-					public void run() {
-						if (!mcu.checkVersionCache(window, selected.getVersion())) {
-							JOptionPane.showMessageDialog(null, "Unable to validate Minecraft version!", "MCUpdater", JOptionPane.ERROR_MESSAGE);
-							return;
-						}
-						btnUpdate.setEnabled(false);
-						btnLaunchMinecraft.setEnabled(false);
-						mcu.getMCVersion();
-						int saveConfig = JOptionPane.showConfirmDialog(null, "Do you want to save a backup of your existing configuration?", "MCUpdater", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
-						if(saveConfig == JOptionPane.YES_OPTION){
-							setLblStatus("Creating backup");
-							setProgressBar(10);
-							Calendar cal = Calendar.getInstance();
-							SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-							String backDesc = (String) JOptionPane.showInputDialog(null,"Enter description for backup:", "MCUpdater", JOptionPane.QUESTION_MESSAGE, null, null, ("Automatic backup: " + sdf.format(cal.getTime())));
-							log("Creating backup ("+backDesc+") ...");
-							mcu.saveConfig(backDesc);
-							log("Backup complete.");
-						} else if(saveConfig == JOptionPane.CANCEL_OPTION){
-							btnUpdate.setEnabled(true);
-							btnLaunchMinecraft.setEnabled(true);
-							return;
-						}
-						tabs.setSelectedIndex(tabs.getTabCount()-1);
-						Properties instData = new Properties();
-						Path instanceFile = mcu.getMCFolder().resolve("instance.dat");
-						try {
-							instData.load(Files.newInputStream(instanceFile));
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-
-						instData.setProperty("serverID", selected.getServerId());
-						instData.setProperty("revision", selected.getRevision());
-						try {
-							instData.store(Files.newOutputStream(instanceFile), "Instance Data");
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						List<Module> toInstall = new ArrayList<Module>();
-						List<Component> selects = new ArrayList<Component>(Arrays.asList(pnlModList.getComponents()));
-						Iterator<Component> it = selects.iterator();
-						setLblStatus("Preparing module list");
-						log("Preparing module list...");
-						setProgressBar(20);
-						while(it.hasNext()) {
-							Component baseEntry = it.next();
-							//System.out.println(baseEntry.getClass().toString());
-							if(baseEntry.getClass().toString().equals("class org.smbarbour.mcu.JModuleCheckBox")) {
-								JModuleCheckBox entry = (JModuleCheckBox) baseEntry;
-								if(entry.isSelected()){
-									toInstall.add(entry.getModule());
-								}
-							}
-						}
-						try {
-							setLblStatus("Installing mods");
-							log("Installing mods...");
-							setProgressBar(25);
-							mcu.installMods(selected, toInstall, chkHardUpdate.isSelected());
-							if (selected.isGenerateList()) {
-								setLblStatus("Writing servers.dat");
-								log("Writing servers.dat");
-								setProgressBar(90);
-								mcu.writeMCServerFile(selected.getName(), selected.getAddress());
-							}
-							setLblStatus("Finished");
-							setProgressBar(100);
-						} catch (FileNotFoundException fnf) {
-							log("! Error: "+fnf.getMessage());
-							JOptionPane.showMessageDialog(null, fnf.getMessage(), "MCUpdater", JOptionPane.ERROR_MESSAGE);
-						}
-						log("Update complete.");
-						JOptionPane.showMessageDialog(frmMain, "Your update is complete.", "Update Complete", JOptionPane.INFORMATION_MESSAGE);
-						btnUpdate.setEnabled(true);
-						btnLaunchMinecraft.setEnabled(true);
-					}						
-				}.start();
+				updateInstance();
 			}
 		});
 		pnlButtons.add(btnUpdate);
@@ -335,54 +235,7 @@ public class MainForm extends MCUApp {
 		btnLaunchMinecraft = new JButton("Launch Minecraft");
 		btnLaunchMinecraft.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (!System.getProperty("os.name").startsWith("Mac")){
-					if (!requestLogin()) {					
-						if (loginData.getUserName().isEmpty()) {
-							JOptionPane.showMessageDialog(null,"You must login first.","MCUpdater",JOptionPane.ERROR_MESSAGE);
-							return;
-						}
-					}
-				}
-				File outFile = mcu.getArchiveFolder().resolve("client-log.txt").toFile();
-				outFile.delete();
-				btnLaunchMinecraft.setEnabled(false);
-				tabs.setSelectedIndex(tabs.getTabCount()-1);
-				final PopupMenu menu = trayIcon.getPopupMenu();
-				MenuItem killItem = null;
-				for( int k = 0; k < menu.getItemCount(); ++k ) {
-					final MenuItem item = menu.getItem(k);
-					if( item.getLabel().equals("Kill Minecraft") ) {
-						killItem = item;
-						break;
-					}
-				}
-
-				GenericLauncherThread thread;
-				if (System.getProperty("os.name").startsWith("Mac")) {
-
-					File launcher = mcu.getMCFolder().resolve("minecraft.jar").toFile();
-					if(!launcher.exists())
-					{
-						try {
-							URL launcherURL = new URL("http://s3.amazonaws.com/MinecraftDownload/launcher/minecraft.jar");
-							ReadableByteChannel rbc = Channels.newChannel(launcherURL.openStream());
-							FileOutputStream fos = new FileOutputStream(launcher);
-							fos.getChannel().transferFrom(rbc, 0, 1 << 24);
-							fos.close();
-						} catch (MalformedURLException mue) {
-							mue.printStackTrace();
-
-						} catch (IOException ioe) {
-							ioe.printStackTrace();
-						}
-					}
-					thread = LauncherThread.launch(launcher, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), Boolean.parseBoolean(config.getProperty("suppressUpdates")), outFile, console);
-
-				} else {
-					thread = NativeLauncherThread.launch(window, loginData, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), outFile, console);
-				}
-				thread.register(window, btnLaunchMinecraft, killItem );
-				thread.start();
+				launchMinecraft();
 			}
 		});
 		pnlButtons.add(btnLaunchMinecraft);
@@ -425,40 +278,7 @@ public class MainForm extends MCUApp {
 		serverList = new JList<ServerListPacket>();
 		serverList.setModel(slModel);
 		serverList.setCellRenderer(new ServerListCellRenderer());
-		serverList.addListSelectionListener(new ListSelectionListener() {
-
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				if (!e.getValueIsAdjusting())
-				{
-					changeSelectedServer(((ServerListPacket)serverList.getSelectedValue()).getEntry());
-					// check for server version update
-					Properties instData = new Properties();
-					try {
-						instData.load(Files.newInputStream(mcu.getMCFolder().resolve("instance.dat")));
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-					final boolean needUpdate = !selected.getRevision().equals(instData.getProperty("revision"));
-					// check for mcu version update
-					final boolean needMCUUpgrade = Version.isVersionOld(selected.getMCUVersion());
-					
-					String warningMessage = null;
-					if( needUpdate ) {
-						warningMessage = "Your configuration is out of sync with the server. Updating is necessary.";
-					} else if( needMCUUpgrade ) {
-						warningMessage = "The server requires a newer version of MCUpdater than you currently have installed.\nPlease upgrade as soon as possible, things are not likely to update correctly otherwise.";
-					}
-					
-					if ( warningMessage != null ) {
-						JOptionPane.showMessageDialog(null, warningMessage, "MCUpdater", JOptionPane.WARNING_MESSAGE);
-					}
-					
-				}
-			}
-			
-		});
+		serverList.addListSelectionListener(new InstanceListener());
 				
 		JScrollPane serverScroller = new JScrollPane(serverList);
 		pnlLeft.add(serverScroller, BorderLayout.CENTER);
@@ -493,19 +313,7 @@ public class MainForm extends MCUApp {
 		pnlUpdateOptions.add(chkHardUpdate);
 		browser.setEditable(false);
 		browser.setContentType("text/html");
-		browser.addHyperlinkListener(new HyperlinkListener(){
-
-			@Override
-			public void hyperlinkUpdate(HyperlinkEvent he) {
-				if (he.getEventType() == HyperlinkEvent.EventType.ACTIVATED){
-					try {
-						MCUpdater.openLink(he.getURL().toURI());
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		});
+		browser.addHyperlinkListener(new NewsPaneListener());
 		
 		tabs = new JTabbedPane();
 
@@ -537,8 +345,7 @@ public class MainForm extends MCUApp {
 		JButton btnManageServers = new JButton("");
 		btnManageServers.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				ServerManager sm = new ServerManager(window);
-				sm.setVisible(true);
+				showServerManager();
 			}
 		});
 		btnManageServers.setToolTipText("Manage Servers");
@@ -550,8 +357,7 @@ public class MainForm extends MCUApp {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				ClientConfig cc = new ClientConfig(window);
-				cc.setVisible(true);
+				showClientConfig();
 			}
 		});
 		btnOptions.setToolTipText("Options");
@@ -561,30 +367,16 @@ public class MainForm extends MCUApp {
 		JButton btnBackups = new JButton("");
 		btnBackups.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				BackupManager bm = new BackupManager(window);
-				bm.setVisible(true);
+				showBackupManager();
 			}
 		});
 		btnBackups.setIcon(new ImageIcon(MainForm.class.getResource("/icons/folder_database.png")));
 		btnBackups.setToolTipText("Backups");
 		toolBar.add(btnBackups);
 		
-		/*
-		JButton btnInsttest = new JButton("InstTest");
-		btnInsttest.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				InstanceManager inst = new InstanceManager(mcu);
-				inst.createInstance("Test");
-			}
-		});
-		toolBar.add(btnInsttest);
-		*/
-		
 		Component horizontalGlue = Box.createHorizontalGlue();
 		toolBar.add(horizontalGlue);
 		
-		//JLabel lblNewLabel = new JLabel("minecraft.jar version: " + mcu.getMCVersion());
-		//toolBar.add(lblNewLabel);
 		log("minecraft.jar version: " + mcu.getMCVersion());
 		
 		JLabel lblPlayerName1 = new JLabel("Player name:  ");
@@ -608,8 +400,7 @@ public class MainForm extends MCUApp {
 		btnLogin.setIcon(new ImageIcon(MainForm.class.getResource("/icons/key.png")));
 		btnLogin.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				LoginForm lf = new LoginForm(window);
-				lf.setVisible(true);
+				showLoginForm();
 			}
 		});
 		
@@ -620,6 +411,57 @@ public class MainForm extends MCUApp {
 		Component horizontalStrut_1 = Box.createHorizontalStrut(5);
 		toolBar.add(horizontalStrut_1);
 		System.out.println("Finished building GUI");
+		initializeInstanceList();
+		checkSelectedInstance();
+		
+		initTray();
+		
+		if (config.getProperty("storePassword").toLowerCase().equals("true")) {
+			if (config.containsKey("password")) {
+				String user = config.getProperty("userName");
+				String password = decrypt(config.getProperty("password"));
+				try {
+					login(user, password);
+				} catch (MCLoginException e1) {
+				}
+			}
+		}
+	}
+	private void loadConfig() {
+		File configFile = mcu.getArchiveFolder().resolve("config.properties").toFile();
+		if (!configFile.exists())
+		{
+			createDefaultConfig(configFile);
+		}
+		try {
+			config.load(new FileInputStream(configFile));
+			if (validateConfig(config))
+			{
+				writeConfig(config);
+			}
+			mcu.setInstanceRoot(new File(config.getProperty("instanceRoot")).toPath());
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+	}
+	
+	private void checkSelectedInstance() {
+		Properties instData = new Properties();
+		try {
+			instData.load(Files.newInputStream(mcu.getMCFolder().resolve("instance.dat")));
+		} catch (NoSuchFileException nsfe) {
+			instData.setProperty("serverID", "unmanaged");
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(instData.getProperty("serverID"));
+		serverList.setSelectedIndex(selectIndex);
+	}
+	
+	private void initializeInstanceList() {
 		File serverFile = mcu.getArchiveFolder().resolve("mcuServers.dat").toFile();
 		String packUrl = Customization.getString("InitialServer.text");
 		if (packUrl.equals("http://www.example.org/ServerPack.xml")){
@@ -646,31 +488,7 @@ public class MainForm extends MCUApp {
 			}
 		}
 
-		updateServerList();
-		Properties instData = new Properties();
-		try {
-			instData.load(Files.newInputStream(mcu.getMCFolder().resolve("instance.dat")));
-		} catch (NoSuchFileException nsfe) {
-			instData.setProperty("serverID", "unmanaged");
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(instData.getProperty("serverID"));
-		serverList.setSelectedIndex(selectIndex);
-		
-		initTray();
-		
-		if (config.getProperty("storePassword").toLowerCase().equals("true")) {
-			if (config.containsKey("password")) {
-				String user = config.getProperty("userName");
-				String password = decrypt(config.getProperty("password"));
-				try {
-					login(user, password);
-				} catch (MCLoginException e1) {
-				}
-			}
-		}
+		updateInstanceList();
 	}
 
 	private String encrypt(String password) {
@@ -758,7 +576,11 @@ public class MainForm extends MCUApp {
 		} catch (IOException e) {
 			// Ignore exception
 		}
-		
+
+		log("Access checks: MC-" + canWriteMinecraft + " MCU-" + canWriteMCUpdater + " Instance-" + canWriteInstances + " SymLink-" + canCreateLinks);
+		if (canCreateLinks == false) {
+			JOptionPane.showMessageDialog(null, "MCUpdater has detected that symbolic linking cannot be performed.\nTrue instancing will be disabled and switching between instances will take considerably longer.\n\nOn Windows, this can be caused by not running MCUpdater as Administrator.", "MCUpdater", JOptionPane.WARNING_MESSAGE);
+		}
 	}
 	
 	protected void changeSelectedServer(ServerList entry) {
@@ -813,15 +635,15 @@ public class MainForm extends MCUApp {
 				//btnUpdate.setEnabled(true);
 				ServerStatus status = ServerStatus.getStatus(selected.getAddress());
 				if (status != null) {
-					setLblStatus("Idle - Server status: " + status.getMOTD() + " (" + status.getPlayers() + "/" + status.getMaxPlayers() + ")");
+					setStatus("Idle - Server status: " + status.getMOTD() + " (" + status.getPlayers() + "/" + status.getMaxPlayers() + ")");
 				} else {
-					setLblStatus("Idle - Server status: Unable to connect!");
+					setStatus("Idle - Server status: Unable to connect!");
 				}
 			} else {
 				pnlModList.removeAll();
 				pnlRight.setVisible(false);
 				btnUpdate.setEnabled(false);
-				setLblStatus("Idle");
+				setStatus("Idle");
 			}
 			
 			Path instancePath;
@@ -903,7 +725,7 @@ public class MainForm extends MCUApp {
 		}
 		
 	}
-	public void updateServerList()
+	public void updateInstanceList()
 	{
 		serverList.setVisible(false);
 		slModel.clear();
@@ -924,7 +746,7 @@ public class MainForm extends MCUApp {
 	}
 		
 	@Override
-	public void setLblStatus(String text) {
+	public void setStatus(String text) {
 		lblStatus.setText(text);
 	}
 	
@@ -1075,6 +897,202 @@ public class MainForm extends MCUApp {
 		cipher.init(mode, pbeKey, pbeParamSpec);
 		return cipher;
 	}
+	private void updateInstance() {
+		new Thread() {
+			public void run() {
+				if (!mcu.checkVersionCache(selected.getVersion())) {
+					JOptionPane.showMessageDialog(null, "Unable to validate Minecraft version!", "MCUpdater", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				btnUpdate.setEnabled(false);
+				btnLaunchMinecraft.setEnabled(false);
+				mcu.getMCVersion();
+				int saveConfig = JOptionPane.showConfirmDialog(null, "Do you want to save a backup of your existing configuration?", "MCUpdater", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+				if(saveConfig == JOptionPane.YES_OPTION){
+					setStatus("Creating backup");
+					setProgressBar(10);
+					Calendar cal = Calendar.getInstance();
+					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+					String backDesc = (String) JOptionPane.showInputDialog(null,"Enter description for backup:", "MCUpdater", JOptionPane.QUESTION_MESSAGE, null, null, ("Automatic backup: " + sdf.format(cal.getTime())));
+					log("Creating backup ("+backDesc+") ...");
+					mcu.saveConfig(backDesc);
+					log("Backup complete.");
+				} else if(saveConfig == JOptionPane.CANCEL_OPTION){
+					btnUpdate.setEnabled(true);
+					btnLaunchMinecraft.setEnabled(true);
+					return;
+				}
+				tabs.setSelectedIndex(tabs.getTabCount()-1);
+				Properties instData = new Properties();
+				Path instanceFile = mcu.getMCFolder().resolve("instance.dat");
+				try {
+					instData.load(Files.newInputStream(instanceFile));
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+
+				instData.setProperty("serverID", selected.getServerId());
+				instData.setProperty("revision", selected.getRevision());
+				try {
+					instData.store(Files.newOutputStream(instanceFile), "Instance Data");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				List<Module> toInstall = new ArrayList<Module>();
+				List<Component> selects = new ArrayList<Component>(Arrays.asList(pnlModList.getComponents()));
+				Iterator<Component> it = selects.iterator();
+				setStatus("Preparing module list");
+				log("Preparing module list...");
+				setProgressBar(20);
+				while(it.hasNext()) {
+					Component baseEntry = it.next();
+					//System.out.println(baseEntry.getClass().toString());
+					if(baseEntry.getClass().toString().equals("class org.smbarbour.mcu.JModuleCheckBox")) {
+						JModuleCheckBox entry = (JModuleCheckBox) baseEntry;
+						if(entry.isSelected()){
+							toInstall.add(entry.getModule());
+						}
+					}
+				}
+				try {
+					setStatus("Installing mods");
+					log("Installing mods...");
+					setProgressBar(25);
+					mcu.installMods(selected, toInstall, chkHardUpdate.isSelected());
+					if (selected.isGenerateList()) {
+						setStatus("Writing servers.dat");
+						log("Writing servers.dat");
+						setProgressBar(90);
+						mcu.writeMCServerFile(selected.getName(), selected.getAddress());
+					}
+					setStatus("Finished");
+					setProgressBar(100);
+				} catch (FileNotFoundException fnf) {
+					log("! Error: "+fnf.getMessage());
+					JOptionPane.showMessageDialog(null, fnf.getMessage(), "MCUpdater", JOptionPane.ERROR_MESSAGE);
+				}
+				log("Update complete.");
+				JOptionPane.showMessageDialog(frmMain, "Your update is complete.", "Update Complete", JOptionPane.INFORMATION_MESSAGE);
+				btnUpdate.setEnabled(true);
+				btnLaunchMinecraft.setEnabled(true);
+			}						
+		}.start();
+	}
+	private void launchMinecraft() {
+		if (!System.getProperty("os.name").startsWith("Mac")){
+			if (!requestLogin()) {					
+				if (loginData.getUserName().isEmpty()) {
+					JOptionPane.showMessageDialog(null,"You must login first.","MCUpdater",JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+			}
+		}
+		File outFile = mcu.getArchiveFolder().resolve("client-log.txt").toFile();
+		outFile.delete();
+		btnLaunchMinecraft.setEnabled(false);
+		tabs.setSelectedIndex(tabs.getTabCount()-1);
+		final PopupMenu menu = trayIcon.getPopupMenu();
+		MenuItem killItem = null;
+		for( int k = 0; k < menu.getItemCount(); ++k ) {
+			final MenuItem item = menu.getItem(k);
+			if( item.getLabel().equals("Kill Minecraft") ) {
+				killItem = item;
+				break;
+			}
+		}
+
+		GenericLauncherThread thread;
+		if (System.getProperty("os.name").startsWith("Mac")) {
+
+			File launcher = mcu.getMCFolder().resolve("minecraft.jar").toFile();
+			if(!launcher.exists())
+			{
+				try {
+					URL launcherURL = new URL("http://s3.amazonaws.com/MinecraftDownload/launcher/minecraft.jar");
+					ReadableByteChannel rbc = Channels.newChannel(launcherURL.openStream());
+					FileOutputStream fos = new FileOutputStream(launcher);
+					fos.getChannel().transferFrom(rbc, 0, 1 << 24);
+					fos.close();
+				} catch (MalformedURLException mue) {
+					mue.printStackTrace();
+
+				} catch (IOException ioe) {
+					ioe.printStackTrace();
+				}
+			}
+			thread = LauncherThread.launch(launcher, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), Boolean.parseBoolean(config.getProperty("suppressUpdates")), outFile, console);
+
+		} else {
+			thread = NativeLauncherThread.launch(window, loginData, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), outFile, console);
+		}
+		thread.register(window, btnLaunchMinecraft, killItem );
+		thread.start();
+	}
+	private void showLoginForm() {
+		LoginForm lf = new LoginForm(window);
+		lf.setVisible(true);
+	}
+	private void showBackupManager() {
+		BackupManager bm = new BackupManager(window);
+		bm.setVisible(true);
+	}
+	private void showClientConfig() {
+		ClientConfig cc = new ClientConfig(window);
+		cc.setVisible(true);
+	}
+	private void showServerManager() {
+		ServerManager sm = new ServerManager(window);
+		sm.setVisible(true);
+	}
+	
+	private final class NewsPaneListener implements HyperlinkListener {
+		@Override
+		public void hyperlinkUpdate(HyperlinkEvent he) {
+			if (he.getEventType() == HyperlinkEvent.EventType.ACTIVATED){
+				try {
+					MCUpdater.openLink(he.getURL().toURI());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+	private final class InstanceListener implements ListSelectionListener {
+		@Override
+		public void valueChanged(ListSelectionEvent e) {
+			if (!e.getValueIsAdjusting())
+			{
+				changeSelectedServer(((ServerListPacket)serverList.getSelectedValue()).getEntry());
+				// check for server version update
+				Properties instData = new Properties();
+				try {
+					instData.load(Files.newInputStream(mcu.getMCFolder().resolve("instance.dat")));
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				final boolean needUpdate = !selected.getRevision().equals(instData.getProperty("revision"));
+				// check for mcu version update
+				final boolean needMCUUpgrade = Version.isVersionOld(selected.getMCUVersion());
+				
+				String warningMessage = null;
+				if( needUpdate ) {
+					warningMessage = "Your configuration is out of sync with the server. Updating is necessary.";
+				} else if( needMCUUpgrade ) {
+					warningMessage = "The server requires a newer version of MCUpdater than you currently have installed.\nPlease upgrade as soon as possible, things are not likely to update correctly otherwise.";
+				}
+				
+				if ( warningMessage != null ) {
+					JOptionPane.showMessageDialog(null, warningMessage, "MCUpdater", JOptionPane.WARNING_MESSAGE);
+				}
+				
+			}
+		}
+	}
+
 }
 
 class JModuleCheckBox extends JCheckBox
