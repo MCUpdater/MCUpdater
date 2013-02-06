@@ -35,19 +35,12 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
-import java.net.Socket;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -74,6 +67,7 @@ import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.Module;
 import org.smbarbour.mcu.util.ServerList;
 import org.smbarbour.mcu.util.ServerListPacket;
+import org.smbarbour.mcu.util.ServerPackParser;
 import org.smbarbour.mcu.util.ServerStatus;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -640,9 +634,9 @@ public class MainForm extends MCUApp {
 				}
 			}
 			try {
-				Document serverHeader = MCUpdater.readXmlFromUrl(packUrl);
+				Document serverHeader = ServerPackParser.readXmlFromUrl(packUrl);
 				Element docEle = serverHeader.getDocumentElement();
-				ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), MCUpdater.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
+				ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
 				List<ServerList> servers = new ArrayList<ServerList>();
 				servers.add(sl);
 				mcu.writeServerList(servers);
@@ -778,7 +772,7 @@ public class MainForm extends MCUApp {
 				tabs.setSelectedIndex(0);
 			}
 			if (!selected.getServerId().equals("unmanaged")) {
-				List<Module> modules = mcu.loadFromURL(entry.getPackUrl(), entry.getServerId());
+				List<Module> modules = ServerPackParser.loadFromURL(entry.getPackUrl(), entry.getServerId());
 				Iterator<Module> itMods = modules.iterator();
 				pnlModList.setVisible(false);
 				pnlModList.removeAll();

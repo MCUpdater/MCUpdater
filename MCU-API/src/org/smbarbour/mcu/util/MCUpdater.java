@@ -22,22 +22,17 @@ import java.util.UUID;
 import java.io.*;
 
 import javax.swing.ImageIcon;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.smbarbour.mcu.MCUApp;
 import org.smbarbour.mcu.util.Archive;
 import org.w3c.dom.*;
-import org.xml.sax.SAXException;
 
 
 public class MCUpdater {
 	
-	private List<Module> modList = new ArrayList<Module>();
+	//private List<Module> modList = new ArrayList<Module>();
 	private Path MCFolder;
 	private Path archiveFolder;
 	private Path instanceRoot;
@@ -130,25 +125,34 @@ public class MCUpdater {
 		this.parent = parent;
 	}
 
-	public List<Module> loadFromFile(File packFile, String serverId) {
-		try {
-			parseDocument(readXmlFromFile(packFile), serverId);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-		return modList;
-	}
-	
-	public List<Module> loadFromURL(String serverUrl, String serverId)
+	public void writeServerList(List<ServerList> serverlist)
 	{
-		try {
-			parseDocument(readXmlFromUrl(serverUrl), serverId);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
+		try
+		{
+			archiveFolder.toFile().mkdirs();
+			BufferedWriter writer = Files.newBufferedWriter(archiveFolder.resolve("mcuServers.dat"), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+			
+			Iterator<ServerList> it = serverlist.iterator();
+			
+			Set<String> urls = new HashSet<String>();
+			while(it.hasNext())
+			{
+				ServerList entry = it.next();
+				urls.add(entry.getPackUrl());
+			}
+			Iterator<String> urlIterator = urls.iterator();
+			while (urlIterator.hasNext())
+			{
+				writer.write(urlIterator.next());
+				writer.newLine();
+			}
+			
+			writer.close();
 		}
-		return modList;
+		catch( IOException x)
+		{
+			x.printStackTrace();
+		}
 	}
 	
 	public List<Backup> loadBackupList() {
@@ -212,7 +216,7 @@ public class MCUpdater {
 				String serverUrl = it.next();
 				try {
 					Element docEle = null;
-					Document serverHeader = readXmlFromUrl(serverUrl);
+					Document serverHeader = ServerPackParser.readXmlFromUrl(serverUrl);
 					if (!(serverHeader == null)) {
 						Element parent = serverHeader.getDocumentElement();
 						if (parent.getNodeName().equals("ServerPack")){
@@ -220,12 +224,12 @@ public class MCUpdater {
 							NodeList servers = parent.getElementsByTagName("Server");
 							for (int i = 0; i < servers.getLength(); i++){
 								docEle = (Element)servers.item(i);
-								ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), serverUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
+								ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), serverUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
 								sl.setMCUVersion(mcuVersion);
 								slList.add(sl);
 							}					
 						} else {
-							slList.add(new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), serverUrl, parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), parseBoolean(parent.getAttribute("generateList")), parent.getAttribute("revision")));
+							slList.add(new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), serverUrl, parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), ServerPackParser.parseBoolean(parent.getAttribute("generateList")), parent.getAttribute("revision")));
 						}
 					} else {
 						_log("Unable to get server information from " + serverUrl);
@@ -250,163 +254,7 @@ public class MCUpdater {
 		}
 		return slList;
 	}
-	
-	public static boolean parseBoolean(String attribute) {
-		if (attribute.equalsIgnoreCase("false")) {
-			return false;
-		} else {
-			return true;
-		}
-	}
-
-	public void writeServerList(List<ServerList> serverlist)
-	{
-		try
-		{
-			archiveFolder.toFile().mkdirs();
-			BufferedWriter writer = Files.newBufferedWriter(archiveFolder.resolve("mcuServers.dat"), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
-			
-			Iterator<ServerList> it = serverlist.iterator();
-			
-			Set<String> urls = new HashSet<String>();
-			while(it.hasNext())
-			{
-				ServerList entry = it.next();
-				urls.add(entry.getPackUrl());
-			}
-			Iterator<String> urlIterator = urls.iterator();
-			while (urlIterator.hasNext())
-			{
-				writer.write(urlIterator.next());
-				writer.newLine();
-			}
-			
-			writer.close();
-		}
-		catch( IOException x)
-		{
-			x.printStackTrace();
-		}
-	}
-	
-	public static Document readXmlFromFile(File packFile) throws Exception
-	{
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		
-		try {
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			return db.parse(packFile);
-		} catch (ParserConfigurationException pce) {
-			pce.printStackTrace();
-		} catch (SAXException se) {
-			se.printStackTrace();
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
-		}
-		return null;
-	}
-	
-	public static Document readXmlFromUrl(String serverUrl) throws Exception
-	{
-		if (serverUrl.equals("http://www.example.org/ServerPack.xml")) {
-			return null;
-		}
-		_log("Reading "+serverUrl+"...");
-		URL server = new URL(serverUrl);
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		
-		try {
-			DocumentBuilder db = dbf.newDocumentBuilder();
-			return db.parse(server.openStream());
-		}catch(ParserConfigurationException pce) {
-			pce.printStackTrace();
-		}catch(SAXException se) {
-			se.printStackTrace();
-		}catch(IOException ioe) {
-			ioe.printStackTrace();
-		}
-		return null;
-	}
-
-	private void parseDocument(Document dom, String serverId)
-	{
-		modList.clear();
-		Element parent = dom.getDocumentElement();
-		Element docEle = null;
-		if (parent.getNodeName().equals("ServerPack")){
-			NodeList servers = parent.getElementsByTagName("Server");
-			for (int i = 0; i < servers.getLength(); i++){
-				docEle = (Element)servers.item(i);
-				if (docEle.getAttribute("id").equals(serverId)) { break; }
-			}
-		} else {
-			docEle = parent;
-		}
-		NodeList nl = docEle.getElementsByTagName("Module");
-		if(nl != null && nl.getLength() > 0)
-		{
-			for(int i = 0; i < nl.getLength(); i++)
-			{
-				Element el = (Element)nl.item(i);
-				Module m = getModule(el);
-				modList.add(m);
-			}
-		}
-	}
-	
-	private Module getModule(Element modEl)
-	{
-		String name = modEl.getAttribute("name");
-		String id = modEl.getAttribute("id");
-		String url = getTextValue(modEl,"URL");
-		String depends = modEl.getAttribute("depends");
-		String side = modEl.getAttribute("side");
-		Boolean required = getBooleanValue(modEl,"Required");
-		Boolean isDefault = getBooleanValue(modEl,"IsDefault");
-		Boolean inJar = getBooleanValue(modEl,"InJar");
-		Boolean extract = getBooleanValue(modEl,"Extract");
-		Boolean inRoot = getBooleanValue(modEl,"InRoot");
-		Boolean coreMod = getBooleanValue(modEl,"CoreMod");
-		String md5 = getTextValue(modEl,"MD5");
-		List<ConfigFile> configs = new ArrayList<ConfigFile>();
-		NodeList nl = modEl.getElementsByTagName("ConfigFile");
-//		_log("NodeList[getLength]: " + nl.getLength());
-		for(int i = 0; i < nl.getLength(); i++) 
-		{
-			Element el = (Element)nl.item(i);
-			ConfigFile cf = getConfigFile(el);
-			configs.add(cf);
-		}
-		Module m = new Module(name, id, url, depends, required, inJar, extract, inRoot, isDefault, coreMod, md5, configs, side);	
-		return m;
-	}
-	
-	private ConfigFile getConfigFile(Element cfEl)
-	{
-		String url = getTextValue(cfEl,"URL");
-		String path = getTextValue(cfEl,"Path");
-		String md5 = getTextValue(cfEl,"MD5");
-		ConfigFile cf = new ConfigFile(url,path,md5);
-		return cf;
-	}
-	
-	private String getTextValue(Element ele, String tagName) {
-		String textVal = null;
-		NodeList nl = ele.getElementsByTagName(tagName);
-		if(nl != null && nl.getLength() > 0) {
-			Element el = (Element)nl.item(0);
-			if(el != null) {
-				Node node = el.getFirstChild();
-				if(node != null) textVal = node.getNodeValue();
-			}
-		}
-		return textVal;
-	}
-	
-	private Boolean getBooleanValue(Element ele, String tagName) {
-		return Boolean.parseBoolean(getTextValue(ele,tagName));
-	}
-	
 	public Path getMCFolder()
 	{
 		return MCFolder;

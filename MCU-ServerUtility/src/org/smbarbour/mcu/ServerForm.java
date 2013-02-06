@@ -7,6 +7,7 @@ import org.smbarbour.mcu.util.ConfigFile;
 import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.Module;
 import org.smbarbour.mcu.util.ServerList;
+import org.smbarbour.mcu.util.ServerPackParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -200,15 +201,15 @@ public class ServerForm extends MCUApp {
 				
 				try {
 					Element docEle = null;
-					Document serverHeader = MCUpdater.readXmlFromFile(currentFile.toFile());
+					Document serverHeader = ServerPackParser.readXmlFromFile(currentFile.toFile());
 					if (!(serverHeader == null)) {
 						Element parent = serverHeader.getDocumentElement();
 						if (parent.getNodeName().equals("ServerPack")){
 							NodeList servers = parent.getElementsByTagName("Server");
 							for (int i = 0; i < servers.getLength(); i++){
 								docEle = (Element)servers.item(i);
-								ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), "", docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), MCUpdater.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
-								List<Module> modules = new ArrayList<Module>(MCUpdater.getInstance().loadFromFile(currentFile.toFile(), docEle.getAttribute("id")));
+								ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), "", docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
+								List<Module> modules = new ArrayList<Module>(ServerPackParser.loadFromFile(currentFile.toFile(), docEle.getAttribute("id")));
 								List<ConfigFileWrapper> configs = new ArrayList<ConfigFileWrapper>();
 								for (Module modEntry : modules) {
 									if (modEntry.getId().equals("")){
@@ -222,8 +223,8 @@ public class ServerForm extends MCUApp {
 							}					
 						} else {
 							docEle = parent;
-							ServerList sl = new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), "", parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), MCUpdater.parseBoolean(parent.getAttribute("generateList")), parent.getAttribute("revision"));
-							List<Module> modules = new ArrayList<Module>(MCUpdater.getInstance().loadFromFile(currentFile.toFile(), docEle.getAttribute("id")));
+							ServerList sl = new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), "", parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), ServerPackParser.parseBoolean(parent.getAttribute("generateList")), parent.getAttribute("revision"));
+							List<Module> modules = new ArrayList<Module>(ServerPackParser.loadFromFile(currentFile.toFile(), docEle.getAttribute("id")));
 							List<ConfigFileWrapper> configs = new ArrayList<ConfigFileWrapper>();
 							for (Module modEntry : modules) {
 								if (modEntry.getId().equals("")){

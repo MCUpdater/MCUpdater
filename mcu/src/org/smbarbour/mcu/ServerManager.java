@@ -21,6 +21,7 @@ import javax.swing.ListSelectionModel;
 
 import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.ServerList;
+import org.smbarbour.mcu.util.ServerPackParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -82,9 +83,9 @@ public class ServerManager extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				String packURL = JOptionPane.showInputDialog(null,"Enter server pack URL: ", "Add Server", JOptionPane.PLAIN_MESSAGE);
 				try {
-					Document serverHeader = MCUpdater.readXmlFromUrl(packURL);
+					Document serverHeader = ServerPackParser.readXmlFromUrl(packURL);
 					Element docEle = serverHeader.getDocumentElement();
-					ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packURL, docEle.getAttribute("newsUrl"), docEle.getAttribute("logoUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), MCUpdater.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
+					ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packURL, docEle.getAttribute("newsUrl"), docEle.getAttribute("logoUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
 					model.add(sl);
 				} catch (Exception x) {
 					x.printStackTrace();
