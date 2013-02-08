@@ -153,7 +153,7 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 		    while (e.hasMoreElements()) {
 		    	Object name = e.nextElement();
 		        String value = (String) attributes.getAttribute(name);
-		        if (name == HTML.Attribute.HREF && value.startsWith("download.php"))
+		        if (name == HTML.Attribute.HREF && value.startsWith("downloadx.php"))
 		        	redirectURL = value;
 		    }
 		}
