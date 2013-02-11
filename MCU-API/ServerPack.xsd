@@ -32,6 +32,15 @@
 									<xs:attribute type="xs:string" name="name" use="required" />
 									<xs:attribute type="xs:string" name="id" use="required" />
 									<xs:attribute type="xs:string" name="depends" use="optional" />
+									<xs:attribute type="xs:string" name="side" use="optional" default="BOTH">
+										<xs:simpleType>
+											<xs:restriction base="xs:string">
+												<xs:enumeration value="BOTH"/>
+												<xs:enumeration value="CLIENT"/>
+												<xs:enumeration value="SERVER"/>
+											</xs:restriction>
+										</xs:simpleType>
+									</xs:attribute>
 								</xs:complexType>
 							</xs:element>
 						</xs:sequence>
