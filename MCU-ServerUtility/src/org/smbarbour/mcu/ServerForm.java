@@ -1409,9 +1409,9 @@ public class ServerForm extends MCUApp {
 					fileWriter.newLine();
 					fileWriter.write("\t\t\t<Required>" + (entry.getRequired() == true ? "true" : "false") + "</Required>");
 					fileWriter.newLine();
-					fileWriter.write("\t\t\t<InJar>" + (entry.getInJar() == true ? "true" : "false") + "</InJar>");
-					fileWriter.newLine();
 					fileWriter.write("\t\t\t<IsDefault>" + (entry.getIsDefault() == true ? "true" : "false") + "</IsDefault>");
+					fileWriter.newLine();
+					fileWriter.write("\t\t\t<InJar>" + (entry.getInJar() == true ? "true" : "false") + "</InJar>");
 					fileWriter.newLine();
 					fileWriter.write("\t\t\t<Extract>" + (entry.getExtract() == true ? "true" : "false") + "</Extract>");
 					fileWriter.newLine();
