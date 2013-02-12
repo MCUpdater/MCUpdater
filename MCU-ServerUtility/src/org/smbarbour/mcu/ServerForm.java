@@ -1445,6 +1445,10 @@ public class ServerForm extends MCUApp {
 		serverDirty = false;
 	}
 
+	private String xmlEscape(String input) {
+		return input.replace("\"", "&quot;").replace("'", "&apos;").replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
+	}
+	
 	protected void doSave(Path outputFile) {
 		try {
 			if (configDirty) updateConfigEntry();
@@ -1456,15 +1460,15 @@ public class ServerForm extends MCUApp {
 			fileWriter.write("<ServerPack version=\"" + Version.API_VERSION + "\" xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://raw.github.com/smbarbour/MCUpdater/master/MCU-API/ServerPack.xsd'>");
 			fileWriter.newLine();
 			for (ServerDefinition server : modelServer.getContents()) {
-				fileWriter.write("\t<Server id=\"" + server.getServer().getServerId() + "\" name=\"" + server.getServer().getName() + "\" newsUrl=\"" + server.getServer().getNewsUrl() + "\" iconUrl=\"" + server.getServer().getIconUrl() + "\" version=\"" + server.getServer().getVersion() + "\" serverAddress=\"" + server.getServer().getAddress()   + "\" revision=\"" + server.getServer().getRevision() + "\" generateList=\"" + server.getServer().isGenerateList() + "\">");
+				fileWriter.write("\t<Server id=\"" + server.getServer().getServerId() + "\" name=\"" + server.getServer().getName() + "\" newsUrl=\"" + server.getServer().getNewsUrl() + "\" iconUrl=\"" + server.getServer().getIconUrl() + "\" version=\"" + server.getServer().getVersion() + "\" serverAddress=\"" + server.getServer().getAddress() + "\" revision=\"" + server.getServer().getRevision() + "\" generateList=\"" + server.getServer().isGenerateList() + "\">");
 				fileWriter.newLine();
 				for (Module entry : server.getModules()) {
 					fileWriter.write("\t\t<Module name=\"" + entry.getName() + "\" id=\"" + entry.getId() + "\" depends=\"" + entry.getDepends() + "\">");
 					fileWriter.newLine();
-					fileWriter.write("\t\t\t<URL>" + entry.getUrl() + "</URL>");
+					fileWriter.write("\t\t\t<URL>" + xmlEscape(entry.getUrl()) + "</URL>");
 					fileWriter.newLine();
 					if (!entry.getPath().equals("")) {
-						fileWriter.write("\t\t\t<Path>" + entry.getPath() + "</Path>");
+						fileWriter.write("\t\t\t<Path>" + xmlEscape(entry.getPath()) + "</Path>");
 						fileWriter.newLine();
 					}
 					fileWriter.write("\t\t\t<Required>" + (entry.getRequired() == true ? "true" : "false") + "</Required>");
@@ -1479,17 +1483,17 @@ public class ServerForm extends MCUApp {
 					fileWriter.newLine();
 					fileWriter.write("\t\t\t<CoreMod>" + (entry.getCoreMod() == true ? "true" : "false") + "</CoreMod>");
 					fileWriter.newLine();
-					fileWriter.write("\t\t\t<MD5>" + entry.getMD5() + "</MD5>");
+					fileWriter.write("\t\t\t<MD5>" + xmlEscape(entry.getMD5()) + "</MD5>");
 					fileWriter.newLine();
 					for (ConfigFileWrapper cfw : server.getConfigs()) {
 						if (cfw.getParentId().equals(entry.getId())) {
 							fileWriter.write("\t\t\t\t<ConfigFile>");
 							fileWriter.newLine();
-							fileWriter.write("\t\t\t\t\t<URL>" + cfw.getConfigFile().getUrl() + "</URL>");
+							fileWriter.write("\t\t\t\t\t<URL>" + xmlEscape(cfw.getConfigFile().getUrl()) + "</URL>");
 							fileWriter.newLine();
-							fileWriter.write("\t\t\t\t\t<Path>" + cfw.getConfigFile().getPath() + "</Path>");
+							fileWriter.write("\t\t\t\t\t<Path>" + xmlEscape(cfw.getConfigFile().getPath()) + "</Path>");
 							fileWriter.newLine();
-							fileWriter.write("\t\t\t\t\t<MD5>" + cfw.getConfigFile().getMD5() + "</MD5>");
+							fileWriter.write("\t\t\t\t\t<MD5>" + xmlEscape(cfw.getConfigFile().getMD5()) + "</MD5>");
 							fileWriter.newLine();
 							fileWriter.write("\t\t\t\t</ConfigFile>");
 							fileWriter.newLine();
