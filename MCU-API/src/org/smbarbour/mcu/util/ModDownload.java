@@ -209,6 +209,10 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 						redirectURL = tokens[j];
 						break;
 					}
+					if (tokens[j].contains("var zzz =")) {
+						redirectURL = tokens[j+1];
+					}
+					//System.out.println("Token: [[ " + tokens[j] + " ]]");
 				}
 			}
 			if (isMediafire) {
