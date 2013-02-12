@@ -8,6 +8,7 @@ public class Module {
 	private String name;
 	private String id;
 	private String url;
+	private String path;
 	private String depends;
 	private Boolean required;
 	private Boolean inJar;
@@ -19,7 +20,7 @@ public class Module {
 	private ModSide side;
 	private List<ConfigFile> configs;
 	
-	public Module(String name, String id, String url, String depends, Boolean required, Boolean inJar, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs, String side)
+	public Module(String name, String id, String url, String depends, Boolean required, Boolean inJar, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs, String side, String path)
 	{
 		this.setName(name);
 		this.setId(id);
@@ -33,6 +34,7 @@ public class Module {
 		this.setCoreMod(coreMod);
 		this.setMD5(md5);
 		this.setSide(side);
+		this.setPath(path);
 		if(configs != null)
 		{
 			this.configs = configs;
@@ -44,7 +46,7 @@ public class Module {
 	@Deprecated
 	public Module(String name, String id, String url, String depends, Boolean required, Boolean inJar, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs)
 	{
-		this(name, id, url, depends, required, inJar, extract, inRoot, isDefault, coreMod, md5, configs, null);
+		this(name, id, url, depends, required, inJar, extract, inRoot, isDefault, coreMod, md5, configs, null, null);
 	}
 
 	public String getName()
@@ -184,6 +186,14 @@ public class Module {
 	}
 	public boolean isServerSide() {
 		return side != ModSide.CLIENT;
+	}
+
+	public String getPath() {
+		return path;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
 	}
 
 }

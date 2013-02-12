@@ -147,6 +147,8 @@ public class ServerForm extends MCUApp {
 	};
 	private JCheckBox chkServerGenerateList;
 	private JButton btnModSort;
+	private JTextField txtModPath;
+	private JComboBox<String> lstModSide;
 	
 	public ServerForm() {
 		initialize();
@@ -849,6 +851,56 @@ public class ServerForm extends MCUApp {
 				row++;
 			}
 			{
+				JLabel lblModPath = new JLabel("Path:");
+				lblModPath.setHorizontalAlignment(SwingConstants.TRAILING);
+				GridBagConstraints gbc_lblModPath = new GridBagConstraints();
+				gbc_lblModPath.fill = GridBagConstraints.HORIZONTAL;
+				gbc_lblModPath.insets = new Insets(0, 0, 5, 5);
+				gbc_lblModPath.gridx = 1;
+				gbc_lblModPath.gridy = row;
+				modDetailPanel.add(lblModPath, gbc_lblModPath);
+
+				txtModPath = new JTextField();
+				txtModPath.getDocument().addDocumentListener(moduleDocumentListener);
+				GridBagConstraints gbc_txtModPath = new GridBagConstraints();
+				gbc_txtModPath.gridwidth = 3;
+				gbc_txtModPath.insets = new Insets(0, 0, 5, 5);
+				gbc_txtModPath.fill = GridBagConstraints.HORIZONTAL;
+				gbc_txtModPath.gridx = 2;
+				gbc_txtModPath.gridy = row;
+				modDetailPanel.add(txtModPath, gbc_txtModPath);
+				txtModPath.setColumns(10);
+
+				row++;
+			}
+			{
+				JLabel lblModSide = new JLabel("Side:");
+				lblModSide.setHorizontalAlignment(SwingConstants.TRAILING);
+				GridBagConstraints gbc_lblModSide = new GridBagConstraints();
+				gbc_lblModSide.fill = GridBagConstraints.HORIZONTAL;
+				gbc_lblModSide.insets = new Insets(0, 0, 5, 5);
+				gbc_lblModSide.gridx = 1;
+				gbc_lblModSide.gridy = row;
+				modDetailPanel.add(lblModSide, gbc_lblModSide);
+
+				lstModSide = new JComboBox<String>(new String[]{"BOTH", "CLIENT", "SERVER"});
+				lstModSide.addItemListener(new ItemListener(){
+					@Override
+					public void itemStateChanged(ItemEvent e) {
+						moduleDirty = true;
+					}						
+				});
+				GridBagConstraints gbc_lstModSide = new GridBagConstraints();
+				gbc_lstModSide.gridwidth = 3;
+				gbc_lstModSide.insets = new Insets(0, 0, 5, 5);
+				gbc_lstModSide.fill = GridBagConstraints.HORIZONTAL;
+				gbc_lstModSide.gridx = 2;
+				gbc_lstModSide.gridy = row;
+				modDetailPanel.add(lstModSide, gbc_lstModSide);
+
+				row++;
+			}			
+			{
 				JLabel lblMD5 = new JLabel("MD5 Checksum:");
 				lblMD5.setHorizontalAlignment(SwingConstants.TRAILING);
 				GridBagConstraints gbc_lblMD5 = new GridBagConstraints();
@@ -992,7 +1044,7 @@ public class ServerForm extends MCUApp {
 				JButton btnModAdd = new JButton("Add");
 				btnModAdd.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, "both");
+						Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, lstModSide.getSelectedItem().toString(), txtModPath.getText());
 						modelModule.add(newMod);
 						modelParentId.add(newMod.getId());
 						modelParentId.sort();
@@ -1407,6 +1459,10 @@ public class ServerForm extends MCUApp {
 					fileWriter.newLine();
 					fileWriter.write("\t\t\t<URL>" + entry.getUrl() + "</URL>");
 					fileWriter.newLine();
+					if (!entry.getPath().equals("")) {
+						fileWriter.write("\t\t\t<Path>" + entry.getPath() + "</Path>");
+						fileWriter.newLine();
+					}
 					fileWriter.write("\t\t\t<Required>" + (entry.getRequired() == true ? "true" : "false") + "</Required>");
 					fileWriter.newLine();
 					fileWriter.write("\t\t\t<IsDefault>" + (entry.getIsDefault() == true ? "true" : "false") + "</IsDefault>");
@@ -1492,7 +1548,7 @@ public class ServerForm extends MCUApp {
 
 	private void updateModuleEntry() {
 		modelParentId.replaceEntry(lstModules.getSelectedValue().getId(), txtModId.getText());
-		Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, "both");
+		Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, lstModSide.getSelectedItem().toString(), txtModPath.getText());
 		modelModule.replace(moduleCurrentSelection, newMod);
 		moduleDirty = false;
 		serverDirty = true;

@@ -89,6 +89,7 @@ public class ServerPackParser {
 		String name = modEl.getAttribute("name");
 		String id = modEl.getAttribute("id");
 		String url = getTextValue(modEl,"URL");
+		String path = getTextValue(modEl,"Path");
 		String depends = modEl.getAttribute("depends");
 		String side = modEl.getAttribute("side");
 		Boolean required = getBooleanValue(modEl,"Required");
@@ -107,7 +108,7 @@ public class ServerPackParser {
 			ConfigFile cf = getConfigFile(el);
 			configs.add(cf);
 		}
-		Module m = new Module(name, id, url, depends, required, inJar, extract, inRoot, isDefault, coreMod, md5, configs, side);	
+		Module m = new Module(name, id, url, depends, required, inJar, extract, inRoot, isDefault, coreMod, md5, configs, side, path);	
 		return m;
 	}
 	
