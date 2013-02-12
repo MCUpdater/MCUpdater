@@ -252,6 +252,10 @@ public class ServerForm extends MCUApp {
 		JMenuItem mntmScanFolder = new JMenuItem("Scan Folder...");
 		mntmScanFolder.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (lstServers.getSelectedIndex() == -1) {
+					JOptionPane.showMessageDialog(frmMain, "You must have a server selected first!", "MCUpdater", JOptionPane.WARNING_MESSAGE);
+					return;
+				}
 				int confirm = JOptionPane.showConfirmDialog(frmMain, "This will clear all existing modules and configurations.\n\nDo you wish to continue?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
 				if (!(confirm == JOptionPane.YES_OPTION)) return;
 				modelModule.clear();
