@@ -641,9 +641,8 @@ public class MainForm extends MCUApp {
 			}
 			
 			Path instancePath;
-			InstanceManager instance = new InstanceManager(mcu);
 			if ( Files.notExists( mcu.getInstanceRoot().resolve(selected.getServerId()) ) ) {
-				instancePath = instance.createInstance(selected.getServerId());
+				instancePath = InstanceManager.createInstance(selected.getServerId());
 			} else {
 				instancePath = mcu.getInstanceRoot().resolve(selected.getServerId());
 			}
@@ -666,7 +665,7 @@ public class MainForm extends MCUApp {
 					}
 				}
 				if (canCreateLinks) {
-					instance.createLink(MCPath, instancePath);
+					InstanceManager.createLink(MCPath, instancePath);
 				} else {
 					copyInstanceFolder(instancePath, MCPath);
 				}

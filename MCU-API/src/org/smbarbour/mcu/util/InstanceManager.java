@@ -12,18 +12,12 @@ import java.util.Properties;
 import org.apache.commons.io.FileUtils;
 
 public class InstanceManager {
-
-	private MCUpdater parent;
 	
-	public InstanceManager(MCUpdater parent) {
-		this.parent = parent;
-	}
-	
-	public boolean checkSymlink(Path target) {
+	public static boolean checkSymlink(Path target) {
 		return Files.isSymbolicLink(target);
 	}
 	
-	public void createLink(Path source, Path target) {
+	public static void createLink(Path source, Path target) {
 		try {
 			Files.createSymbolicLink(source, target);
 		} catch (IOException e) {
@@ -32,9 +26,9 @@ public class InstanceManager {
 		}
 	}
 	
-	public Path createInstance(String instanceName) {
+	public static Path createInstance(String instanceName) {
 		try {
-			Path instance = parent.getInstanceRoot().resolve(instanceName);
+			Path instance = MCUpdater.getInstance().getInstanceRoot().resolve(instanceName);
 			Files.createDirectories(instance);
 			Path instanceFile = instance.resolve("instance.dat");
 			Files.createFile(instanceFile);
