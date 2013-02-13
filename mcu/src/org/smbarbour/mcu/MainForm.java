@@ -14,7 +14,6 @@ import java.awt.Color;
 import java.awt.Frame;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
-import java.awt.SplashScreen;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
 
@@ -139,12 +138,7 @@ public class MainForm extends MCUApp {
 		window = this;
 		mcu.setParent(window);
 		initialize();
-		window.frmMain.setVisible(true);
-		
-		SplashScreen splash = SplashScreen.getSplashScreen();
-		if( splash != null ) {
-			splash.close();
-		}
+		window.frmMain.setVisible(true);		
 	}
 
 	public Properties getConfig()
