@@ -37,6 +37,7 @@ public class ServerPackParser {
 	
 	public static Document readXmlFromUrl(String serverUrl) throws Exception
 	{
+		System.out.println("readXMLFromUrl(" + serverUrl + ")");
 		if (serverUrl.equals("http://www.example.org/ServerPack.xml")) {
 			return null;
 		}
@@ -89,7 +90,7 @@ public class ServerPackParser {
 		String name = modEl.getAttribute("name");
 		String id = modEl.getAttribute("id");
 		String url = getTextValue(modEl,"URL");
-		String path = getTextValue(modEl,"Path");
+		String path = getTextValue(modEl,"ModPath");
 		String depends = modEl.getAttribute("depends");
 		String side = modEl.getAttribute("side");
 		Boolean required = getBooleanValue(modEl,"Required");
@@ -128,12 +129,16 @@ public class ServerPackParser {
 			Element el = (Element)nl.item(0);
 			if(el != null) {
 				Node node = el.getFirstChild();
-				if(node != null) textVal = node.getNodeValue();
+				if(node != null) textVal = unescapeXML(node.getNodeValue());
 			}
 		}
 		return textVal;
 	}
 	
+	private static String unescapeXML(String nodeValue) {
+		return nodeValue.replace("&amp;", "&").replace("&quot;", "\"").replace("&apos;","'").replace("&lt;", "<").replace("&gt;", ">");
+	}
+
 	private static Boolean getBooleanValue(Element ele, String tagName) {
 		return Boolean.parseBoolean(getTextValue(ele,tagName));
 	}

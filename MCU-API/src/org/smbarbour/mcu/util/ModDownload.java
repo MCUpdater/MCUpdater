@@ -26,7 +26,7 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 
 	private boolean isAdfly = false, isMediafire = false, isOptifined = false, readingScript = false;
 	private String redirectURL = null;
-	private String remoteFilename;
+	//private String remoteFilename;
 	private File destFile = null;
 	public final URL url;
 	public final String expectedMD5;
@@ -46,14 +46,14 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 	public ModDownload(URL url, File destination, ModDownload referer, String MD5) throws Exception {
 		this.url = url;
 		this.expectedMD5 = MD5;
-		this.remoteFilename = url.getFile().substring(url.getFile().lastIndexOf('/')+1);
+		//this.remoteFilename = url.getFile().substring(url.getFile().lastIndexOf('/')+1);
 		// TODO: check for md5 in download cache first
 		if( MD5 != null ) {
 			final File cacheFile = DownloadCache.getFile(MD5);
 			if( cacheFile.exists() ) {
 				cacheHit = true;
 				System.out.println("\n\nCache hit - "+MD5);
-				this.destFile = new File(destination, this.remoteFilename);
+				this.destFile = destination;
 				FileUtils.copyFile(cacheFile, this.destFile);
 				return;
 			} else {
@@ -61,7 +61,7 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 			}
 		}
 		if (url.getProtocol().equals("file")){
-			this.destFile = new File(destination, this.remoteFilename);
+			this.destFile = destination;
 			FileUtils.copyURLToFile(url, this.destFile);
 			return;
 		}
@@ -76,7 +76,7 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 			String newLocation = connection.getHeaderField("Location");
 			url = redirect(url, newLocation);
 			ModDownload redirect = new ModDownload(url, destination, this, MD5);
-			this.remoteFilename = redirect.getRemoteFilename();
+			//this.remoteFilename = redirect.getRemoteFilename();
 			this.destFile = redirect.getDestFile();
 			return;
 		}
@@ -93,12 +93,12 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 		if (redirectURL != null) {
 			url = redirect(url, redirectURL);
 			ModDownload redirect = new ModDownload(url, destination, this, MD5);
-			this.remoteFilename = redirect.getRemoteFilename();
+			//this.remoteFilename = redirect.getRemoteFilename();
 			this.destFile = redirect.getDestFile();
 			return;
 		}
 		if (connection != null) {
-			this.destFile = new File(destination, this.remoteFilename); 
+			this.destFile = destination; 
 			InputStream is = connection.getInputStream();
 			//InputStreamReader isr = new InputStreamReader(connection.getInputStream());
 			FileOutputStream fos = new FileOutputStream(this.destFile);
@@ -260,9 +260,9 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 		return s;
 	}
 
-	public String getRemoteFilename() {
-		return unescape(remoteFilename);
-	}
+//	public String getRemoteFilename() {
+//		return unescape(remoteFilename);
+//	}
 
 	/* Code for testing.  Not needed for API usage.
 	public static void main(String[] args) {

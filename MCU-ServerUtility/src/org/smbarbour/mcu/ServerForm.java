@@ -1468,7 +1468,7 @@ public class ServerForm extends MCUApp {
 					fileWriter.write("\t\t\t<URL>" + xmlEscape(entry.getUrl()) + "</URL>");
 					fileWriter.newLine();
 					if (!entry.getPath().equals("")) {
-						fileWriter.write("\t\t\t<Path>" + xmlEscape(entry.getPath()) + "</Path>");
+						fileWriter.write("\t\t\t<ModPath>" + xmlEscape(entry.getPath()) + "</ModPath>");
 						fileWriter.newLine();
 					}
 					fileWriter.write("\t\t\t<Required>" + (entry.getRequired() == true ? "true" : "false") + "</Required>");

@@ -11,7 +11,7 @@
 								<xs:complexType>
 									<xs:sequence>
 										<xs:element type="xs:anyURI" name="URL" />
-										<xs:element type="xs:string" name="Path" minOccurs="0" />
+										<xs:element type="xs:string" name="ModPath" minOccurs="0" />
 										<xs:element type="xs:boolean" name="Required" />
 										<xs:element type="xs:boolean" name="IsDefault" />
 										<xs:element type="xs:boolean" name="InJar" />
