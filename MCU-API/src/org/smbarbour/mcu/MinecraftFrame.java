@@ -37,6 +37,8 @@ public class MinecraftFrame extends Frame implements WindowListener {
 				port = Integer.toString(25565);
 			}
 			applet = new MCULaunchApplet(instance, lwjgl, login, address.getHost(), port);
+			System.setProperty("org.lwjgl.librarypath", lwjgl.resolve("natives").toString());
+			System.setProperty("net.java.games.input.librarypath", lwjgl.resolve("natives").toString());
 			this.add(applet);
 			this.pack();
 			this.setLocationRelativeTo(null);
