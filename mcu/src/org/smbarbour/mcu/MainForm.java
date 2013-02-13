@@ -62,6 +62,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.smbarbour.mcu.MCUApp;
 import org.smbarbour.mcu.MCLoginException.ResponseType;
 import org.smbarbour.mcu.util.InstanceManager;
+import org.smbarbour.mcu.util.LoginData;
 import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.Module;
 import org.smbarbour.mcu.util.ServerList;

@@ -1,4 +1,4 @@
-package org.smbarbour.mcu;
+package org.smbarbour.mcu.util;
 
 public class LoginData {
 	private String userName = "";

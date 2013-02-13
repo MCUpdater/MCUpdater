@@ -19,6 +19,7 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 
+import org.smbarbour.mcu.util.LoginData;
 import org.smbarbour.mcu.util.MCUpdater;
 
 public class NativeLauncherThread implements Runnable, GenericLauncherThread {
