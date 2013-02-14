@@ -12,15 +12,10 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Path;
 
 import javax.swing.ImageIcon;
 
 import net.minecraft.Launcher;
-
-import org.smbarbour.mcu.util.LoginData;
-import org.smbarbour.mcu.util.MCUpdater;
-import org.smbarbour.mcu.util.ServerList;
 
 public class MinecraftFrame extends Frame implements WindowListener {
 
@@ -32,22 +27,22 @@ public class MinecraftFrame extends Frame implements WindowListener {
 	private Launcher applet = null;
 
 	public static void main(String[] args) {
-		LoginData login = new LoginData();
-		login.setUserName(args[0]);
-		login.setSessionId(args[1]);
-		ServerList server = new ServerList(null, args[2], null, null, null, null, args[5], true, null);
-		Path instPath = new File(args[3]).toPath();
-		Path lwjglPath = new File(args[4]).toPath();
+		String username = args[0];
+		String sessionid = args[1];
+		String serverName = args[2];
+		File instPath = new File(args[3]);
+		File lwjglPath = new File(args[4]);
+		String serverAddress = args[5];		
 		ImageIcon icon = null;
 		try {
 			icon = new ImageIcon(new URL(args[6]));
 		} catch (MalformedURLException e) { 
 			System.out.println("No valid icon URL specified in server pack");
 		} catch (IndexOutOfBoundsException indexException) {}
-		if (icon == null) { icon = MCUpdater.getInstance().defaultIcon; }
+		if (icon == null) { icon = new ImageIcon(Launcher.class.getResource("/minecraft.png")); }
 			
-		MinecraftFrame me = new MinecraftFrame("MCUpdater - " + server.getName(), icon);
-		me.launch(instPath, lwjglPath, login, server);
+		MinecraftFrame me = new MinecraftFrame("MCUpdater - " + serverName, icon);
+		me.launch(instPath, lwjglPath, username, sessionid, serverAddress);
 	}
 	
 	public MinecraftFrame(String title, ImageIcon icon) {
@@ -63,20 +58,20 @@ public class MinecraftFrame extends Frame implements WindowListener {
 		g2d.dispose();
 	}
 	
-	public void launch(Path instance, Path lwjgl, LoginData login, ServerList server) {
+	public void launch(File instance, File lwjgl, String username, String sessionid, String serverAddress) {
 		try {
 			URI address;
 			String port;
-			address = new URI("my://" + server.getAddress());
+			address = new URI("my://" + serverAddress);
 			if (address.getPort() != -1) {
 				port = Integer.toString(address.getPort());
 			} else {
 				port = Integer.toString(25565);
 			}
-			applet = new Launcher(instance, lwjgl, login, address.getHost(), port);
+			applet = new Launcher(instance, lwjgl, username, sessionid, address.getHost(), port);
 			System.setProperty("minecraft.applet.TargetDirectory", instance.toString());
-			System.setProperty("org.lwjgl.librarypath", lwjgl.resolve("natives").toString());
-			System.setProperty("net.java.games.input.librarypath", lwjgl.resolve("natives").toString());
+			System.setProperty("org.lwjgl.librarypath", new File(lwjgl, "natives").getAbsolutePath());
+			System.setProperty("net.java.games.input.librarypath", new File(lwjgl, "natives").getAbsolutePath());
 			this.add(applet);
 			applet.setPreferredSize(new Dimension(1280, 720));
 			this.pack();
@@ -88,7 +83,6 @@ public class MinecraftFrame extends Frame implements WindowListener {
 			setVisible(true);
 						
 		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 

@@ -11,6 +11,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -57,6 +61,23 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 
 	@Override
 	public void run() {
+		File launcher = MCUpdater.getInstance().getArchiveFolder().resolve("MCU-Launcher.jar").toFile();
+		if(!launcher.exists())
+		{
+			try {
+				URL launcherURL = new URL("http://files.mcupdater.com/MCU-Launcher.jar");
+				ReadableByteChannel rbc = Channels.newChannel(launcherURL.openStream());
+				FileOutputStream fos = new FileOutputStream(launcher);
+				fos.getChannel().transferFrom(rbc, 0, 1 << 24);
+				fos.close();
+			} catch (MalformedURLException mue) {
+				mue.printStackTrace();
+
+			} catch (IOException ioe) {
+				ioe.printStackTrace();
+			}
+		}
+		
 		String javaBin = "java";
 		File binDir;
 		if (System.getProperty("os.name").startsWith("Mac")) {
@@ -74,9 +95,8 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		args.add("-XX:+AggressiveOpts");
 		args.add("-Xms" + this.minMem);
 		args.add("-Xmx" + this.maxMem);
-		args.add("-classpath");
-		args.add(MCUpdater.getJarFile().toString());
-		args.add("org.smbarbour.mcu.MinecraftFrame");
+		args.add("-jar");
+		args.add(launcher.getAbsolutePath());
 		args.add(session.getUserName());
 		args.add(session.getSessionId());
 		args.add(server.getName());

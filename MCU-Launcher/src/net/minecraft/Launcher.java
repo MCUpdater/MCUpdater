@@ -10,12 +10,8 @@ import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
-
-import org.smbarbour.mcu.util.LoginData;
-import org.smbarbour.mcu.util.MCUpdater;
 
 public class Launcher extends Applet implements AppletStub {
 
@@ -28,19 +24,19 @@ public class Launcher extends Applet implements AppletStub {
 	private boolean active;
 	private URLClassLoader classLoader;
 	
-	public Launcher(Path instance, Path lwjgl, LoginData login, String host, String port) {
+	public Launcher(File instance, File lwjgl, String username, String sessionid, String host, String port) {
 		params = new HashMap<String, String>();
-		params.put("username", login.getUserName());
-		params.put("sessionid", login.getSessionId());
+		params.put("username", username);
+		params.put("sessionid", sessionid);
 		params.put("stand-alone", "true");
 		params.put("server", host);
 		params.put("port", port);
 		URL[] urls = new URL[4];
-		urls[0] = pathToUrl(instance.resolve("bin").resolve("minecraft.jar"));
-		urls[1] = pathToUrl(lwjgl.resolve("lwjgl.jar"));
-		urls[2] = pathToUrl(lwjgl.resolve("lwjgl_util.jar"));
-		urls[3] = pathToUrl(lwjgl.resolve("jinput.jar"));
-		classLoader = new URLClassLoader(urls, MCUpdater.class.getClassLoader());
+		urls[0] = pathToUrl(new File(new File(instance,"bin"), "minecraft.jar"));
+		urls[1] = pathToUrl(new File(lwjgl, "lwjgl.jar"));
+		urls[2] = pathToUrl(new File(lwjgl, "lwjgl_util.jar"));
+		urls[3] = pathToUrl(new File(lwjgl, "jinput.jar"));
+		classLoader = new URLClassLoader(urls, Launcher.class.getClassLoader());
 		try {
 			Class<?> minecraft = classLoader.loadClass("net.minecraft.client.Minecraft");
 			Field pathField = findPathField(minecraft);
@@ -49,7 +45,7 @@ public class Launcher extends Applet implements AppletStub {
 				System.exit(-1);
 			}
 			pathField.setAccessible(true);
-			pathField.set(null, instance.toFile());
+			pathField.set(null, instance);
 			mcApplet = (Applet)classLoader.loadClass("net.minecraft.client.MinecraftApplet").newInstance();
 			this.add(mcApplet, "Center");
 		} catch (InstantiationException e) {
@@ -87,9 +83,9 @@ public class Launcher extends Applet implements AppletStub {
 		return null;
 	}
 
-	private URL pathToUrl(Path path) {
+	private URL pathToUrl(File path) {
 		try {
-			return path.toUri().toURL();
+			return path.toURI().toURL();
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		}
@@ -158,7 +154,6 @@ public class Launcher extends Applet implements AppletStub {
 		try {
 			return new URL("http://www.minecraft.net/game");
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return null;
