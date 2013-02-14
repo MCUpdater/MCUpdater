@@ -8,8 +8,10 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Path;
 
 import javax.swing.ImageIcon;
@@ -36,7 +38,15 @@ public class MinecraftFrame extends Frame implements WindowListener {
 		ServerList server = new ServerList(null, args[2], null, null, null, null, args[5], true, null);
 		Path instPath = new File(args[3]).toPath();
 		Path lwjglPath = new File(args[4]).toPath();
-		MinecraftFrame me = new MinecraftFrame("MCUpdater - " + server.getName(), MCUpdater.getInstance().defaultIcon);
+		ImageIcon icon = null;
+		try {
+			icon = new ImageIcon(new URL(args[6]));
+		} catch (MalformedURLException e) {
+			e.printStackTrace();
+		} catch (IndexOutOfBoundsException indexException) {}
+		if (icon == null) { icon = MCUpdater.getInstance().defaultIcon; }
+			
+		MinecraftFrame me = new MinecraftFrame("MCUpdater - " + server.getName(), icon);
 		me.launch(instPath, lwjglPath, login, server);
 	}
 	

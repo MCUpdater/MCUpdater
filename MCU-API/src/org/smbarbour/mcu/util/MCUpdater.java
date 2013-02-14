@@ -479,21 +479,23 @@ public class MCUpdater {
 	}
 	
 	public void installMods(ServerList server, List<Module> toInstall, boolean clearExisting) throws FileNotFoundException {
-		File folder;
-		try {
-			folder = Files.readSymbolicLink(MCFolder).toFile();
-			System.out.println(MCFolder.toString());
-			System.out.println(MCFolder.toFile().getAbsolutePath());
-			System.out.println((Files.readSymbolicLink(MCFolder).toString()));
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-			folder = MCFolder.toFile();
-		} catch (UnsupportedOperationException uoe) {
-			folder = MCFolder.toFile();
-		}
-		System.out.println(folder.getAbsolutePath());
-		List<File> contents = recurseFolder(folder, true);
+		Path instancePath = instanceRoot.resolve(server.getServerId());
+		//File folder;
+//		try {
+//			folder = Files.readSymbolicLink(MCFolder).toFile();
+//			System.out.println(MCFolder.toString());
+//			System.out.println(MCFolder.toFile().getAbsolutePath());
+//			System.out.println((Files.readSymbolicLink(MCFolder).toString()));
+//		} catch (IOException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//			folder = MCFolder.toFile();
+//		} catch (UnsupportedOperationException uoe) {
+//			folder = MCFolder.toFile();
+//		}
+		//folder = instanceRoot.resolve(server.getServerId()).toFile();
+		System.out.println(instancePath.toString());
+		List<File> contents = recurseFolder(instancePath.toFile(), true);
 		File jar = archiveFolder.resolve("mc-" + server.getVersion() + ".jar").toFile();
 		if(!jar.exists()) {
 			parent.log("! Unable to find a backup copy of minecraft.jar for "+server.getVersion());
@@ -586,9 +588,9 @@ public class MCUpdater {
 						}
 						_debug(extractMod.url + " -> " + extractMod.getDestFile().getPath());
 						//FileUtils.copyURLToFile(modURL, modPath);
-						String outPath = folder.getPath() + sep;
-						if(!entry.getInRoot()) outPath += "mods" + sep;
-						Archive.extractZip(extractMod.getDestFile(), new File(outPath));
+						Path destPath = instancePath;
+						if(!entry.getInRoot()) destPath = instancePath.resolve("mods");
+						Archive.extractZip(extractMod.getDestFile(), destPath.toFile());
 						extractMod.getDestFile().delete();
 					} catch (Exception e) {
 						++errorCount;
@@ -596,7 +598,7 @@ public class MCUpdater {
 						e.printStackTrace();
 					}
 				} else if (entry.getCoreMod()) {
-					modPath = MCFolder.resolve("coremods").resolve(entry.getId() + ".jar").toFile();
+					modPath = instancePath.resolve("coremods").resolve(entry.getId() + ".jar").toFile();
 					modPath.getParentFile().mkdirs();
 					try {
 						ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
@@ -613,9 +615,9 @@ public class MCUpdater {
 					}					
 				} else {
 					if (entry.getPath().equals("")){
-						modPath = MCFolder.resolve("mods").resolve(entry.getId() + ".jar").toFile();
+						modPath = instancePath.resolve("mods").resolve(entry.getId() + ".jar").toFile();
 					} else {
-						modPath = MCFolder.resolve(entry.getPath()).toFile();
+						modPath = instancePath.resolve(entry.getPath()).toFile();
 					}
 					modPath.getParentFile().mkdirs();
 					//_log("~~~ " + modPath.getPath());
@@ -640,7 +642,7 @@ public class MCUpdater {
 					final String MD5 = cfEntry.getMD5(); 
 					_debug(cfEntry.getUrl());
 					URL configURL = new URL(cfEntry.getUrl());
-					final File confFile = MCFolder.resolve(cfEntry.getPath()).toFile();
+					final File confFile = instancePath.resolve(cfEntry.getPath()).toFile();
 					confFile.getParentFile().mkdirs();
 					if( MD5 != null ) {
 						final File cacheFile = DownloadCache.getFile(MD5);
@@ -697,7 +699,7 @@ public class MCUpdater {
 		//Archive.patchJar(jar, buildJar, new ArrayList<File>(Arrays.asList(tmpFolder.listFiles())));
 		//copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
 		try {
-			Path binPath = folder.toPath().resolve("bin");
+			Path binPath = instancePath.resolve("bin");
 			Files.copy(buildJar.toPath(), binPath.resolve("minecraft.jar"), StandardCopyOption.REPLACE_EXISTING );
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -712,7 +714,7 @@ public class MCUpdater {
 		
 	}
 	
-	public void writeMCServerFile(String name, String ip) {
+	public void writeMCServerFile(String name, String ip, String instance) {
 		byte[] header = new byte[]{
 				0x0A,0x00,0x00,0x09,0x00,0x07,0x73,0x65,0x72,0x76,0x65,0x72,0x73,0x0A,
 				0x00,0x00,0x00,0x01,0x01,0x00,0x0B,0x68,0x69,0x64,0x65,0x41,0x64,0x64,
@@ -735,7 +737,7 @@ public class MCUpdater {
 		System.arraycopy(ipBytes, 0, full, pos, ipBytes.length);
 		pos += ipBytes.length;
 		System.arraycopy(end, 0, full, pos, end.length);
-		File serverFile = new File(MCFolder + sep + "servers.dat");
+		File serverFile = instanceRoot.resolve(instance).resolve("servers.dat").toFile();
 		try {
 			serverFile.createNewFile();
 			FileOutputStream fos = new FileOutputStream(serverFile);

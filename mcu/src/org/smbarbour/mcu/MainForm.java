@@ -34,7 +34,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -42,15 +41,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
+//import java.nio.channels.Channels;
+//import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
+//import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
+//import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -92,10 +91,10 @@ public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
 	
 	//Access check booleans
-	private boolean canWriteMinecraft = false;
+//	private boolean canWriteMinecraft = false;
 	private boolean canWriteMCUpdater = false;
 	private boolean canWriteInstances = false;
-	private boolean canCreateLinks = false;
+//	private boolean canCreateLinks = false;
 	
 	private static MainForm window;
 	private Properties config = new Properties();
@@ -360,15 +359,15 @@ public class MainForm extends MCUApp {
 		btnOptions.setIcon(new ImageIcon(MainForm.class.getResource("/icons/application_edit.png")));
 		toolBar.add(btnOptions);
 		
-		JButton btnBackups = new JButton("");
-		btnBackups.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				showBackupManager();
-			}
-		});
-		btnBackups.setIcon(new ImageIcon(MainForm.class.getResource("/icons/folder_database.png")));
-		btnBackups.setToolTipText("Backups");
-		toolBar.add(btnBackups);
+//		JButton btnBackups = new JButton("");
+//		btnBackups.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				showBackupManager();
+//			}
+//		});
+//		btnBackups.setIcon(new ImageIcon(MainForm.class.getResource("/icons/folder_database.png")));
+//		btnBackups.setToolTipText("Backups");
+//		toolBar.add(btnBackups);
 		
 		Component horizontalGlue = Box.createHorizontalGlue();
 		toolBar.add(horizontalGlue);
@@ -444,17 +443,17 @@ public class MainForm extends MCUApp {
 	}
 	
 	private void checkSelectedInstance() {
-		Properties instData = new Properties();
-		try {
-			instData.load(Files.newInputStream(mcu.getMCFolder().resolve("instance.dat")));
-		} catch (NoSuchFileException nsfe) {
-			instData.setProperty("serverID", "unmanaged");
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(instData.getProperty("serverID"));
-		serverList.setSelectedIndex(selectIndex);
+//		Properties instData = new Properties();
+//		try {
+//			instData.load(Files.newInputStream(mcu.getMCFolder().resolve("instance.dat")));
+//		} catch (NoSuchFileException nsfe) {
+//			instData.setProperty("serverID", "unmanaged");
+//		} catch (IOException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+//		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(instData.getProperty("serverID"));
+//		serverList.setSelectedIndex(selectIndex);
 	}
 	
 	private void initializeInstanceList() {
@@ -526,21 +525,21 @@ public class MainForm extends MCUApp {
 	}
 	
 	private void checkAccess() {
-		Path MCFolder = mcu.getMCFolder();
+		//Path MCFolder = mcu.getMCFolder();
 		Path MCUFolder = mcu.getArchiveFolder();
 		Path InstancesFolder = mcu.getInstanceRoot();
-		Path testMCFile = MCFolder.resolve("MCUTest.dat");
+		//Path testMCFile = MCFolder.resolve("MCUTest.dat");
 		Path testMCUFile = MCUFolder.resolve("MCUTest.dat");
 		Path testInstancesFile = InstancesFolder.resolve("MCUTest.dat");
-		Path testLink = MCUFolder.resolve("LinkTest.dat");
+		//Path testLink = MCUFolder.resolve("LinkTest.dat");
 		
-		try {
-			Files.createFile(testMCFile);
-			Files.delete(testMCFile);
-			canWriteMinecraft = true;
-		} catch (IOException ioe) {
-			canWriteMinecraft = false;
-		}
+//		try {
+//			Files.createFile(testMCFile);
+//			Files.delete(testMCFile);
+//			canWriteMinecraft = true;
+//		} catch (IOException ioe) {
+//			canWriteMinecraft = false;
+//		}
 		
 		try {
 			Files.createFile(testMCUFile);
@@ -557,15 +556,15 @@ public class MainForm extends MCUApp {
 			canWriteInstances=false;
 		}
 		
-		try {
-			Files.createSymbolicLink(testLink, testMCUFile);
-			Files.delete(testLink);
-			canCreateLinks = true;
-		} catch (IOException ioe) {
-			canCreateLinks = false;
-		} catch (UnsupportedOperationException uoe) {
-			canCreateLinks = false;
-		}
+//		try {
+//			Files.createSymbolicLink(testLink, testMCUFile);
+//			Files.delete(testLink);
+//			canCreateLinks = true;
+//		} catch (IOException ioe) {
+//			canCreateLinks = false;
+//		} catch (UnsupportedOperationException uoe) {
+//			canCreateLinks = false;
+//		}
 		
 		try {
 			Files.delete(testMCUFile);
@@ -573,10 +572,10 @@ public class MainForm extends MCUApp {
 			// Ignore exception
 		}
 
-		log("Access checks: MC-" + canWriteMinecraft + " MCU-" + canWriteMCUpdater + " Instance-" + canWriteInstances + " SymLink-" + canCreateLinks);
-		if (canCreateLinks == false) {
-			JOptionPane.showMessageDialog(null, "MCUpdater has detected that symbolic linking cannot be performed.\nTrue instancing will be disabled and switching between instances will take considerably longer.\n\nOn Windows, this can be caused by not running MCUpdater as Administrator.", "MCUpdater", JOptionPane.WARNING_MESSAGE);
-		}
+		log("Access checks: MCU-" + canWriteMCUpdater + " Instance-" + canWriteInstances);
+//		if (canCreateLinks == false) {
+//			JOptionPane.showMessageDialog(null, "MCUpdater has detected that symbolic linking cannot be performed.\nTrue instancing will be disabled and switching between instances will take considerably longer.\n\nOn Windows, this can be caused by not running MCUpdater as Administrator.", "MCUpdater", JOptionPane.WARNING_MESSAGE);
+//		}
 	}
 	
 	protected void changeSelectedServer(ServerList entry) {
@@ -589,7 +588,7 @@ public class MainForm extends MCUApp {
 			if( tabs != null ) {
 				tabs.setSelectedIndex(0);
 			}
-			if (!selected.getServerId().equals("unmanaged")) {
+//			if (!selected.getServerId().equals("unmanaged")) {
 				List<Module> modules = ServerPackParser.loadFromURL(entry.getPackUrl(), entry.getServerId());
 				Iterator<Module> itMods = modules.iterator();
 				pnlModList.setVisible(false);
@@ -635,47 +634,47 @@ public class MainForm extends MCUApp {
 				} else {
 					setStatus("Idle - Server status: Unable to connect!");
 				}
-			} else {
-				pnlModList.removeAll();
-				pnlRight.setVisible(false);
-				btnUpdate.setEnabled(false);
-				setStatus("Idle");
-			}
+//			} else {
+//				pnlModList.removeAll();
+//				pnlRight.setVisible(false);
+//				btnUpdate.setEnabled(false);
+//				setStatus("Idle");
+//			}
 			
-			Path instancePath;
 			if ( Files.notExists( mcu.getInstanceRoot().resolve(selected.getServerId()) ) ) {
-				instancePath = InstanceManager.createInstance(selected.getServerId());
-			} else {
-				instancePath = mcu.getInstanceRoot().resolve(selected.getServerId());
+				InstanceManager.createInstance(selected.getServerId());
 			}
-			try {
-				Path MCPath = mcu.getMCFolder();
-				if (Files.exists(MCPath)) {
-					if (Files.isSymbolicLink(MCPath)) {
-						Files.delete(MCPath);
-					} else {
-						Path instDataPath = MCPath.resolve("instance.dat");
-						boolean instanceDataExists = Files.exists(instDataPath);
-						if (instanceDataExists) {
-							Properties instProp = new Properties();
-							instProp.load(Files.newInputStream(instDataPath));
-							Path oldInstance = mcu.getInstanceRoot().resolve(instProp.getProperty("serverID"));
-							removeAndPrepareFolder(MCPath, oldInstance, false);
-						} else {
-							removeAndPrepareFolder(MCPath, mcu.getInstanceRoot().resolve("unmanaged"), true);
-						}
-					}
-				}
-				if (canCreateLinks) {
-					InstanceManager.createLink(MCPath, instancePath);
-				} else {
-					copyInstanceFolder(instancePath, MCPath);
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				return;
-			}
+//			else {
+//				instancePath = mcu.getInstanceRoot().resolve(selected.getServerId());
+//			}
+//			try {
+//				Path MCPath = mcu.getMCFolder();
+//				if (Files.exists(MCPath)) {
+//					if (Files.isSymbolicLink(MCPath)) {
+//						Files.delete(MCPath);
+//					} else {
+//						Path instDataPath = MCPath.resolve("instance.dat");
+//						boolean instanceDataExists = Files.exists(instDataPath);
+//						if (instanceDataExists) {
+//							Properties instProp = new Properties();
+//							instProp.load(Files.newInputStream(instDataPath));
+//							Path oldInstance = mcu.getInstanceRoot().resolve(instProp.getProperty("serverID"));
+//							removeAndPrepareFolder(MCPath, oldInstance, false);
+//						} else {
+//							removeAndPrepareFolder(MCPath, mcu.getInstanceRoot().resolve("unmanaged"), true);
+//						}
+//					}
+//				}
+//				if (canCreateLinks) {
+//					InstanceManager.createLink(MCPath, instancePath);
+//				} else {
+//					copyInstanceFolder(instancePath, MCPath);
+//				}
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//				return;
+//			}
 						
 			this.frmMain.repaint();
 		} catch (IOException ioe) {
@@ -684,42 +683,44 @@ public class MainForm extends MCUApp {
 
 	}
 
-	private void copyInstanceFolder(Path instancePath, Path MCPath) {
-		CopyFiles cf = new CopyFiles(instancePath, MCPath);
-		try {
-			Files.walkFileTree(instancePath, cf);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-	private void removeAndPrepareFolder(Path MCPath, Path instancePath, boolean prepareInstance) {
-		
-		if (!Files.exists(instancePath)) {
-			try {
-				Files.createDirectory(instancePath);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		PrepareFiles pf = new PrepareFiles(MCPath, instancePath, prepareInstance);
-		try {
-			Files.walkFileTree(MCPath, pf);
-			Path instanceFile = instancePath.resolve("instance.dat");
-			if (!Files.exists(instanceFile)) {
-				Files.createFile(instanceFile);
-				Properties instData = new Properties();
-				instData.setProperty("serverID", "unmanaged");
-				instData.setProperty("revision", "0");
-				instData.store(Files.newOutputStream(instanceFile), "Instance data");
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-	}
+//	private void copyInstanceFolder(Path instancePath, Path MCPath) {
+//		CopyFiles cf = new CopyFiles(instancePath, MCPath);
+//		try {
+//			Files.walkFileTree(instancePath, cf);
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
+//	
+//	private void removeAndPrepareFolder(Path MCPath, Path instancePath, boolean prepareInstance) {
+//		
+//		if (!Files.exists(instancePath)) {
+//			try {
+//				Files.createDirectory(instancePath);
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
+//		PrepareFiles pf = new PrepareFiles(MCPath, instancePath, prepareInstance);
+//		try {
+//			Files.walkFileTree(MCPath, pf);
+//			Path instanceFile = instancePath.resolve("instance.dat");
+//			if (!Files.exists(instanceFile)) {
+//				Files.createFile(instanceFile);
+//				Properties instData = new Properties();
+//				instData.setProperty("serverID", "unmanaged");
+//				instData.setProperty("revision", "0");
+//				instData.store(Files.newOutputStream(instanceFile), "Instance data");
+//			}
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		
+//	}
+	
 	public void updateInstanceList()
 	{
 		serverList.setVisible(false);
@@ -735,7 +736,7 @@ public class MainForm extends MCUApp {
 				ServerList entry = it.next();
 				slModel.add(new ServerListPacket(entry, mcu));
 			}
-			slModel.add(new ServerListPacket(new ServerList("unmanaged","Unmanaged","http://www.example.org/ServerPack.xml","http://mcupdater.net46.net","","","",false,"0"), mcu));
+			//slModel.add(new ServerListPacket(new ServerList("unmanaged","Unmanaged","http://www.example.org/ServerPack.xml","http://mcupdater.net46.net","","","",false,"0"), mcu));
 		}
 		serverList.setVisible(true);
 	}
@@ -902,24 +903,24 @@ public class MainForm extends MCUApp {
 				btnUpdate.setEnabled(false);
 				btnLaunchMinecraft.setEnabled(false);
 				mcu.getMCVersion();
-				int saveConfig = JOptionPane.showConfirmDialog(null, "Do you want to save a backup of your existing configuration?", "MCUpdater", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
-				if(saveConfig == JOptionPane.YES_OPTION){
-					setStatus("Creating backup");
-					setProgressBar(10);
-					Calendar cal = Calendar.getInstance();
-					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-					String backDesc = (String) JOptionPane.showInputDialog(null,"Enter description for backup:", "MCUpdater", JOptionPane.QUESTION_MESSAGE, null, null, ("Automatic backup: " + sdf.format(cal.getTime())));
-					log("Creating backup ("+backDesc+") ...");
-					mcu.saveConfig(backDesc);
-					log("Backup complete.");
-				} else if(saveConfig == JOptionPane.CANCEL_OPTION){
-					btnUpdate.setEnabled(true);
-					btnLaunchMinecraft.setEnabled(true);
-					return;
-				}
+//				int saveConfig = JOptionPane.showConfirmDialog(null, "Do you want to save a backup of your existing configuration?", "MCUpdater", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+//				if(saveConfig == JOptionPane.YES_OPTION){
+//					setStatus("Creating backup");
+//					setProgressBar(10);
+//					Calendar cal = Calendar.getInstance();
+//					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//					String backDesc = (String) JOptionPane.showInputDialog(null,"Enter description for backup:", "MCUpdater", JOptionPane.QUESTION_MESSAGE, null, null, ("Automatic backup: " + sdf.format(cal.getTime())));
+//					log("Creating backup ("+backDesc+") ...");
+//					mcu.saveConfig(backDesc);
+//					log("Backup complete.");
+//				} else if(saveConfig == JOptionPane.CANCEL_OPTION){
+//					btnUpdate.setEnabled(true);
+//					btnLaunchMinecraft.setEnabled(true);
+//					return;
+//				}
 				tabs.setSelectedIndex(tabs.getTabCount()-1);
 				Properties instData = new Properties();
-				Path instanceFile = mcu.getMCFolder().resolve("instance.dat");
+				Path instanceFile = mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("instance.dat");
 				try {
 					instData.load(Files.newInputStream(instanceFile));
 				} catch (IOException e1) {
@@ -927,14 +928,6 @@ public class MainForm extends MCUApp {
 					e1.printStackTrace();
 				}
 
-				instData.setProperty("serverID", selected.getServerId());
-				instData.setProperty("revision", selected.getRevision());
-				try {
-					instData.store(Files.newOutputStream(instanceFile), "Instance Data");
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 				List<Module> toInstall = new ArrayList<Module>();
 				List<Component> selects = new ArrayList<Component>(Arrays.asList(pnlModList.getComponents()));
 				Iterator<Component> it = selects.iterator();
@@ -960,13 +953,21 @@ public class MainForm extends MCUApp {
 						setStatus("Writing servers.dat");
 						log("Writing servers.dat");
 						setProgressBar(90);
-						mcu.writeMCServerFile(selected.getName(), selected.getAddress());
+						mcu.writeMCServerFile(selected.getName(), selected.getAddress(), selected.getServerId());
 					}
 					setStatus("Finished");
 					setProgressBar(100);
 				} catch (FileNotFoundException fnf) {
 					log("! Error: "+fnf.getMessage());
 					JOptionPane.showMessageDialog(null, fnf.getMessage(), "MCUpdater", JOptionPane.ERROR_MESSAGE);
+				}
+				instData.setProperty("serverID", selected.getServerId());
+				instData.setProperty("revision", selected.getRevision());
+				try {
+					instData.store(Files.newOutputStream(instanceFile), "Instance Data");
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
 				log("Update complete.");
 				JOptionPane.showMessageDialog(frmMain, "Your update is complete.", "Update Complete", JOptionPane.INFORMATION_MESSAGE);
@@ -976,14 +977,14 @@ public class MainForm extends MCUApp {
 		}.start();
 	}
 	private void launchMinecraft() {
-		if (!System.getProperty("os.name").startsWith("Mac")){
+		//if (!System.getProperty("os.name").startsWith("Mac")){
 			if (!requestLogin()) {					
 				if (loginData.getUserName().isEmpty()) {
 					JOptionPane.showMessageDialog(null,"You must login first.","MCUpdater",JOptionPane.ERROR_MESSAGE);
 					return;
 				}
 			}
-		}
+		//}
 		File outFile = mcu.getArchiveFolder().resolve("client-log.txt").toFile();
 		outFile.delete();
 		btnLaunchMinecraft.setEnabled(false);
@@ -999,30 +1000,30 @@ public class MainForm extends MCUApp {
 		}
 
 		GenericLauncherThread thread;
-		if (System.getProperty("os.name").startsWith("Mac")) {
-
-			File launcher = mcu.getMCFolder().resolve("minecraft.jar").toFile();
-			if(!launcher.exists())
-			{
-				try {
-					URL launcherURL = new URL("http://s3.amazonaws.com/MinecraftDownload/launcher/minecraft.jar");
-					ReadableByteChannel rbc = Channels.newChannel(launcherURL.openStream());
-					FileOutputStream fos = new FileOutputStream(launcher);
-					fos.getChannel().transferFrom(rbc, 0, 1 << 24);
-					fos.close();
-				} catch (MalformedURLException mue) {
-					mue.printStackTrace();
-
-				} catch (IOException ioe) {
-					ioe.printStackTrace();
-				}
-			}
-			thread = LauncherThread.launch(launcher, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), Boolean.parseBoolean(config.getProperty("suppressUpdates")), outFile, console);
-
-		} else {
+//		if (System.getProperty("os.name").startsWith("Mac")) {
+//
+//			File launcher = mcu.getMCFolder().resolve("minecraft.jar").toFile();
+//			if(!launcher.exists())
+//			{
+//				try {
+//					URL launcherURL = new URL("http://s3.amazonaws.com/MinecraftDownload/launcher/minecraft.jar");
+//					ReadableByteChannel rbc = Channels.newChannel(launcherURL.openStream());
+//					FileOutputStream fos = new FileOutputStream(launcher);
+//					fos.getChannel().transferFrom(rbc, 0, 1 << 24);
+//					fos.close();
+//				} catch (MalformedURLException mue) {
+//					mue.printStackTrace();
+//
+//				} catch (IOException ioe) {
+//					ioe.printStackTrace();
+//				}
+//			}
+//			thread = LauncherThread.launch(launcher, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), Boolean.parseBoolean(config.getProperty("suppressUpdates")), outFile, console);
+//
+//		} else {
 			//thread = NativeLauncherThread.launch(window, loginData, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), outFile, console);
 			thread = AppletLauncherThread.launch(window, loginData, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), outFile, console, selected);
-		}
+//		}
 		thread.register(window, btnLaunchMinecraft, killItem );
 		thread.start();
 	}
@@ -1065,7 +1066,7 @@ public class MainForm extends MCUApp {
 				// check for server version update
 				Properties instData = new Properties();
 				try {
-					instData.load(Files.newInputStream(mcu.getMCFolder().resolve("instance.dat")));
+					instData.load(Files.newInputStream(mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("instance.dat")));
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();

@@ -79,6 +79,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		args.add(MCUpdater.getInstance().getInstanceRoot().resolve(server.getServerId()).toString());
 		args.add(MCUpdater.getInstance().getInstanceRoot().resolve(server.getServerId()).resolve("bin").toString());
 		args.add(server.getAddress());
+		args.add(server.getIconUrl());
 		
 		if (!Version.isMasterBranch()) {
 			parent.log("Process args:");
