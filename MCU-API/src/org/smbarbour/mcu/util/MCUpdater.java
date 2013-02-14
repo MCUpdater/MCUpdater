@@ -45,6 +45,15 @@ public class MCUpdater {
 	
 	private static MCUpdater INSTANCE;
 
+	public static File getJarFile() {
+		try {
+			return new File(MCUpdater.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+		} catch (URISyntaxException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	public static MCUpdater getInstance() {
 		if( INSTANCE == null ) {
 			INSTANCE = new MCUpdater();

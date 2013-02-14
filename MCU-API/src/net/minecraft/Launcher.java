@@ -1,9 +1,12 @@
-package org.smbarbour.mcu;
+package net.minecraft;
 
 import java.applet.Applet;
 import java.applet.AppletStub;
+import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.io.IOException;
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -14,7 +17,7 @@ import java.util.Map;
 import org.smbarbour.mcu.util.LoginData;
 import org.smbarbour.mcu.util.MCUpdater;
 
-public class MCULaunchApplet extends Applet implements AppletStub {
+public class Launcher extends Applet implements AppletStub {
 
 	/**
 	 * 
@@ -23,8 +26,9 @@ public class MCULaunchApplet extends Applet implements AppletStub {
 	private final Map<String, String> params;
 	private Applet mcApplet;
 	private boolean active;
+	private URLClassLoader classLoader;
 	
-	public MCULaunchApplet(Path instance, Path lwjgl, LoginData login, String host, String port) {
+	public Launcher(Path instance, Path lwjgl, LoginData login, String host, String port) {
 		params = new HashMap<String, String>();
 		params.put("username", login.getUserName());
 		params.put("sessionid", login.getSessionId());
@@ -36,8 +40,16 @@ public class MCULaunchApplet extends Applet implements AppletStub {
 		urls[1] = pathToUrl(lwjgl.resolve("lwjgl.jar"));
 		urls[2] = pathToUrl(lwjgl.resolve("lwjgl_util.jar"));
 		urls[3] = pathToUrl(lwjgl.resolve("jinput.jar"));
-		URLClassLoader classLoader = new URLClassLoader(urls, MCUpdater.class.getClassLoader());
+		classLoader = new URLClassLoader(urls, MCUpdater.class.getClassLoader());
 		try {
+			Class<?> minecraft = classLoader.loadClass("net.minecraft.client.Minecraft");
+			Field pathField = findPathField(minecraft);
+			if (pathField == null) {
+				System.err.println("Unable to find a matching field.  Aborting launch.");
+				System.exit(-1);
+			}
+			pathField.setAccessible(true);
+			pathField.set(null, instance.toFile());
 			mcApplet = (Applet)classLoader.loadClass("net.minecraft.client.MinecraftApplet").newInstance();
 			this.add(mcApplet, "Center");
 		} catch (InstantiationException e) {
@@ -47,11 +59,32 @@ public class MCULaunchApplet extends Applet implements AppletStub {
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
 		}
-		try {
-			classLoader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+	}
+	
+	public void replace(Applet applet) {
+		this.mcApplet = applet;
+		
+		applet.setStub(this);
+		applet.setSize(getWidth(), getHeight());
+		
+		this.setLayout(new BorderLayout());
+		this.add(applet, "Center");
+		
+		applet.init();
+		active = true;
+		applet.start();
+		validate();
+	}
+
+	private Field findPathField(Class<?> minecraft) {
+		Field[] fields = minecraft.getDeclaredFields();
+		
+		for (int i=0; i<fields.length; i++) {
+			Field current = fields[i];
+			if (current.getType() != File.class || (current.getModifiers() != (Modifier.PRIVATE + Modifier.STATIC))) {continue;}
+			return current;
 		}
+		return null;
 	}
 
 	private URL pathToUrl(Path path) {
@@ -117,6 +150,18 @@ public class MCULaunchApplet extends Applet implements AppletStub {
 	@Override
 	public URL getCodeBase() {
 		return mcApplet.getCodeBase();
+	}
+
+	@Override
+	public URL getDocumentBase()
+	{
+		try {
+			return new URL("http://www.minecraft.net/game");
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
 	}
 	
 	@Override
