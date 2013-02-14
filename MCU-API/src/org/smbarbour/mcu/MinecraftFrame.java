@@ -41,8 +41,8 @@ public class MinecraftFrame extends Frame implements WindowListener {
 		ImageIcon icon = null;
 		try {
 			icon = new ImageIcon(new URL(args[6]));
-		} catch (MalformedURLException e) {
-			e.printStackTrace();
+		} catch (MalformedURLException e) { 
+			System.out.println("No valid icon URL specified in server pack");
 		} catch (IndexOutOfBoundsException indexException) {}
 		if (icon == null) { icon = MCUpdater.getInstance().defaultIcon; }
 			

@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.*;
 

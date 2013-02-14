@@ -14,7 +14,6 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 
@@ -91,6 +90,10 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		}
 		
 		ProcessBuilder pb = new ProcessBuilder(args);
+		System.out.println("Running on: " + System.getProperty("os.name"));
+		if(System.getProperty("os.name").startsWith("Linux")) {
+			pb.environment().put("LD_LIBRARY_PATH", (new File(jrePath)).toPath().resolve("lib").resolve("i386").toString());
+		}
 		pb.redirectErrorStream(true);
 		BufferedWriter buffWrite = null;
 		try {
