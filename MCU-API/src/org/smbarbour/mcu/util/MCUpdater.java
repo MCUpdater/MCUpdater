@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.*;
 
 import javax.swing.ImageIcon;
@@ -92,7 +94,12 @@ public class MCUpdater {
 			archiveFolder = (new File(System.getProperty("user.home")).toPath().resolve(".MCUpdater"));
 		}
 		//defaultIcon = new ImageIcon(new URL("http://www.minecraft.net/favicon.png"));
-		defaultIcon = new ImageIcon(MCUpdater.class.getResource("/minecraft.png"));
+		try {
+			defaultIcon = new ImageIcon(MCUpdater.class.getResource("/minecraft.png"));
+		} catch( NullPointerException e ) {
+			_debug( "Unable to load default icon?!" );
+			defaultIcon = new ImageIcon(new BufferedImage(32,32,BufferedImage.TYPE_INT_ARGB));
+		}
 		// configure the download cache
 		try {
 			DownloadCache.init(archiveFolder.resolve("cache").toFile());
