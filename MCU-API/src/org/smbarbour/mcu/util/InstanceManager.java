@@ -1,30 +1,31 @@
 package org.smbarbour.mcu.util;
 
+import j7compat.Files;
+import j7compat.Path;
+
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 
 public class InstanceManager {
 	
-	public static boolean checkSymlink(Path target) {
-		return Files.isSymbolicLink(target);
-	}
-	
-	public static void createLink(Path source, Path target) {
-		try {
-			Files.createSymbolicLink(source, target);
-		} catch (IOException e) {
-			//parent.baseLogger.error("Failed to create link", e);
-			e.printStackTrace();
-		}
-	}
+//	public static boolean checkSymlink(Path target) {
+//		return Files.isSymbolicLink(target);
+//	}
+//	
+//	public static void createLink(Path source, Path target) {
+//		try {
+//			Files.createSymbolicLink(source, target);
+//		} catch (IOException e) {
+//			//parent.baseLogger.error("Failed to create link", e);
+//			e.printStackTrace();
+//		}
+//	}
 	
 	public static Path createInstance(String instanceName) {
 		try {

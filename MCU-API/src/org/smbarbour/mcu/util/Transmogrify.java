@@ -1,7 +1,8 @@
 package org.smbarbour.mcu.util;
 
+import j7compat.Path;
+
 import java.io.IOException;
-import java.nio.file.Path;
 
 import net.md_5.jbeat.LinearCreator;
 import net.md_5.jbeat.Patcher;

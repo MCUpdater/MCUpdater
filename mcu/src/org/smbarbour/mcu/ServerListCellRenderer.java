@@ -13,7 +13,7 @@ import javax.swing.ListCellRenderer;
 import org.smbarbour.mcu.util.ServerList;
 import org.smbarbour.mcu.util.ServerListPacket;
 
-final class ServerListCellRenderer extends JPanel implements ListCellRenderer<ServerListPacket> {
+final class ServerListCellRenderer extends JPanel implements ListCellRenderer {
 	private static final int LIST_CELL_ICON_SIZE = 32;
 	
 	private JLabel lblIcon;
@@ -58,7 +58,7 @@ final class ServerListCellRenderer extends JPanel implements ListCellRenderer<Se
 	private static final long serialVersionUID = -8713538452906281847L;
 
 	@Override
-	public Component getListCellRendererComponent(JList<? extends ServerListPacket> list, ServerListPacket value, int index, boolean isSelected, boolean cellHasFocus)
+	public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
 	{
 		ServerListPacket slp = (ServerListPacket) value;
 		ServerList entry = slp.getEntry();

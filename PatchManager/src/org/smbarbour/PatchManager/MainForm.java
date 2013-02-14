@@ -1,5 +1,7 @@
 package org.smbarbour.PatchManager;
 
+import j7compat.Path;
+
 import java.awt.EventQueue;
 
 import javax.swing.JFrame;
@@ -20,7 +22,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 
 public class MainForm {
 
@@ -148,9 +149,9 @@ public class MainForm {
 		JButton btnCreate = new JButton("Create patch file");
 		btnCreate.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				Path sourcePath = (new File(txtCreateSource.getText())).toPath();
-				Path targetPath = (new File(txtCreateTarget.getText())).toPath();
-				Path patchPath = (new File(txtCreatePatch.getText())).toPath();
+				Path sourcePath = new Path(new File(txtCreateSource.getText()));
+				Path targetPath = new Path(new File(txtCreateTarget.getText()));
+				Path patchPath = new Path(new File(txtCreatePatch.getText()));
 				try {
 					Transmogrify.createPatch(sourcePath, targetPath, patchPath);
 				} catch (IOException e) {
@@ -238,9 +239,9 @@ public class MainForm {
 		btnApplyPatch.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				try {
-					Path sourcePath = (new File(txtPatchSource.getText())).toPath();
-					Path targetPath = (new File(txtPatchTarget.getText())).toPath();
-					Path patchPath = (new File(txtPatchPatch.getText())).toPath();
+					Path sourcePath = new Path(new File(txtPatchSource.getText()));
+					Path targetPath = new Path(new File(txtPatchTarget.getText()));
+					Path patchPath = new Path(new File(txtPatchPatch.getText()));
 					Transmogrify.applyPatch(sourcePath, targetPath, patchPath);
 				} catch (IOException e) {
 					e.printStackTrace();

@@ -1,5 +1,8 @@
 package org.smbarbour.mcu;
 
+import j7compat.Files;
+import j7compat.Path;
+
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 import javax.crypto.SecretKeyFactory;
@@ -43,9 +46,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 //import java.nio.channels.Channels;
 //import java.nio.channels.ReadableByteChannel;
-import java.nio.file.Files;
 //import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -112,7 +113,7 @@ public class MainForm extends MCUApp {
 	private JCheckBox chkHardUpdate;
 	private JLabel lblStatus;
 	private JProgressBar progressBar;
-	private JList<ServerListPacket> serverList;
+	private JList serverList;
 	private SLListModel slModel;
 	
 	private JButton btnUpdate;
@@ -272,7 +273,7 @@ public class MainForm extends MCUApp {
 		pnlLeft.add(lblServers, BorderLayout.NORTH);
 		
 		slModel = new SLListModel();
-		serverList = new JList<ServerListPacket>();
+		serverList = new JList();
 		serverList.setModel(slModel);
 		serverList.setCellRenderer(new ServerListCellRenderer());
 		serverList.addListSelectionListener(new InstanceListener());
@@ -420,6 +421,8 @@ public class MainForm extends MCUApp {
 				try {
 					login(user, password);
 				} catch (MCLoginException e1) {
+				} catch (Exception e1) {
+					e1.printStackTrace();
 				}
 			}
 		}
@@ -436,7 +439,7 @@ public class MainForm extends MCUApp {
 			{
 				writeConfig(config);
 			}
-			mcu.setInstanceRoot(new File(config.getProperty("instanceRoot")).toPath());
+			mcu.setInstanceRoot(new Path(new File(config.getProperty("instanceRoot"))));
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		} catch (IOException e1) {
@@ -568,11 +571,7 @@ public class MainForm extends MCUApp {
 //			canCreateLinks = false;
 //		}
 		
-		try {
-			Files.delete(testMCUFile);
-		} catch (IOException e) {
-			// Ignore exception
-		}
+		Files.delete(testMCUFile);
 
 		log("Access checks: MCU-" + canWriteMCUpdater + " Instance-" + canWriteInstances);
 //		if (canCreateLinks == false) {
@@ -830,7 +829,7 @@ public class MainForm extends MCUApp {
 		frmMain.setExtendedState(Frame.NORMAL);
 	}
 
-	public LoginData login(String username, String password) throws MCLoginException {
+	public LoginData login(String username, String password) throws Exception {
 		try {
 			HashMap<String, Object> localHashMap = new HashMap<String, Object>();
 			localHashMap.put("user", username);
@@ -1117,7 +1116,7 @@ class JModuleCheckBox extends JCheckBox
 	}
 }
 
-class SLListModel extends AbstractListModel<ServerListPacket>
+class SLListModel extends AbstractListModel
 {
 	/**
 	 * 

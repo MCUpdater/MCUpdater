@@ -1,5 +1,7 @@
 package org.smbarbour.mcu;
 
+import j7compat.Path;
+
 import java.awt.MenuItem;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,7 +13,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -89,9 +90,9 @@ public class NativeLauncherThread implements Runnable, GenericLauncherThread {
 	@Override
 	public void run() {
 		String javaBin = "java";
-		File binDir = (new File(jrePath)).toPath().resolve("bin").toFile();
+		File binDir = new Path(new File(jrePath)).resolve("bin").toFile();
 		if( binDir.exists() ) {
-			javaBin = binDir.toPath().resolve("java").toString();
+			javaBin = new Path(binDir).resolve("java").toString();
 		}
 
 		StringBuilder sbClassPath = new StringBuilder();

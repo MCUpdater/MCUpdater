@@ -1,11 +1,13 @@
 package org.smbarbour.mcu.util;
 
 import java.net.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.StandardOpenOption;
+import j7compat.Files;
+//import java.nio.charset.StandardCharsets;
+//import java.nio.file.Files;
+//import java.nio.file.Path;
+//import java.nio.file.StandardCopyOption;
+//import java.nio.file.StandardOpenOption;
+import j7compat.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -80,17 +82,17 @@ public class MCUpdater {
 		}
 		if(System.getProperty("os.name").startsWith("Windows"))
 		{
-			MCFolder = (new File(System.getenv("APPDATA")).toPath().resolve(".minecraft"));
-			archiveFolder = (new File(System.getenv("APPDATA")).toPath().resolve(".MCUpdater"));
+			MCFolder = new Path(System.getenv("APPDATA")).resolve(".minecraft");
+			archiveFolder = new Path(System.getenv("APPDATA")).resolve(".MCUpdater");
 		} else if(System.getProperty("os.name").startsWith("Mac"))
 		{
-			MCFolder = (new File(System.getProperty("user.home")).toPath().resolve("Library").resolve("Application Support").resolve("minecraft"));
-			archiveFolder = (new File(System.getProperty("user.home")).toPath().resolve("Library").resolve("Application Support").resolve("MCUpdater"));
+			MCFolder = new Path(System.getProperty("user.home")).resolve("Library").resolve("Application Support").resolve("minecraft");
+			archiveFolder = new Path(System.getProperty("user.home")).resolve("Library").resolve("Application Support").resolve("MCUpdater");
 		}
 		else
 		{
-			MCFolder = (new File(System.getProperty("user.home")).toPath().resolve(".minecraft"));
-			archiveFolder = (new File(System.getProperty("user.home")).toPath().resolve(".MCUpdater"));
+			MCFolder = new Path(System.getProperty("user.home")).resolve(".minecraft");
+			archiveFolder = new Path(System.getProperty("user.home")).resolve(".MCUpdater");
 		}
 		//defaultIcon = new ImageIcon(new URL("http://www.minecraft.net/favicon.png"));
 		try {
@@ -145,7 +147,7 @@ public class MCUpdater {
 		try
 		{
 			archiveFolder.toFile().mkdirs();
-			BufferedWriter writer = Files.newBufferedWriter(archiveFolder.resolve("mcuServers.dat"), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+			BufferedWriter writer = Files.newBufferedWriter(archiveFolder.resolve("mcuServers.dat"));
 			
 			Iterator<ServerList> it = serverlist.iterator();
 			
@@ -173,7 +175,7 @@ public class MCUpdater {
 	public List<Backup> loadBackupList() {
 		List<Backup> bList = new ArrayList<Backup>();
 		try {
-			BufferedReader reader = Files.newBufferedReader(archiveFolder.resolve("mcuBackups.dat"), StandardCharsets.UTF_8);
+			BufferedReader reader = Files.newBufferedReader(archiveFolder.resolve("mcuBackups.dat"));
 			
 			String entry = reader.readLine();
 			while(entry != null) {
@@ -194,7 +196,7 @@ public class MCUpdater {
 	
 	public void writeBackupList(List<Backup> backupList) {
 		try {
-			BufferedWriter writer = Files.newBufferedWriter(archiveFolder.resolve("mcuBackups.dat"), StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+			BufferedWriter writer = Files.newBufferedWriter(archiveFolder.resolve("mcuBackups.dat"));
 			
 			Iterator<Backup> it = backupList.iterator();
 			
@@ -217,7 +219,7 @@ public class MCUpdater {
 		{
 			Set<String> urls = new HashSet<String>();
 			urls.add(defaultUrl);
-			BufferedReader reader = Files.newBufferedReader(archiveFolder.resolve("mcuServers.dat"), StandardCharsets.UTF_8);
+			BufferedReader reader = Files.newBufferedReader(archiveFolder.resolve("mcuServers.dat"));
 
 			String entry = reader.readLine();
 			while(entry != null)
@@ -706,7 +708,7 @@ public class MCUpdater {
 		//copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
 		try {
 			Path binPath = instancePath.resolve("bin");
-			Files.copy(buildJar.toPath(), binPath.resolve("minecraft.jar"), StandardCopyOption.REPLACE_EXISTING );
+			Files.copy(new Path(buildJar), binPath.resolve("minecraft.jar"));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -805,7 +807,7 @@ public class MCUpdater {
 			_debug(patchURL.toString());
 			File patchFile = archiveFolder.resolve("temp.patch").toFile();
 			FileUtils.copyURLToFile(patchURL, patchFile);
-			Transmogrify.applyPatch(newestJar.toPath(), requestedJar.toPath(), patchFile.toPath());
+			Transmogrify.applyPatch(new Path(newestJar), new Path(requestedJar), new Path(patchFile));
 			patchFile.delete();
 		} catch (Exception e) {
 			e.printStackTrace();

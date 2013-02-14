@@ -1,5 +1,7 @@
 package org.smbarbour.mcu.util;
 
+import j7compat.Path;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -8,7 +10,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -30,14 +31,14 @@ public class Archive {
 				String entryName = entry.getName();
 
 				if(entry.isDirectory()) {
-					File newDir = destination.toPath().resolve(entryName).toFile();
+					File newDir = new Path(destination).resolve(entryName).toFile();
 					newDir.mkdirs();
 					System.out.println("   Directory: " + newDir.getPath());
 				} else {
 					if (entryName.contains("aux.class")) {
 						entryName = "mojangDerpyClass1.class";
 					}
-					File outFile = destination.toPath().resolve(entryName).toFile();
+					File outFile = new Path(destination).resolve(entryName).toFile();
 					outFile.getParentFile().mkdirs();
 					System.out.println("   Extract: " + outFile.getPath());
 					FileOutputStream fos = new FileOutputStream(outFile);

@@ -1,5 +1,7 @@
 package org.smbarbour.mcu;
 
+import j7compat.Path;
+
 import java.awt.MenuItem;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -91,9 +93,9 @@ public class LauncherThread implements Runnable, GenericLauncherThread {
 		}
 		
 		String javaBin = "java";
-		File binDir = (new File(jrePath)).toPath().resolve("bin").toFile();
+		File binDir = new Path(new File(jrePath)).resolve("bin").toFile();
 		if( binDir.exists() ) {
-			javaBin = binDir.toPath().resolve("java").toString();
+			javaBin = new Path(binDir).resolve("java").toString();
 		}
 		
 		ProcessBuilder pb = new ProcessBuilder(javaBin,"-Xms"+minMem, "-Xmx"+maxMem, "-jar", launcher.getPath(), suppress);

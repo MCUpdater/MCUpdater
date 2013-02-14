@@ -1,5 +1,7 @@
 package org.smbarbour.mcu;
 
+import j7compat.Path;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 
@@ -305,7 +307,7 @@ public class ClientConfig extends JDialog {
 						//newConfig.setProperty("suppressUpdates", Boolean.toString(chckbxSuppressVanillaUpdate.isSelected()));
 						newConfig.setProperty("instanceRoot", txtInstanceRoot.getText());
 						parent.writeConfig(newConfig);
-						parent.mcu.setInstanceRoot(new File(txtInstanceRoot.getText()).toPath());
+						parent.mcu.setInstanceRoot(new Path(new File(txtInstanceRoot.getText())));
 						dispose();
 					}
 				});

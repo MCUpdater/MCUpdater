@@ -163,6 +163,8 @@ public class LoginForm extends JDialog {
 								
 							} catch (MCLoginException e) {
 								lblStatus.setText(e.getMessage());
+							} catch (Exception e) {
+								e.printStackTrace();
 							} finally {
 								getContentPane().setEnabled(true);
 							}

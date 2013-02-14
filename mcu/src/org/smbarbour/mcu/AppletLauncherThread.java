@@ -1,5 +1,7 @@
 package org.smbarbour.mcu;
 
+import j7compat.Path;
+
 import java.awt.MenuItem;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -81,12 +83,12 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		String javaBin = "java";
 		File binDir;
 		if (System.getProperty("os.name").startsWith("Mac")) {
-			binDir = (new File(jrePath)).toPath().resolve("Commands").toFile();
+			binDir = new Path(new File(jrePath)).resolve("Commands").toFile();
 		} else {
-			binDir = (new File(jrePath)).toPath().resolve("bin").toFile();
+			binDir = new Path(new File(jrePath)).resolve("bin").toFile();
 		}
 		if( binDir.exists() ) {
-			javaBin = binDir.toPath().resolve("java").toString();
+			javaBin = new Path(binDir).resolve("java").toString();
 		}
 		List<String> args = new ArrayList<String>();
 		args.add(javaBin);
@@ -117,7 +119,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		ProcessBuilder pb = new ProcessBuilder(args);
 		System.out.println("Running on: " + System.getProperty("os.name"));
 		if(System.getProperty("os.name").startsWith("Linux")) {
-			pb.environment().put("LD_LIBRARY_PATH", (new File(jrePath)).toPath().resolve("lib").resolve("i386").toString());
+			pb.environment().put("LD_LIBRARY_PATH", new Path(new File(jrePath)).resolve("lib").resolve("i386").toString());
 //		} else if(System.getProperty("os.name").startsWith("Mac")) {
 //			pb.environment().put("DYLD_LIBRARY_PATH", (new File(jrePath)).toPath().resolve("Lib").resolve("amd64").toString());
 		}
