@@ -93,8 +93,6 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		System.out.println("Running on: " + System.getProperty("os.name"));
 		if(System.getProperty("os.name").startsWith("Linux")) {
 			pb.environment().put("LD_LIBRARY_PATH", (new File(jrePath)).toPath().resolve("lib").resolve("i386").toString());
-		} else if(System.getProperty("os.name").startsWith("Mac")) {
-			pb.environment().put("DYLD_LIBRARY_PATH", (new File(jrePath)).toPath().resolve("lib").resolve("i386").toString());
 		}
 		pb.redirectErrorStream(true);
 		BufferedWriter buffWrite = null;

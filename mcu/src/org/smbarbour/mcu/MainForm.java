@@ -11,7 +11,6 @@ import javax.swing.JPanel;
 import java.awt.AWTException;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Frame;
 import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
@@ -817,7 +816,7 @@ public class MainForm extends MCUApp {
 			return;
 		}
 		frmMain.setVisible(false);
-		frmMain.setState(Frame.ICONIFIED);
+		//frmMain.setState(Frame.ICONIFIED);
 		minimized = true;
 	}
 	public void restore() {
@@ -825,7 +824,7 @@ public class MainForm extends MCUApp {
 			return;
 		}
 		frmMain.setVisible(true);
-		frmMain.setState(Frame.NORMAL);
+		//frmMain.setState(Frame.NORMAL);
 	}
 
 	public LoginData login(String username, String password) throws MCLoginException {
