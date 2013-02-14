@@ -2,6 +2,7 @@ package org.smbarbour.mcu.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +43,13 @@ public class ServerPackParser {
 			return null;
 		}
 		//_log("Reading "+serverUrl+"...");
-		URL server = new URL(serverUrl);
+		final URL server;
+		try {
+			server = new URL(serverUrl);
+		} catch( MalformedURLException e ) {
+			System.out.println("Malformed URL: "+e.getMessage());
+			return null;
+		}
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		
 		try {
