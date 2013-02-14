@@ -312,7 +312,7 @@ public class MainForm extends MCUApp {
 		
 		tabs = new JTabbedPane();
 
-		browser.setText("<HTML><BODY>There are no servers currently defined.</BODY></HTML>");
+		browser.setText("<HTML><BODY>Please select an instance from the list on the left.</BODY></HTML>");
 		JScrollPane browserScrollPane = new JScrollPane(browser);
 		browserScrollPane.setViewportBorder(null);
 		browser.setBorder(null);
