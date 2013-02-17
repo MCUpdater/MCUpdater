@@ -978,6 +978,10 @@ public class MainForm extends MCUApp {
 		}.start();
 	}
 	private void launchMinecraft() {
+		if (serverList.getSelectedIndex() == -1) {
+			JOptionPane.showMessageDialog(null,"You must select an instance first.","MCUpdater",JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 		//if (!System.getProperty("os.name").startsWith("Mac")){
 			if (!requestLogin()) {					
 				if (loginData.getUserName().isEmpty()) {
@@ -990,13 +994,15 @@ public class MainForm extends MCUApp {
 		outFile.delete();
 		btnLaunchMinecraft.setEnabled(false);
 		tabs.setSelectedIndex(tabs.getTabCount()-1);
-		final PopupMenu menu = trayIcon.getPopupMenu();
 		MenuItem killItem = null;
-		for( int k = 0; k < menu.getItemCount(); ++k ) {
-			final MenuItem item = menu.getItem(k);
-			if( item.getLabel().equals("Kill Minecraft") ) {
-				killItem = item;
-				break;
+		if (SystemTray.isSupported()) {
+			final PopupMenu menu = trayIcon.getPopupMenu();
+			for( int k = 0; k < menu.getItemCount(); ++k ) {
+				final MenuItem item = menu.getItem(k);
+				if( item.getLabel().equals("Kill Minecraft") ) {
+					killItem = item;
+					break;
+				}
 			}
 		}
 

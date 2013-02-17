@@ -119,7 +119,11 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		ProcessBuilder pb = new ProcessBuilder(args);
 		System.out.println("Running on: " + System.getProperty("os.name"));
 		if(System.getProperty("os.name").startsWith("Linux")) {
-			pb.environment().put("LD_LIBRARY_PATH", new Path(new File(jrePath)).resolve("lib").resolve("i386").toString());
+			if (new Path(new File(jrePath)).resolve("lib").resolve("amd64").toFile().exists()) {
+				pb.environment().put("LD_LIBRARY_PATH", new Path(new File(jrePath)).resolve("lib").resolve("amd64").toString());
+			} else {
+				pb.environment().put("LD_LIBRARY_PATH", new Path(new File(jrePath)).resolve("lib").resolve("i386").toString());
+			}
 //		} else if(System.getProperty("os.name").startsWith("Mac")) {
 //			pb.environment().put("DYLD_LIBRARY_PATH", (new File(jrePath)).toPath().resolve("Lib").resolve("amd64").toString());
 		}
@@ -256,7 +260,9 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 	@Override
 	public void register(MainForm form, JButton btnLaunchMinecraft, MenuItem killItem) {
 		launchButton = btnLaunchMinecraft;
-		this.killItem = killItem;
+		if (!(killItem == null)) {
+			this.killItem = killItem;
+		}
 		if( ready ) {
 			setReady();
 		}
