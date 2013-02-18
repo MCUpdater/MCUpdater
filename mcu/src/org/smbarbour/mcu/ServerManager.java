@@ -181,12 +181,12 @@ class SLTableModel extends AbstractTableModel implements TableModelListener
 	public void add(ServerList entry)
 	{
 		slTable.add(entry);
-		tableChanged(new TableModelEvent(this));		
+		fireTableRowsInserted(slTable.size()-1, slTable.size()-1);		
 	}
 	
 	public void remove(int rowIndex) {
 		slTable.remove(rowIndex);
-		tableChanged(new TableModelEvent(this));
+		fireTableRowsDeleted(rowIndex, rowIndex);
 	}
 	
 	public List<ServerList> getList()
@@ -196,6 +196,7 @@ class SLTableModel extends AbstractTableModel implements TableModelListener
 
 	@Override
 	public void tableChanged(TableModelEvent e) {
-		fireTableChanged(e);
+		return;		
 	}
+
 }
