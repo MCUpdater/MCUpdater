@@ -30,6 +30,7 @@
 		</ant>
 	</target>
 	<target name="package" depends="build-API,build-Client">
+		<mkdir dir="dist"/>
 		<property name="git_branch" value="${ENV.GIT_BRANCH}"/>
 		<echo message="git_branch = ${git_branch}"/>
 		<propertyfile file="${MCUpdater.location}/bin/version.properties" comment="MCUpdater automatic build version">
