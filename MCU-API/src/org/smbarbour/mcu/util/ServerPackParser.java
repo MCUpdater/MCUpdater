@@ -103,7 +103,7 @@ public class ServerPackParser {
 		Boolean required = getBooleanValue(modEl,"Required");
 		Boolean isDefault = getBooleanValue(modEl,"IsDefault");
 		Boolean inJar = getBooleanValue(modEl,"InJar");
-		int jarOrder = Integer.parseInt(getTextValue(modEl,"JarOrder"));
+		int jarOrder = getIntValue(modEl,"JarOrder");
 		Boolean extract = getBooleanValue(modEl,"Extract");
 		Boolean inRoot = getBooleanValue(modEl,"InRoot");
 		Boolean coreMod = getBooleanValue(modEl,"CoreMod");
@@ -128,6 +128,15 @@ public class ServerPackParser {
 		String md5 = getTextValue(cfEl,"MD5");
 		ConfigFile cf = new ConfigFile(url,path,md5);
 		return cf;
+	}
+	
+	private static int getIntValue(Element ele, String tagName) {
+		int value = 0;
+		try {
+			value = Integer.parseInt(getTextValue(ele,tagName));
+		} catch (NumberFormatException e) {			
+		}
+		return value;
 	}
 	
 	private static String getTextValue(Element ele, String tagName) {
