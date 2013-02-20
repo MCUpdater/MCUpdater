@@ -15,6 +15,7 @@
 										<xs:element type="xs:boolean" name="Required" />
 										<xs:element type="xs:boolean" name="IsDefault" />
 										<xs:element type="xs:boolean" name="InJar" />
+										<xs:element type="xs:integer" name="JarOrder" minOccurs="0"/>
 										<xs:element type="xs:boolean" name="Extract" />
 										<xs:element type="xs:boolean" name="InRoot" />
 										<xs:element type="xs:boolean" name="CoreMod" />
@@ -33,7 +34,7 @@
 									<xs:attribute type="xs:string" name="name" use="required" />
 									<xs:attribute type="xs:string" name="id" use="required" />
 									<xs:attribute type="xs:string" name="depends" use="optional" />
-									<xs:attribute type="xs:string" name="side" use="optional" default="BOTH">
+									<xs:attribute name="side" use="optional" default="BOTH">
 										<xs:simpleType>
 											<xs:restriction base="xs:string">
 												<xs:enumeration value="BOTH"/>

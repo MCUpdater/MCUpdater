@@ -14,6 +14,7 @@ import org.w3c.dom.NodeList;
 
 import javax.swing.JMenuBar;
 import java.awt.BorderLayout;
+import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
@@ -32,11 +33,13 @@ import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.JSpinner;
 import javax.swing.ListSelectionModel;
 import javax.swing.AbstractListModel;
 import javax.swing.JScrollPane;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
@@ -149,6 +152,7 @@ public class ServerForm extends MCUApp {
 	private JButton btnModSort;
 	private JTextField txtModPath;
 	private JComboBox<String> lstModSide;
+	private JSpinner spinModInJarPriority;
 	
 	public ServerForm() {
 		initialize();
@@ -160,7 +164,7 @@ public class ServerForm extends MCUApp {
 	private void initialize() {
 		frmMain = new JFrame();
 		frmMain.setTitle("MCUpdater - ServerPack Utility build " + Version.BUILD_VERSION + " (Implementing MCU-API " + Version.API_VERSION + ")");
-		frmMain.setBounds(100,100,900,700);
+		frmMain.setBounds(100,100,1100,800);
 		frmMain.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		frmMain.addWindowListener(new WindowAdapter(){
 			@Override
@@ -697,6 +701,7 @@ public class ServerForm extends MCUApp {
 						txtModUrl.setText(selected.getUrl());
 						chkModRequired.setSelected(selected.getRequired());
 						chkModInJar.setSelected(selected.getInJar());
+						spinModInJarPriority.setValue(selected.getJarOrder());
 						chkModCoreMod.setSelected(selected.getCoreMod());
 						chkModIsDefault.setSelected(selected.getIsDefault());
 						chkModExtract.setSelected(selected.getExtract());
@@ -955,14 +960,23 @@ public class ServerForm extends MCUApp {
 				gbc_lblInJar.gridy = row;
 				modDetailPanel.add(lblInJar, gbc_lblInJar);
 
+				JPanel pnlInJar = new JPanel();
+				pnlInJar.setLayout(new FlowLayout(FlowLayout.LEFT));
+				GridBagConstraints gbc_pnlInJar = new GridBagConstraints();
+				gbc_pnlInJar.insets = new Insets(0, 0, 5, 5);
+				gbc_pnlInJar.anchor = GridBagConstraints.WEST;
+				gbc_pnlInJar.gridx = 4;
+				gbc_pnlInJar.gridy = row;
+				
 				chkModInJar = new JCheckBox("");
 				chkModInJar.addChangeListener(moduleChangeListener);
-				GridBagConstraints gbc_chkInJar = new GridBagConstraints();
-				gbc_chkInJar.insets = new Insets(0, 0, 5, 5);
-				gbc_chkInJar.anchor = GridBagConstraints.WEST;
-				gbc_chkInJar.gridx = 4;
-				gbc_chkInJar.gridy = row;
-				modDetailPanel.add(chkModInJar, gbc_chkInJar);
+				pnlInJar.add(chkModInJar);
+				
+				spinModInJarPriority = new JSpinner(new SpinnerNumberModel(0,0,99,1));
+				spinModInJarPriority.addChangeListener(moduleChangeListener);
+				pnlInJar.add(spinModInJarPriority);
+				
+				modDetailPanel.add(pnlInJar, gbc_pnlInJar);
 
 				row++;
 			}
@@ -1048,7 +1062,7 @@ public class ServerForm extends MCUApp {
 				JButton btnModAdd = new JButton("Add");
 				btnModAdd.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, lstModSide.getSelectedItem().toString(), txtModPath.getText());
+						Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), (int)spinModInJarPriority.getValue(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, lstModSide.getSelectedItem().toString(), txtModPath.getText());
 						modelModule.add(newMod);
 						modelParentId.add(newMod.getId());
 						modelParentId.sort();
@@ -1477,6 +1491,10 @@ public class ServerForm extends MCUApp {
 					fileWriter.newLine();
 					fileWriter.write("\t\t\t<InJar>" + (entry.getInJar() == true ? "true" : "false") + "</InJar>");
 					fileWriter.newLine();
+					if (entry.getInJar() == true) {
+						fileWriter.write("\t\t\t<JarOrder>" + (entry.getJarOrder()) + "</JarOrder>");
+						fileWriter.newLine();
+					}
 					fileWriter.write("\t\t\t<Extract>" + (entry.getExtract() == true ? "true" : "false") + "</Extract>");
 					fileWriter.newLine();
 					fileWriter.write("\t\t\t<InRoot>" + (entry.getInRoot() == true ? "true" : "false") + "</InRoot>");
@@ -1556,7 +1574,7 @@ public class ServerForm extends MCUApp {
 
 	private void updateModuleEntry() {
 		modelParentId.replaceEntry(lstModules.getSelectedValue().getId(), txtModId.getText());
-		Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, lstModSide.getSelectedItem().toString(), txtModPath.getText());
+		Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), (int)spinModInJarPriority.getValue(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, lstModSide.getSelectedItem().toString(), txtModPath.getText());
 		modelModule.replace(moduleCurrentSelection, newMod);
 		moduleDirty = false;
 		serverDirty = true;
