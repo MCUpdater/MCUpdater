@@ -171,6 +171,7 @@ public class MainForm extends MCUApp {
 		//newConfig.setProperty("currentConfig", "");
 		//newConfig.setProperty("packRevision","");
 		//newConfig.setProperty("suppressUpdates", "false");
+		newConfig.setProperty("minimizeOnLaunch", (System.getProperty("os.name").startsWith("Mac")) ? "false" : "true");
 		newConfig.setProperty("instanceRoot", mcu.getArchiveFolder().resolve("instances").toString());
 		if (System.getProperty("os.name").startsWith("Mac")) { newConfig.setProperty("jrePath", "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0"); }
 		newConfig.setProperty("storePassword", "false");
@@ -191,7 +192,7 @@ public class MainForm extends MCUApp {
 		if (current.getProperty("maximumMemory") == null) {	current.setProperty("maximumMemory", "1G"); hasChanged = true; }
 		//if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; } // Made obsolete by instancing
 		//if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; } // Made obsolete by instancing
-		if (current.getProperty("minimizeOnLaunch") == null) { current.setProperty("minimizeOnLaunch", "true"); hasChanged = true; }
+		if (current.getProperty("minimizeOnLaunch") == null) { current.setProperty("minimizeOnLaunch", (System.getProperty("os.name").startsWith("Mac")) ? "false" : "true"); hasChanged = true; }
 		//if (current.getProperty("suppressUpdates") == null) { current.setProperty("suppressUpdates", "false"); hasChanged = true; } // Made obsolete by native launcher
 		if (current.getProperty("instanceRoot") == null) { current.setProperty("instanceRoot", mcu.getArchiveFolder().resolve("instances").toString()); }
 		if (current.getProperty("storePassword") == null) { current.setProperty("storePassword", "false"); hasChanged = true; }
