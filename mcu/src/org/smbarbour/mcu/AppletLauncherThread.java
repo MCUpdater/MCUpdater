@@ -64,22 +64,22 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 
 	@Override
 	public void run() {
-		File launcher = MCUpdater.getInstance().getArchiveFolder().resolve("MCU-Launcher.jar").toFile();
-		if(!launcher.exists())
-		{
-			try {
-				URL launcherURL = new URL("http://files.mcupdater.com/MCU-Launcher.jar");
-				ReadableByteChannel rbc = Channels.newChannel(launcherURL.openStream());
-				FileOutputStream fos = new FileOutputStream(launcher);
-				fos.getChannel().transferFrom(rbc, 0, 1 << 24);
-				fos.close();
-			} catch (MalformedURLException mue) {
-				mue.printStackTrace();
-
-			} catch (IOException ioe) {
-				ioe.printStackTrace();
-			}
-		}
+//		File launcher = MCUpdater.getInstance().getArchiveFolder().resolve("MCU-Launcher.jar").toFile();
+//		if(!launcher.exists())
+//		{
+//			try {
+//				URL launcherURL = new URL("http://files.mcupdater.com/MCU-Launcher.jar");
+//				ReadableByteChannel rbc = Channels.newChannel(launcherURL.openStream());
+//				FileOutputStream fos = new FileOutputStream(launcher);
+//				fos.getChannel().transferFrom(rbc, 0, 1 << 24);
+//				fos.close();
+//			} catch (MalformedURLException mue) {
+//				mue.printStackTrace();
+//
+//			} catch (IOException ioe) {
+//				ioe.printStackTrace();
+//			}
+//		}
 		List<String> jvmOpts = new ArrayList<String>();
 		if (!parent.getConfig().getProperty("jvmOpts","").isEmpty()){
 			jvmOpts = Arrays.asList(parent.getConfig().getProperty("jvmOpts").split("\\s"));
@@ -106,8 +106,11 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		args.addAll(jvmOpts);
 		args.add("-Xms" + this.minMem);
 		args.add("-Xmx" + this.maxMem);
-		args.add("-jar");
-		args.add(launcher.getAbsolutePath());
+		args.add("-classpath");
+		args.add(MCUpdater.getJarFile().toString());
+		args.add("org.smbarbour.mcu.MinecraftFrame");
+		//args.add("-jar");
+		//args.add(launcher.getAbsolutePath());
 		args.add(session.getUserName());
 		args.add(session.getSessionId());
 		args.add(server.getName());
