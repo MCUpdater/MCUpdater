@@ -594,94 +594,94 @@ public class MainForm extends MCUApp {
 			if( tabs != null ) {
 				tabs.setSelectedIndex(0);
 			}
-//			if (!selected.getServerId().equals("unmanaged")) {
-				List<Module> modules = ServerPackParser.loadFromURL(entry.getPackUrl(), entry.getServerId());
-				Iterator<Module> itMods = modules.iterator();
-				pnlModList.setVisible(false);
-				pnlModList.removeAll();
-				List<String> modIds = new ArrayList<String>();
-				while(itMods.hasNext())
-				{
-					Module modEntry = itMods.next();
-					if (modEntry.getId().equals("")) {
-						modEntry.setId(modEntry.getName().replace(" ", ""));
-					}
-					if (modIds.contains(modEntry.getId())) {
-						tabs.setSelectedIndex(tabs.getTabCount()-1);
-						this.log("The " + selected.getName() + " ServerPack contains multiple mods with id (" + modEntry.getId() + ").  This is an invalid ServerPack.  Please contact the server operator.");
-						//JOptionPane.showMessageDialog(frmMain, "This ServerPack contains multiple mods with id (" + modEntry.getId() + ").  This is an invalid ServerPack.  Please contact the server operator.", "MCUpdater", JOptionPane.ERROR_MESSAGE);
-						btnUpdate.setEnabled(false);
-					} else {
-						modIds.add(modEntry.getId());
-					}
-					JModuleCheckBox chkModule = new JModuleCheckBox(modEntry.getName());
-					if(modEntry.getInJar())
-					{
-						chkModule.setFont(chkModule.getFont().deriveFont(Font.BOLD));
-					}
-					chkModule.setModule(modEntry);
-					if(modEntry.getRequired())
-					{
-						chkModule.setSelected(true);
-						chkModule.setEnabled(false);
-					}
-					if(modEntry.getIsDefault())
-					{
-						chkModule.setSelected(true);
-					}
-					pnlModList.add(chkModule);
+			//			if (!selected.getServerId().equals("unmanaged")) {
+			List<Module> modules = ServerPackParser.loadFromURL(entry.getPackUrl(), entry.getServerId());
+			Iterator<Module> itMods = modules.iterator();
+			pnlModList.setVisible(false);
+			pnlModList.removeAll();
+			List<String> modIds = new ArrayList<String>();
+			while(itMods.hasNext())
+			{
+				Module modEntry = itMods.next();
+				if (modEntry.getId().equals("")) {
+					modEntry.setId(modEntry.getName().replace(" ", ""));
 				}
-				pnlModList.setVisible(true);
-				pnlRight.setVisible(true);
-				//btnUpdate.setEnabled(true);
-				ServerStatus status = ServerStatus.getStatus(selected.getAddress());
-				if (status != null) {
-					setStatus("Idle - Server status: " + status.getMOTD() + " (" + status.getPlayers() + "/" + status.getMaxPlayers() + ")");
+				if (modIds.contains(modEntry.getId())) {
+					tabs.setSelectedIndex(tabs.getTabCount()-1);
+					this.log("The " + selected.getName() + " ServerPack contains multiple mods with id (" + modEntry.getId() + ").  This is an invalid ServerPack.  Please contact the server operator.");
+					//JOptionPane.showMessageDialog(frmMain, "This ServerPack contains multiple mods with id (" + modEntry.getId() + ").  This is an invalid ServerPack.  Please contact the server operator.", "MCUpdater", JOptionPane.ERROR_MESSAGE);
+					btnUpdate.setEnabled(false);
 				} else {
-					setStatus("Idle - Server status: Unable to connect!");
+					modIds.add(modEntry.getId());
 				}
-//			} else {
-//				pnlModList.removeAll();
-//				pnlRight.setVisible(false);
-//				btnUpdate.setEnabled(false);
-//				setStatus("Idle");
-//			}
-			
+				JModuleCheckBox chkModule = new JModuleCheckBox(modEntry.getName());
+				if(modEntry.getInJar())
+				{
+					chkModule.setFont(chkModule.getFont().deriveFont(Font.BOLD));
+				}
+				chkModule.setModule(modEntry);
+				if(modEntry.getRequired())
+				{
+					chkModule.setSelected(true);
+					chkModule.setEnabled(false);
+				}
+				if(modEntry.getIsDefault())
+				{
+					chkModule.setSelected(true);
+				}
+				pnlModList.add(chkModule);
+			}
+			pnlModList.setVisible(true);
+			pnlRight.setVisible(true);
+			//btnUpdate.setEnabled(true);
+			ServerStatus status = ServerStatus.getStatus(selected.getAddress());
+			if (status != null) {
+				setStatus("Idle - Server status: " + status.getMOTD() + " (" + status.getPlayers() + "/" + status.getMaxPlayers() + ")");
+			} else {
+				setStatus("Idle - Server status: Unable to connect!");
+			}
+			//			} else {
+			//				pnlModList.removeAll();
+			//				pnlRight.setVisible(false);
+			//				btnUpdate.setEnabled(false);
+			//				setStatus("Idle");
+			//			}
+
 			if ( Files.notExists( mcu.getInstanceRoot().resolve(selected.getServerId()) ) ) {
 				InstanceManager.createInstance(selected.getServerId());
 			}
-//			else {
-//				instancePath = mcu.getInstanceRoot().resolve(selected.getServerId());
-//			}
-//			try {
-//				Path MCPath = mcu.getMCFolder();
-//				if (Files.exists(MCPath)) {
-//					if (Files.isSymbolicLink(MCPath)) {
-//						Files.delete(MCPath);
-//					} else {
-//						Path instDataPath = MCPath.resolve("instance.dat");
-//						boolean instanceDataExists = Files.exists(instDataPath);
-//						if (instanceDataExists) {
-//							Properties instProp = new Properties();
-//							instProp.load(Files.newInputStream(instDataPath));
-//							Path oldInstance = mcu.getInstanceRoot().resolve(instProp.getProperty("serverID"));
-//							removeAndPrepareFolder(MCPath, oldInstance, false);
-//						} else {
-//							removeAndPrepareFolder(MCPath, mcu.getInstanceRoot().resolve("unmanaged"), true);
-//						}
-//					}
-//				}
-//				if (canCreateLinks) {
-//					InstanceManager.createLink(MCPath, instancePath);
-//				} else {
-//					copyInstanceFolder(instancePath, MCPath);
-//				}
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//				return;
-//			}
-						
+			//			else {
+			//				instancePath = mcu.getInstanceRoot().resolve(selected.getServerId());
+			//			}
+			//			try {
+			//				Path MCPath = mcu.getMCFolder();
+			//				if (Files.exists(MCPath)) {
+			//					if (Files.isSymbolicLink(MCPath)) {
+			//						Files.delete(MCPath);
+			//					} else {
+			//						Path instDataPath = MCPath.resolve("instance.dat");
+			//						boolean instanceDataExists = Files.exists(instDataPath);
+			//						if (instanceDataExists) {
+			//							Properties instProp = new Properties();
+			//							instProp.load(Files.newInputStream(instDataPath));
+			//							Path oldInstance = mcu.getInstanceRoot().resolve(instProp.getProperty("serverID"));
+			//							removeAndPrepareFolder(MCPath, oldInstance, false);
+			//						} else {
+			//							removeAndPrepareFolder(MCPath, mcu.getInstanceRoot().resolve("unmanaged"), true);
+			//						}
+			//					}
+			//				}
+			//				if (canCreateLinks) {
+			//					InstanceManager.createLink(MCPath, instancePath);
+			//				} else {
+			//					copyInstanceFolder(instancePath, MCPath);
+			//				}
+			//			} catch (IOException e) {
+			//				// TODO Auto-generated catch block
+			//				e.printStackTrace();
+			//				return;
+			//			}
+
 			this.frmMain.repaint();
 		} catch (IOException ioe) {
 			ioe.printStackTrace();
