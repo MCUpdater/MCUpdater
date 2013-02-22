@@ -53,6 +53,7 @@ public class MinecraftFrame extends Frame implements WindowListener {
 		Image source = icon.getImage();
 		int w = source.getWidth(null);
 		int h = source.getHeight(null);
+		if (w == -1) { w = 32; h = 32; }
 		BufferedImage image = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
 		Graphics2D g2d = (Graphics2D)image.getGraphics();
 		g2d.drawImage(source, 0, 0, null);
