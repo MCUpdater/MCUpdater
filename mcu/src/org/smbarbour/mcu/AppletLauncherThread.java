@@ -99,7 +99,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		args.add("-XX:+CMSIncrementalMode");
 		args.add("-XX:+AggressiveOpts");
 		if (System.getProperty("os.name").startsWith("Mac")) {
-			args.add("-Xdock:name=\"MCUpdater - " + server.getName() + "\"");
+			args.add("-Xdock:name=MCUpdater - " + server.getName());
 		}
 		args.addAll(jvmOpts);
 		args.add("-Xms" + this.minMem);
@@ -111,7 +111,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		args.add(server.getName());
 		args.add(MCUpdater.getInstance().getInstanceRoot().resolve(server.getServerId()).toString());
 		args.add(MCUpdater.getInstance().getInstanceRoot().resolve(server.getServerId()).resolve("bin").toString());
-		args.add((server.getIconUrl().equals("")) ? "http://www.minecraft.net/favicon.png" : server.getIconUrl());
+		args.add((server.getIconUrl().equals("")) ? "https://minecraft.net/favicon.png" : server.getIconUrl());
 		args.add(parent.getConfig().getProperty("width"));
 		args.add(parent.getConfig().getProperty("height"));
 		args.add(server.getAddress());
