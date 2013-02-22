@@ -1046,10 +1046,10 @@ public class MainForm extends MCUApp {
 		LoginForm lf = new LoginForm(window);
 		lf.setVisible(true);
 	}
-	private void showBackupManager() {
-		BackupManager bm = new BackupManager(window);
-		bm.setVisible(true);
-	}
+//	private void showBackupManager() {
+//		BackupManager bm = new BackupManager(window);
+//		bm.setVisible(true);
+//	}
 	private void showClientConfig() {
 		ClientConfig cc = new ClientConfig(window);
 		cc.setVisible(true);

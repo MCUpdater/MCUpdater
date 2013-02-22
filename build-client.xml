@@ -2,6 +2,7 @@
 <project default="package" name="Create Runnable Jar for Project MCUpdater">
 	<property name="MCU-API.location" value="MCU-API"/>
 	<property name="MCUpdater.location" value="mcu"/>
+	<property name="MCU-Launcher.location" value="MCU-Launcher"/>
 
 	<property environment="ENV"/>
 	<include file="version.xml"/> <!-- Version data import -->
@@ -22,6 +23,13 @@
 			</propertyset>
 		</ant>
 	</target>
+	<target name="build-Launcher">
+		<ant antfile="build.xml" dir="${MCU-Launcher.location}" inheritAll="false" target="build-project">
+			<propertyset>
+				<propertyref name="build.compiler"/>
+			</propertyset>
+		</ant>
+	</target>
 	<target name="build-Client">
 		<ant antfile="build.xml" dir="${MCUpdater.location}" inheritAll="false" target="build-project">
 			<propertyset>
@@ -29,7 +37,7 @@
 			</propertyset>
 		</ant>
 	</target>
-	<target name="package" depends="build-API,build-Client">
+	<target name="package" depends="build-API,build-Launcher,build-Client">
 		<mkdir dir="dist"/>
 		<property name="git_branch" value="${ENV.GIT_BRANCH}"/>
 		<echo message="git_branch = ${git_branch}"/>
@@ -52,6 +60,7 @@
 			</manifest>
 			<fileset dir="${MCUpdater.location}/bin"/>
 			<fileset excludes="version.properties" dir="${MCU-API.location}/bin"/>
+			<fileset dir="${MCU-Launcher.location}/bin"/>
 			<zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/commons-codec-1.6.jar"/>
 			<zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/commons-io-2.1.jar"/>
 			<zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/jbeat-1.0.jar"/>
