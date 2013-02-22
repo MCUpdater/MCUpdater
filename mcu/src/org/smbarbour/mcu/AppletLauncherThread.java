@@ -80,8 +80,10 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 				ioe.printStackTrace();
 			}
 		}
-		
-		List<String> jvmOpts = Arrays.asList(parent.getConfig().getProperty("jvmOpts").split("\\s"));
+		List<String> jvmOpts = new ArrayList<String>();
+		if (!parent.getConfig().getProperty("jvmOpts","").isEmpty()){
+			jvmOpts = Arrays.asList(parent.getConfig().getProperty("jvmOpts").split("\\s"));
+		}
 		
 		String javaBin = "java";
 		File binDir;
