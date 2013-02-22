@@ -233,6 +233,7 @@ public class MainForm extends MCUApp {
 				updateInstance();
 			}
 		});
+		btnUpdate.setEnabled(false);
 		pnlButtons.add(btnUpdate);
 
 		btnLaunchMinecraft = new JButton("Launch Minecraft");
@@ -241,6 +242,7 @@ public class MainForm extends MCUApp {
 				launchMinecraft();
 			}
 		});
+		btnLaunchMinecraft.setEnabled(false);
 		pnlButtons.add(btnLaunchMinecraft);
 
 		JPanel pnlStatus = new JPanel();
@@ -633,7 +635,8 @@ public class MainForm extends MCUApp {
 			}
 			pnlModList.setVisible(true);
 			pnlRight.setVisible(true);
-			//btnUpdate.setEnabled(true);
+			btnUpdate.setEnabled(true);
+			btnLaunchMinecraft.setEnabled(true);
 			ServerStatus status = ServerStatus.getStatus(selected.getAddress());
 			if (status != null) {
 				setStatus("Idle - Server status: " + status.getMOTD() + " (" + status.getPlayers() + "/" + status.getMaxPlayers() + ")");
