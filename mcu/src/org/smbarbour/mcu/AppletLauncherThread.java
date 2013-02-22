@@ -99,7 +99,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		args.add("-XX:+CMSIncrementalMode");
 		args.add("-XX:+AggressiveOpts");
 		if (System.getProperty("os.name").startsWith("Mac")) {
-			args.add("-Xdock:name=\"" + server.getName() + "\"");
+			args.add("-Xdock:name=\"MCUpdater - " + server.getName() + "\"");
 		}
 		args.addAll(jvmOpts);
 		args.add("-Xms" + this.minMem);
