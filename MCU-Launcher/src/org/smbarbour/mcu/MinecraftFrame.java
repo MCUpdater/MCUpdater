@@ -32,17 +32,20 @@ public class MinecraftFrame extends Frame implements WindowListener {
 		String serverName = args[2];
 		File instPath = new File(args[3]);
 		File lwjglPath = new File(args[4]);
-		String serverAddress = args[5];		
+		int width = Integer.parseInt(args[6]);
+		int height = Integer.parseInt(args[7]);
+		String serverAddress = args[8];		
 		ImageIcon icon = null;
 		try {
-			icon = new ImageIcon(new URL(args[6]));
+			icon = new ImageIcon(new URL(args[5]));
 		} catch (MalformedURLException e) { 
 			System.out.println("No valid icon URL specified in server pack");
 		} catch (IndexOutOfBoundsException indexException) {}
 		if (icon == null) { icon = new ImageIcon(Launcher.class.getResource("/minecraft.png")); }
 			
 		MinecraftFrame me = new MinecraftFrame("MCUpdater - " + serverName, icon);
-		me.launch(instPath, lwjglPath, username, sessionid, serverAddress);
+		Dimension windowSize = new Dimension(width, height); //new Dimension(1280, 720)
+		me.launch(instPath, lwjglPath, username, sessionid, serverAddress, windowSize);
 	}
 	
 	public MinecraftFrame(String title, ImageIcon icon) {
@@ -58,7 +61,7 @@ public class MinecraftFrame extends Frame implements WindowListener {
 		g2d.dispose();
 	}
 	
-	public void launch(File instance, File lwjgl, String username, String sessionid, String serverAddress) {
+	public void launch(File instance, File lwjgl, String username, String sessionid, String serverAddress, Dimension windowSize) {
 		try {
 			URI address;
 			String port;
@@ -73,7 +76,7 @@ public class MinecraftFrame extends Frame implements WindowListener {
 			System.setProperty("org.lwjgl.librarypath", new File(lwjgl, "natives").getAbsolutePath());
 			System.setProperty("net.java.games.input.librarypath", new File(lwjgl, "natives").getAbsolutePath());
 			this.add(applet);
-			applet.setPreferredSize(new Dimension(1280, 720));
+			applet.setPreferredSize(windowSize);
 			this.pack();
 			this.setLocationRelativeTo(null);
 			this.setResizable(true);

@@ -9,6 +9,7 @@ import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
@@ -38,7 +39,9 @@ public class ClientConfig extends JDialog {
 	private JCheckBox chckbxMinimize;
 	//private JCheckBox chckbxSuppressVanillaUpdate;
 	private JTextField txtInstanceRoot;
-	private JCheckBox chckbxSuppressVanillaUpdate;
+	private JTextField txtJVMOpts;
+	private JTextField txtResWidth;
+	private JTextField txtResHeight;
 
 	/**
 	 * Create the dialog.
@@ -74,7 +77,7 @@ public class ClientConfig extends JDialog {
 		{
 			JLabel lblMinimumMemory = new JLabel("Minimum memory:");
 			GridBagConstraints gbc_lblMinimumMemory = new GridBagConstraints();
-			gbc_lblMinimumMemory.anchor = GridBagConstraints.WEST;
+			gbc_lblMinimumMemory.anchor = GridBagConstraints.EAST;
 			gbc_lblMinimumMemory.insets = new Insets(0, 0, 5, 5);
 			gbc_lblMinimumMemory.gridx = 1;
 			gbc_lblMinimumMemory.gridy = row;
@@ -134,7 +137,54 @@ public class ClientConfig extends JDialog {
 			gbc_lblMemoryCanBe.gridy = row;
 			contentPanel.add(lblMemoryCanBe, gbc_lblMemoryCanBe);
 		}
-		
+		// Resolution
+		++row;
+		{
+			Component verticalStrut = Box.createVerticalStrut(5);
+			GridBagConstraints gbc_verticalStrut = new GridBagConstraints();
+			gbc_verticalStrut.insets = new Insets(0, 0, 5, 5);
+			gbc_verticalStrut.gridx = 1;
+			gbc_verticalStrut.gridy = row;
+			contentPanel.add(verticalStrut, gbc_verticalStrut);
+		}
+		++row;
+		{
+			JLabel lblResolution = new JLabel("Resolution:");
+			GridBagConstraints gbc_lblResolution = new GridBagConstraints();
+			gbc_lblResolution.anchor = GridBagConstraints.EAST;
+			gbc_lblResolution.insets = new Insets(0, 0, 5, 5);
+			gbc_lblResolution.gridx = 1;
+			gbc_lblResolution.gridy = row;
+			contentPanel.add(lblResolution, gbc_lblResolution);
+			
+			JPanel pnlResolution = new JPanel();
+			pnlResolution.setLayout(new BorderLayout());
+			GridBagConstraints gbc_pnlResolution = new GridBagConstraints();
+			gbc_pnlResolution.anchor = GridBagConstraints.WEST;
+			gbc_pnlResolution.gridwidth = 2;
+			gbc_pnlResolution.insets = new Insets(0, 0, 5, 5);
+			gbc_pnlResolution.fill = GridBagConstraints.HORIZONTAL;
+			gbc_pnlResolution.gridx=2;
+			gbc_pnlResolution.gridy=row;
+			{
+				txtResWidth = new JTextField();
+				txtResWidth.setText(parent.getConfig().getProperty("width"));
+				txtResWidth.setColumns(10);
+				pnlResolution.add(txtResWidth, BorderLayout.WEST);
+				
+				JLabel lblResX = new JLabel("X");
+				lblResX.setHorizontalAlignment(SwingConstants.CENTER);
+				pnlResolution.add(lblResX, BorderLayout.CENTER);
+				
+
+				txtResHeight = new JTextField();
+				txtResHeight.setText(parent.getConfig().getProperty("height"));
+				txtResHeight.setColumns(10);
+				pnlResolution.add(txtResHeight, BorderLayout.EAST);
+
+			}
+			contentPanel.add(pnlResolution, gbc_pnlResolution);
+		}
 		// JRE
 		++row;
 		{
@@ -191,7 +241,29 @@ public class ClientConfig extends JDialog {
 				}
 			});
 		}
-		
+		// JVM Options
+		++row;
+		{
+			JLabel lblJVMOpts = new JLabel("JVM Opts:");
+			GridBagConstraints gbc_lblJVMOpts = new GridBagConstraints();
+			gbc_lblJVMOpts.anchor = GridBagConstraints.EAST;
+			gbc_lblJVMOpts.insets = new Insets(0, 0, 5, 5);
+			gbc_lblJVMOpts.gridx = 1;
+			gbc_lblJVMOpts.gridy = row;
+			contentPanel.add(lblJVMOpts, gbc_lblJVMOpts);
+			
+			txtJVMOpts = new JTextField();
+			txtJVMOpts.setText(parent.getConfig().getProperty("jvmOpts"));
+			GridBagConstraints gbc_txtJVMOpts = new GridBagConstraints();
+			gbc_txtJVMOpts.insets = new Insets(0, 0, 5, 5);
+			gbc_txtJVMOpts.fill = GridBagConstraints.HORIZONTAL;
+			gbc_txtJVMOpts.gridx = 2;
+			gbc_txtJVMOpts.gridy = row;
+			gbc_txtJVMOpts.gridwidth = 2;
+			contentPanel.add(txtJVMOpts, gbc_txtJVMOpts);
+			txtJVMOpts.setColumns(10);
+			
+		}
 		// Instance
 		++row;
 		{
@@ -270,7 +342,7 @@ public class ClientConfig extends JDialog {
 		}
 		
 		/* This option is obsolete with native launcher */
-		// Suppress update
+		/* Suppress update
 		if (System.getProperty("os.name").startsWith("Mac")) {
 			++row;
 			{
@@ -285,7 +357,7 @@ public class ClientConfig extends JDialog {
 				contentPanel.add(chckbxSuppressVanillaUpdate, gbc_chckbxSuppressVanillaUpdate);
 			}
 		}
-		/* --- */
+		 --- */
 		
 		// Stretch to make room for the content panel
 		setSize(this.getWidth(), this.getHeight() + (int)contentPanel.getMinimumSize().getHeight());
@@ -306,6 +378,9 @@ public class ClientConfig extends JDialog {
 						newConfig.setProperty("minimizeOnLaunch", Boolean.toString(chckbxMinimize.isSelected()));
 						//newConfig.setProperty("suppressUpdates", Boolean.toString(chckbxSuppressVanillaUpdate.isSelected()));
 						newConfig.setProperty("instanceRoot", txtInstanceRoot.getText());
+						newConfig.setProperty("jvmOpts", txtJVMOpts.getText());
+						newConfig.setProperty("width", txtResWidth.getText());
+						newConfig.setProperty("height", txtResHeight.getText());
 						parent.writeConfig(newConfig);
 						parent.mcu.setInstanceRoot(new Path(new File(txtInstanceRoot.getText())));
 						dispose();

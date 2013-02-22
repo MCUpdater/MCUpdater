@@ -18,6 +18,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.JButton;
@@ -80,6 +81,8 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 			}
 		}
 		
+		List<String> jvmOpts = Arrays.asList(parent.getConfig().getProperty("jvmOpts").split("\\s"));
+		
 		String javaBin = "java";
 		File binDir;
 		if (System.getProperty("os.name").startsWith("Mac")) {
@@ -95,6 +98,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		args.add("-XX:+UseConcMarkSweepGC");
 		args.add("-XX:+CMSIncrementalMode");
 		args.add("-XX:+AggressiveOpts");
+		args.addAll(jvmOpts);
 		args.add("-Xms" + this.minMem);
 		args.add("-Xmx" + this.maxMem);
 		args.add("-jar");
@@ -104,8 +108,10 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		args.add(server.getName());
 		args.add(MCUpdater.getInstance().getInstanceRoot().resolve(server.getServerId()).toString());
 		args.add(MCUpdater.getInstance().getInstanceRoot().resolve(server.getServerId()).resolve("bin").toString());
-		args.add(server.getAddress());
 		args.add(server.getIconUrl());
+		args.add(parent.getConfig().getProperty("width"));
+		args.add(parent.getConfig().getProperty("height"));
+		args.add(server.getAddress());
 		
 		if (!Version.isMasterBranch()) {
 			parent.log("Process args:");
