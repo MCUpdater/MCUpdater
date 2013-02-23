@@ -48,6 +48,23 @@ public class Version {
 		return false;
 	}
 	
+	public static boolean requestedFeatureLevel(String packVersion, String featureLevelVersion) {
+		String packParts[] = packVersion.split("\\.");
+		String featureParts[] = featureLevelVersion.split("\\.");
+		try {
+			for (int q = 0; q < featureParts.length; ++q ) {
+				if (Integer.valueOf(packParts[q]) > Integer.valueOf(featureParts[q])) return true;
+				if (Integer.valueOf(packParts[q]) < Integer.valueOf(featureParts[q])) return false;
+			}
+			return true;
+		} catch( NumberFormatException e ) {
+			log("Got non-numerical pack format version '"+packVersion+"'");
+		} catch( ArrayIndexOutOfBoundsException e ) {
+			log("Got malformed pack format version '"+packVersion+"'");
+		}
+		return false;
+	}
+	
 	public static boolean isMasterBranch() {
 		return BUILD_BRANCH.equals("master");
 	}

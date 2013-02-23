@@ -12,6 +12,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -29,6 +30,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.smbarbour.mcu.MCUApp;
+import org.smbarbour.mcu.Version;
 import org.smbarbour.mcu.util.Archive;
 import org.w3c.dom.*;
 
@@ -487,6 +489,10 @@ public class MCUpdater {
 	}
 	
 	public void installMods(ServerList server, List<Module> toInstall, boolean clearExisting) throws FileNotFoundException {
+		if (Version.requestedFeatureLevel(server.getMCUVersion(), "2.2")) {
+			// Sort mod list for InJar
+			Collections.sort(toInstall, new ModuleComparator());
+		}
 		Path instancePath = instanceRoot.resolve(server.getServerId());
 		//File folder;
 //		try {
