@@ -498,8 +498,10 @@ public class MCUpdater {
 		Iterator<Module> iMods = toInstall.iterator();
 		while (iMods.hasNext() && !updateJar) {
 			Module current = iMods.next();
-			if (current.getInJar() && !current.getMD5().equalsIgnoreCase(instData.getProperty("mod:" + current.getId(), "NoHash"))) {
-				updateJar = true;
+			if (current.getInJar()) {
+				if (current.getMD5().isEmpty() || (!current.getMD5().equalsIgnoreCase(instData.getProperty("mod:" + current.getId(), "NoHash")))) {
+					updateJar = true;
+				}
 			}
 		}
 		System.out.println(instancePath.toString());

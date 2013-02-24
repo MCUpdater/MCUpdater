@@ -112,7 +112,7 @@ public class Module {
 	}
 	
 	public String getMD5() {
-		return md5;
+		return (md5 == null ? "" : md5);
 	}
 	
 	public void setMD5(String md5) {

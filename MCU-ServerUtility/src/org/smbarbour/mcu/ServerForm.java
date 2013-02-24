@@ -728,7 +728,7 @@ public class ServerForm extends MCUApp {
 		gbc_modDetailPanel.gridy = 1;
 		modulePanel.add(modDetailPanel, gbc_modDetailPanel);
 		GridBagLayout gbl_modDetailPanel = new GridBagLayout();
-		gbl_modDetailPanel.columnWidths = new int[]{0, 60, 86, 0, 0, 0};
+		gbl_modDetailPanel.columnWidths = new int[]{0, 60, 86, 60, 0, 0};
 		gbl_modDetailPanel.rowHeights = new int[]{0, 20, 0, 0, 0, 0, 0, 0};
 		gbl_modDetailPanel.columnWeights = new double[]{0.0, 0.0, 0.0, 0.0, 1.0, Double.MIN_VALUE};
 		gbl_modDetailPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
@@ -1109,6 +1109,20 @@ public class ServerForm extends MCUApp {
 				gbc_btnModUpdate.gridy = row;
 				modDetailPanel.add(btnModUpdate, gbc_btnModUpdate);
 				
+				JButton btnModImport = new JButton("Import");
+				btnModImport.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						importModuleEntry();
+					}
+				});
+				GridBagConstraints gbc_btnModImport = new GridBagConstraints();
+				gbc_btnModImport.fill = GridBagConstraints.HORIZONTAL;
+				gbc_btnModImport.insets = new Insets(0, 0, 5, 5);
+				gbc_btnModImport.gridx = 4;
+				gbc_btnModImport.gridy = row;
+				modDetailPanel.add(btnModImport, gbc_btnModImport);
+
 				row++;
 			}
 			{
@@ -1407,6 +1421,11 @@ public class ServerForm extends MCUApp {
 			configDetailPanel.add(rigidArea_3, gbc_rigidArea_3);
 
 		}
+	}
+
+	protected void importModuleEntry() {
+		// TODO Auto-generated method stub
+		
 	}
 
 	protected void doExit() {
