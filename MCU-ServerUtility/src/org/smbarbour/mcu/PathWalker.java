@@ -42,7 +42,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		byte[] hash = DigestUtils.md5(is);
 		String md5 = new String(Hex.encodeHex(hash));
 		String name = file.getFileName().toString();
-		String id = file.getFileName().toString();
+		String id;
 		name = name.substring(0,name.length()-4);
 		id = name.replace(" ", "");
 		String depends = "";

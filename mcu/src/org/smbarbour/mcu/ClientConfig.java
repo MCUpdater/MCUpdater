@@ -51,7 +51,7 @@ public class ClientConfig extends JDialog {
 		setModal(true);
 		setTitle("Client Configuration");
 		setResizable(false);
-		setBounds(100, 100, 480, 75);	// height is amount of padding reserved for button bar
+		setSize(480, 75);	// height is amount of padding reserved for button bar
 		getContentPane().setLayout(new BorderLayout());
 		contentPanel.setBorder(new EmptyBorder(5, 5, 5, 5));
 		getContentPane().add(contentPanel, BorderLayout.CENTER);

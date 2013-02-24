@@ -3,8 +3,11 @@ package org.smbarbour.mcu;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.smbarbour.mcu.util.ConfigFile;
 import org.smbarbour.mcu.util.MCUpdater;
+import org.smbarbour.mcu.util.ModDownload;
 import org.smbarbour.mcu.util.Module;
 import org.smbarbour.mcu.util.ModuleComparator;
 import org.smbarbour.mcu.util.ServerList;
@@ -12,6 +15,11 @@ import org.smbarbour.mcu.util.ServerPackParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+
+import argo.jdom.JdomParser;
+import argo.jdom.JsonNode;
+import argo.jdom.JsonRootNode;
+import argo.saj.InvalidSyntaxException;
 
 import javax.swing.JMenuBar;
 import java.awt.BorderLayout;
@@ -53,6 +61,10 @@ import java.awt.event.WindowEvent;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,6 +73,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -154,6 +168,14 @@ public class ServerForm extends MCUApp {
 	private JTextField txtModPath;
 	private JComboBox<String> lstModSide;
 	private JSpinner spinModInJarPriority;
+	private JButton btnModAdd;
+	private JButton btnModRemove;
+	private JButton btnModUpdate;
+	private JButton btnModImport;
+	private JButton btnConfigAdd;
+	private JButton btnConfigRemove;
+	private JButton btnConfigUpdate;
+	private JButton btnConfigImport;
 	
 	public ServerForm() {
 		initialize();
@@ -318,7 +340,7 @@ public class ServerForm extends MCUApp {
 		JMenu mnOptions = new JMenu("Options");
 		menuBar.add(mnOptions);
 		
-		JCheckBoxMenuItem mnuAutosave = new JCheckBoxMenuItem("Auto-save updates");
+		final JCheckBoxMenuItem mnuAutosave = new JCheckBoxMenuItem("Auto-save updates");
 		mnOptions.add(mnuAutosave);
 		
 		frmMain.getContentPane().setLayout(new BorderLayout(0, 0));
@@ -340,11 +362,17 @@ public class ServerForm extends MCUApp {
 				public void valueChanged(ListSelectionEvent e) {
 					if (e.getValueIsAdjusting() == false) {
 						if (serverDirty || moduleDirty || configDirty) {
-							int confirm = JOptionPane.showConfirmDialog(frmMain, "Changes to the current selection(s) have been made.  Do you wish to save these changes?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
-							if (confirm == JOptionPane.YES_OPTION) {
+							if (mnuAutosave.isSelected()) {
 								if (configDirty) updateConfigEntry();
 								if (moduleDirty) updateModuleEntry();
-								updateServerEntry();
+								updateServerEntry();								
+							} else {
+								int confirm = JOptionPane.showConfirmDialog(frmMain, "Changes to the current selection(s) have been made.  Do you wish to save these changes?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
+								if (confirm == JOptionPane.YES_OPTION) {
+									if (configDirty) updateConfigEntry();
+									if (moduleDirty) updateModuleEntry();
+									updateServerEntry();
+								}
 							}
 						}
 						if (lstServers.getSelectedIndex() > -1) {
@@ -369,6 +397,15 @@ public class ServerForm extends MCUApp {
 								modelConfig.add(entry);
 							}
 							serverCurrentSelection = lstServers.getSelectedIndex();
+							btnModAdd.setEnabled(true);
+							btnModRemove.setEnabled(true);
+							btnModUpdate.setEnabled(true);
+							btnModImport.setEnabled(true);
+							btnModSort.setEnabled(true);
+							btnConfigAdd.setEnabled(true);
+							btnConfigRemove.setEnabled(true);
+							btnConfigUpdate.setEnabled(true);
+							btnConfigImport.setEnabled(true);
 						}
 						serverDirty=false;
 						moduleDirty=false;
@@ -688,9 +725,13 @@ public class ServerForm extends MCUApp {
 			public void valueChanged(ListSelectionEvent e) {
 				if (e.getValueIsAdjusting() == false) {
 					if (moduleDirty) {
-						int confirm = JOptionPane.showConfirmDialog(frmMain, "Changes to the currently selected module have been made.  Do you wish to save these changes?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
-						if (confirm == JOptionPane.YES_OPTION) {
+						if (mnuAutosave.isSelected()) {
 							updateModuleEntry();
+						} else {
+							int confirm = JOptionPane.showConfirmDialog(frmMain, "Changes to the currently selected module have been made.  Do you wish to save these changes?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
+							if (confirm == JOptionPane.YES_OPTION) {
+								updateModuleEntry();
+							}
 						}
 					}
 					if (lstModules.getSelectedIndex() > -1) {
@@ -923,13 +964,32 @@ public class ServerForm extends MCUApp {
 				txtModMD5 = new JTextField();
 				txtModMD5.getDocument().addDocumentListener(moduleDocumentListener);
 				GridBagConstraints gbc_txtMD5 = new GridBagConstraints();
-				gbc_txtMD5.gridwidth = 3;
+				gbc_txtMD5.gridwidth = 2;
 				gbc_txtMD5.insets = new Insets(0, 0, 5, 5);
 				gbc_txtMD5.fill = GridBagConstraints.HORIZONTAL;
 				gbc_txtMD5.gridx = 2;
 				gbc_txtMD5.gridy = row;
 				modDetailPanel.add(txtModMD5, gbc_txtMD5);
 				txtModMD5.setColumns(10);
+
+				JButton btnModMD5Calc = new JButton("Calculate");
+				btnModMD5Calc.addActionListener(new ActionListener() {
+
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						try {
+							txtModMD5.setText(calculateMD5(new URL(txtModUrl.getText())));
+						} catch (MalformedURLException e1) {
+							e1.printStackTrace();
+						}
+					}
+				});
+				GridBagConstraints gbc_btnModMD5Calc = new GridBagConstraints();
+				gbc_btnModMD5Calc.insets = new Insets(0, 0, 5, 5);
+				gbc_btnModMD5Calc.fill = GridBagConstraints.HORIZONTAL;
+				gbc_btnModMD5Calc.gridx = 4;
+				gbc_btnModMD5Calc.gridy = row;
+				modDetailPanel.add(btnModMD5Calc, gbc_btnModMD5Calc);
 
 				row++;
 			}
@@ -963,6 +1023,7 @@ public class ServerForm extends MCUApp {
 
 				JPanel pnlInJar = new JPanel();
 				pnlInJar.setLayout(new FlowLayout(FlowLayout.LEFT));
+				((FlowLayout)pnlInJar.getLayout()).setHgap(0);
 				GridBagConstraints gbc_pnlInJar = new GridBagConstraints();
 				gbc_pnlInJar.insets = new Insets(0, 0, 5, 5);
 				gbc_pnlInJar.anchor = GridBagConstraints.WEST;
@@ -1060,7 +1121,8 @@ public class ServerForm extends MCUApp {
 				row++;
 			}
 			{
-				JButton btnModAdd = new JButton("Add");
+				btnModAdd = new JButton("Add");
+				btnModAdd.setEnabled(false);
 				btnModAdd.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), (int)spinModInJarPriority.getValue(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, lstModSide.getSelectedItem().toString(), txtModPath.getText());
@@ -1078,7 +1140,8 @@ public class ServerForm extends MCUApp {
 				gbc_btnModAdd.gridy = row;
 				modDetailPanel.add(btnModAdd, gbc_btnModAdd);
 
-				JButton btnModRemove = new JButton("Remove");
+				btnModRemove = new JButton("Remove");
+				btnModRemove.setEnabled(false);
 				btnModRemove.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						modelParentId.remove(modelParentId.find(lstModules.getSelectedValue().getId()));
@@ -1096,7 +1159,8 @@ public class ServerForm extends MCUApp {
 				gbc_btnModRemove.gridy = row;
 				modDetailPanel.add(btnModRemove, gbc_btnModRemove);
 
-				JButton btnModUpdate = new JButton("Update");
+				btnModUpdate = new JButton("Update");
+				btnModUpdate.setEnabled(false);
 				btnModUpdate.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						updateModuleEntry();
@@ -1109,7 +1173,8 @@ public class ServerForm extends MCUApp {
 				gbc_btnModUpdate.gridy = row;
 				modDetailPanel.add(btnModUpdate, gbc_btnModUpdate);
 				
-				JButton btnModImport = new JButton("Import");
+				btnModImport = new JButton("Import");
+				btnModImport.setEnabled(false);
 				btnModImport.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
@@ -1159,6 +1224,7 @@ public class ServerForm extends MCUApp {
 				modDetailPanel.add(btnModMoveDown, gbc_btnModMoveDown);
 
 				btnModSort = new JButton("IntelliSort");
+				btnModSort.setEnabled(false);
 				btnModSort.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
 						modelModule.sort();
@@ -1212,9 +1278,13 @@ public class ServerForm extends MCUApp {
 			public void valueChanged(ListSelectionEvent e) {
 				if (e.getValueIsAdjusting() == false) {
 					if (configDirty) {
-						int confirm = JOptionPane.showConfirmDialog(frmMain, "Changes to the currently selected configuration file have been made.  Do you wish to save these changes?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
-						if (confirm == JOptionPane.YES_OPTION) {
+						if (mnuAutosave.isSelected()) {
 							updateConfigEntry();
+						} else {
+							int confirm = JOptionPane.showConfirmDialog(frmMain, "Changes to the currently selected configuration file have been made.  Do you wish to save these changes?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
+							if (confirm == JOptionPane.YES_OPTION) {
+								updateConfigEntry();
+							}
 						}
 					}
 					if (lstConfigFiles.getSelectedIndex() > -1) {
@@ -1355,7 +1425,7 @@ public class ServerForm extends MCUApp {
 			txtConfigMD5 = new JTextField();
 			txtConfigMD5.getDocument().addDocumentListener(configDocumentListener);
 			GridBagConstraints gbc_txtConfigMD5 = new GridBagConstraints();
-			gbc_txtConfigMD5.gridwidth = 3;
+			gbc_txtConfigMD5.gridwidth = 2;
 			gbc_txtConfigMD5.insets = new Insets(0, 0, 5, 5);
 			gbc_txtConfigMD5.fill = GridBagConstraints.HORIZONTAL;
 			gbc_txtConfigMD5.gridx = 2;
@@ -1363,9 +1433,29 @@ public class ServerForm extends MCUApp {
 			configDetailPanel.add(txtConfigMD5, gbc_txtConfigMD5);
 			txtConfigMD5.setColumns(10);
 
+			JButton btnConfigMD5Calc = new JButton("Calculate");
+			btnConfigMD5Calc.addActionListener(new ActionListener() {
+
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					try {
+						txtConfigMD5.setText(calculateMD5(new URL(txtConfigUrl.getText())));
+					} catch (MalformedURLException e1) {
+						e1.printStackTrace();
+					}
+				}
+			});
+			GridBagConstraints gbc_btnConfigMD5Calc = new GridBagConstraints();
+			gbc_btnConfigMD5Calc.insets = new Insets(0, 0, 5, 5);
+			gbc_btnConfigMD5Calc.fill = GridBagConstraints.HORIZONTAL;
+			gbc_btnConfigMD5Calc.gridx = 4;
+			gbc_btnConfigMD5Calc.gridy = row;
+			configDetailPanel.add(btnConfigMD5Calc, gbc_btnConfigMD5Calc);
+
 			row++;
 			
-			JButton btnConfigAdd = new JButton("Add");
+			btnConfigAdd = new JButton("Add");
+			btnConfigAdd.setEnabled(false);
 			btnConfigAdd.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					ConfigFileWrapper newConfig = new ConfigFileWrapper(lstConfigParentId.getSelectedItem().toString(), new ConfigFile(txtConfigUrl.getText(), txtConfigPath.getText(), txtConfigMD5.getText()));
@@ -1381,7 +1471,8 @@ public class ServerForm extends MCUApp {
 			gbc_btnConfigAdd.gridy = row;
 			configDetailPanel.add(btnConfigAdd, gbc_btnConfigAdd);
 
-			JButton btnConfigRemove = new JButton("Remove");
+			btnConfigRemove = new JButton("Remove");
+			btnConfigRemove.setEnabled(false);
 			btnConfigRemove.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					modelConfig.remove(configCurrentSelection);
@@ -1399,7 +1490,8 @@ public class ServerForm extends MCUApp {
 			gbc_btnConfigRemove.gridy = row;
 			configDetailPanel.add(btnConfigRemove, gbc_btnConfigRemove);
 
-			JButton btnConfigUpdate = new JButton("Update");
+			btnConfigUpdate = new JButton("Update");
+			btnConfigUpdate.setEnabled(false);
 			btnConfigUpdate.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					updateConfigEntry();
@@ -1411,6 +1503,21 @@ public class ServerForm extends MCUApp {
 			gbc_btnConfigUpdate.gridx = 3;
 			gbc_btnConfigUpdate.gridy = row;
 			configDetailPanel.add(btnConfigUpdate, gbc_btnConfigUpdate);
+
+			btnConfigImport = new JButton("Import");
+			btnConfigImport.setEnabled(false);
+			btnConfigImport.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					importConfigEntry();
+				}
+			});
+			GridBagConstraints gbc_btnConfigImport = new GridBagConstraints();
+			gbc_btnConfigImport.fill = GridBagConstraints.HORIZONTAL;
+			gbc_btnConfigImport.insets = new Insets(0, 0, 5, 5);
+			gbc_btnConfigImport.gridx = 4;
+			gbc_btnConfigImport.gridy = row;
+			configDetailPanel.add(btnConfigImport, gbc_btnConfigImport);
 
 			row++;
 			
@@ -1424,8 +1531,137 @@ public class ServerForm extends MCUApp {
 	}
 
 	protected void importModuleEntry() {
-		// TODO Auto-generated method stub
-		
+		JURLSelector jus = new JURLSelector();
+		jus.pack();
+		jus.setLocationRelativeTo(frmMain);
+		jus.setVisible(true);
+		if (jus.getResult() == null) {return;}
+		URL url = jus.getResult();
+		if (url == null) {return;}
+		Path tempFile = null;
+		try {
+			tempFile = Files.createTempFile("MCUSU-temp", null);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		try {
+			new ModDownload(url, tempFile.toFile());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		InputStream is;
+		try {
+			is = Files.newInputStream(tempFile);
+			byte[] hash = DigestUtils.md5(is);
+			is.close();
+			String downloadUrl = url.toString();
+			String md5 = String.valueOf(Hex.encodeHex(hash));
+			String longPath = url.getFile();
+			int idx = longPath.replaceAll("\\\\", "/").lastIndexOf("/");
+			String name = (idx >= 0 ? longPath.substring(idx+1) : longPath);
+			String id;
+			name = name.substring(0,name.length()-4);
+			id = name.replace(" ", "");
+			String depends = "";
+			Boolean required = true;
+			Boolean inJar = false;
+			Boolean extract = false;
+			Boolean inRoot = false;
+			Boolean isDefault = true;
+			Boolean coreMod = false;
+			try {
+				ZipFile zf = new ZipFile(tempFile.toFile());
+				System.out.println(zf.size() + " entries in file.");
+				JdomParser parser = new JdomParser();
+				JsonRootNode modInfo = parser.parse(new InputStreamReader(zf.getInputStream(zf.getEntry("mcmod.info"))));
+				JsonNode subnode;
+				if (modInfo.hasElements()) {
+					subnode = modInfo.getElements().get(0);
+				} else {
+					subnode = modInfo.getNode("modlist").getElements().get(0);
+				}
+				id = subnode.getStringValue("modid");
+				name = subnode.getStringValue("name");
+				zf.close();
+			} catch (NullPointerException e) {
+			} catch (ZipException e) {
+				System.out.println("Not an archive.");
+			} catch (IOException e) {
+				e.printStackTrace();
+			} catch (InvalidSyntaxException e) {
+				e.printStackTrace();
+			} finally {
+				AddModule(new Module(name, id, downloadUrl, depends, required, inJar, 0, extract, inRoot, isDefault, coreMod, md5, null, "both", null));
+			}			
+
+			Files.delete(tempFile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
+	}
+
+	protected void importConfigEntry() {
+		JURLSelector jus = new JURLSelector();
+		jus.pack();
+		jus.setLocationRelativeTo(frmMain);
+		jus.setVisible(true);
+		URL url = jus.getResult();
+		if (url == null) {return;}
+		Path tempFile = null;
+		try {
+			tempFile = Files.createTempFile("MCUSU-temp", null);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		try {
+			new ModDownload(url, tempFile.toFile());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		InputStream is;
+		try {
+			is = Files.newInputStream(tempFile);
+			byte[] hash = DigestUtils.md5(is);
+			is.close();
+			String downloadUrl = url.toString();
+			String md5 = String.valueOf(Hex.encodeHex(hash));
+			String longPath = url.getFile();
+			int idx = longPath.replaceAll("\\\\", "/").lastIndexOf("/");
+			String path = "config/" + (idx >= 0 ? longPath.substring(idx+1) : longPath);
+			String parentId = "";
+			if (lstModules.getSelectedIndex() > -1) {
+				parentId = lstModules.getSelectedValue().getId();
+			}
+			AddConfig(new ConfigFileWrapper(parentId, new ConfigFile(downloadUrl,path,md5)));
+			Files.delete(tempFile);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	protected String calculateMD5(URL url) {
+		Path tempFile = null;
+		try {
+			tempFile = Files.createTempFile("MCUSU-temp", null);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		try {
+			new ModDownload(url, tempFile.toFile());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		InputStream is;
+		try {
+			is = Files.newInputStream(tempFile);
+			byte[] hash = DigestUtils.md5(is);
+			is.close();
+			Files.delete(tempFile);
+			return String.valueOf(Hex.encodeHex(hash));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return "";
 	}
 
 	protected void doExit() {

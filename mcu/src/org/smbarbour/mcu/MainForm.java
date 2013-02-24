@@ -1063,6 +1063,8 @@ public class MainForm extends MCUApp {
 	}
 	private void showLoginForm() {
 		LoginForm lf = new LoginForm(window);
+		lf.pack();
+		lf.setLocationRelativeTo(frmMain);
 		lf.setVisible(true);
 	}
 //	private void showBackupManager() {
@@ -1071,10 +1073,14 @@ public class MainForm extends MCUApp {
 //	}
 	private void showClientConfig() {
 		ClientConfig cc = new ClientConfig(window);
+		cc.pack();
+		cc.setLocationRelativeTo(frmMain);
 		cc.setVisible(true);
 	}
 	private void showServerManager() {
 		ServerManager sm = new ServerManager(window);
+		sm.pack();
+		sm.setLocationRelativeTo(frmMain);
 		sm.setVisible(true);
 	}
 	
