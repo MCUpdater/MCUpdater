@@ -3,21 +3,20 @@ package org.smbarbour.mcu.util;
 import j7compat.Path;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+//import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
+//import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.jar.*;
 import java.util.zip.*;
 
 import org.smbarbour.mcu.MCUApp;
-
 
 public class Archive {
 
@@ -214,161 +213,135 @@ public class Archive {
 
 	}
 
-	public static void patchJar(final File jar, final File outputFile, final ArrayList<File> inputFiles)
-	{
-		if(jar == null) {
-			//TODO: Log message("No jar selected!");
-			return;
-		}
-		if(inputFiles.size() <= 0) {
-			//TODO: Log message("No Mods selected!");
-			return;
-		}
-		new Thread() {
-			@Override
-			public void run() {
-				ZipInputStream zipIn;
+//	public static void patchJar(final File jar, final ArrayList<File> inputFiles)
+//	{
+//		File tempFile = null;
+//		try {
+//			tempFile = File.createTempFile(jar.getName(), null);
+//			tempFile.delete();
+//			jar.renameTo(tempFile);
+//		} catch (IOException e1) {
+//			e1.printStackTrace();
+//		}
+//		if(inputFiles.size() <= 0) {
+//			return;
+//		}
+//		new Thread() {
+//			@Override
+//			public void run() {
+//				ZipInputStream zipIn;
+//
+//				try {
+//					JarOutputStream out = new JarOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile, true)));
+//
+//					zipIn = new ZipInputStream(new FileInputStream(jar));
+//					putIntoJar(zipIn, out);
+//					zipIn.close();
+//
+//					Iterator<File> iterator = inputFiles.iterator();
+//					while(iterator.hasNext())
+//					{
+//						File inFile = iterator.next();
+//						//TODO: Log message("Adding " + inFile.getName() + " ...")
+//						System.out.println("JAR: " + inFile.getPath());
+//						zipIn = new ZipInputStream(new FileInputStream(inFile));
+//						putIntoJar(zipIn, out);
+//						zipIn.close();
+//						//TODO: Log progress
+//					}
+//					out.close();
+//					//TODO: Log progress (complete)
+//				} catch (FileNotFoundException fnfe)
+//				{
+//					fnfe.printStackTrace();
+//					//TODO: Log message ("File not found: " + fnfe.getMessage())
+//				} catch (IOException ioe)
+//				{
+//					ioe.printStackTrace();
+//					//TODO: Log message ("Could not read zip file!")
+//				}
+//			}
+//
+//			private void putIntoJar(ZipInputStream zipIn, JarOutputStream out) throws IOException {
+//				ZipEntry zentry = new ZipEntry(zipIn.getNextEntry().getName());	
+//				while(zentry != null) {
+//					try {
+//						out.putNextEntry(zentry);
+//					}catch (ZipException e) {
+//						//TODO: Log message("Skipping existing entry: " + e.getMessage());
+//						zentry = new ZipEntry(zipIn.getNextEntry().getName());
+//						continue;
+//					}
+//					byte[] buffer = new byte[1024];
+//					int len;
+//					while((len = zipIn.read(buffer)) > 0) {
+//						out.write(buffer, 0, len);
+//					}
+//					out.closeEntry();
+//					try {
+//						zentry = new ZipEntry(zipIn.getNextEntry().getName());
+//					}catch (NullPointerException e) {
+//						zentry = null;
+//					}
+//				}				
+//			}
+//		}.start();
+//		//TODO: Log message ("Done")
+//	}
 
-				try {
-					JarOutputStream out = new JarOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile, true)));
+    public static void updateArchive(File zipFile, File[] files) throws IOException {
+       File tempFile = File.createTempFile(zipFile.getName(), null);
+       tempFile.delete();
 
-					zipIn = new ZipInputStream(new FileInputStream(jar));
-					putIntoJar(zipIn, out);
-					zipIn.close();
+       boolean renameOk=zipFile.renameTo(tempFile);
+       if (!renameOk)
+       {
+           throw new RuntimeException("could not rename the file "+zipFile.getAbsolutePath()+" to "+tempFile.getAbsolutePath());
+       }
+       byte[] buf = new byte[1024];
 
-					Iterator<File> iterator = inputFiles.iterator();
-					while(iterator.hasNext())
-					{
-						File inFile = iterator.next();
-						//TODO: Log message("Adding " + inFile.getName() + " ...")
-						System.out.println("JAR: " + inFile.getPath());
-						zipIn = new ZipInputStream(new FileInputStream(inFile));
-						putIntoJar(zipIn, out);
-						zipIn.close();
-						//TODO: Log progress
-					}
-					out.close();
-					//TODO: Log progress (complete)
-				} catch (FileNotFoundException fnfe)
-				{
-					fnfe.printStackTrace();
-					//TODO: Log message ("File not found: " + fnfe.getMessage())
-				} catch (IOException ioe)
-				{
-					ioe.printStackTrace();
-					//TODO: Log message ("Could not read zip file!")
-				}
-			}
+       ZipInputStream zin = new ZipInputStream(new FileInputStream(tempFile));
+       ZipOutputStream out = new ZipOutputStream(new FileOutputStream(zipFile));
 
-			private void putIntoJar(ZipInputStream zipIn, JarOutputStream out) throws IOException {
-				ZipEntry zentry = new ZipEntry(zipIn.getNextEntry().getName());	
-				while(zentry != null) {
-					try {
-						out.putNextEntry(zentry);
-					}catch (ZipException e) {
-						//TODO: Log message("Skipping existing entry: " + e.getMessage());
-						zentry = new ZipEntry(zipIn.getNextEntry().getName());
-						continue;
-					}
-					byte[] buffer = new byte[1024];
-					int len;
-					while((len = zipIn.read(buffer)) > 0) {
-						out.write(buffer, 0, len);
-					}
-					out.closeEntry();
-					try {
-						zentry = new ZipEntry(zipIn.getNextEntry().getName());
-					}catch (NullPointerException e) {
-						zentry = null;
-					}
-				}				
-			}
-		}.start();
-		//TODO: Log message ("Done")
-	}
+       ZipEntry entry = zin.getNextEntry();
+       while (entry != null) {
+           String name = entry.getName();
+           boolean notInFiles = true;
+           for (File f : files) {
+               if (f.getName().equals(name)) {
+                   notInFiles = false;
+                   break;
+               }
+           }
+           if (notInFiles) {
+               // Add ZIP entry to output stream.
+               out.putNextEntry(new ZipEntry(name));
+               // Transfer bytes from the ZIP file to the output file
+               int len;
+               while ((len = zin.read(buf)) > 0) {
+                   out.write(buf, 0, len);
+               }
+           }
+           entry = zin.getNextEntry();
+       }
+       // Close the streams        
+       zin.close();
+       // Compress the files
+       for (int i = 0; i < files.length; i++) {
+           InputStream in = new FileInputStream(files[i]);
+           // Add ZIP entry to output stream.
+           out.putNextEntry(new ZipEntry(files[i].getName()));
+           // Transfer bytes from the file to the ZIP file
+           int len;
+           while ((len = in.read(buf)) > 0) {
+               out.write(buf, 0, len);
+           }
+           // Complete the entry
+           out.closeEntry();
+           in.close();
+       }
+       // Complete the ZIP file
+       out.close();
+       tempFile.delete();
+   }
 }
-
-/*
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.jar.JarOutputStream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
-import java.util.zip.ZipInputStream;
-
-
-public class Patcher {
-
-	public static void patch(final File jar, final File outputfile, final ArrayList<File> zips, final BukkitPatcher bp) {
-		if(jar == null) {
-			bp.logMessage("No jar selected!");
-			return;
-		}
-		if(zips.size() <= 0) {
-			bp.logMessage("No Mods selected!");
-			return;
-		}
-		new Thread() {
-			@Override
-			public void run() {
-				ZipInputStream zipIn;
-
-				try {
-					JarOutputStream out = new JarOutputStream(new BufferedOutputStream(new FileOutputStream(outputfile, true)));
-
-					for(int i=0; i<zips.size(); i++) {
-						bp.logMessage("Adding " + zips.get(i).getName() + " ...");
-						// Open Zip
-						zipIn = new ZipInputStream(new FileInputStream(zips.get(i)));
-						putIntoJar(zipIn, out);
-						zipIn.close();
-						bp.setProgress(100/(zips.size()+1)*i);
-					}
-					zipIn = new ZipInputStream(new FileInputStream(jar));
-					putIntoJar(zipIn, out);
-					zipIn.close();
-					out.close();
-					bp.setProgress(100);
-				}catch (FileNotFoundException e) {
-					e.printStackTrace();
-					bp.logMessage("File not found: " + e.getMessage());
-				} catch (IOException e) {
-					e.printStackTrace();
-					bp.logMessage("Could not read zip file!\n");
-				}
-			}
-
-			private void putIntoJar(ZipInputStream zipIn, JarOutputStream out) throws IOException {
-				// Get Zip entry
-				ZipEntry zentry = new ZipEntry(zipIn.getNextEntry().getName());	
-				while(zentry != null) {
-					try {
-						out.putNextEntry(zentry);
-					}catch (ZipException e) {
-						bp.logMessage("Skipping existing entry: " + e.getMessage());
-						zentry = new ZipEntry(zipIn.getNextEntry().getName());
-						continue;
-					}
-					byte[] buffer = new byte[1024];
-					int len;
-					while((len = zipIn.read(buffer)) > 0) {
-						out.write(buffer, 0, len);
-					}
-					out.closeEntry();
-					try {
-						zentry = new ZipEntry(zipIn.getNextEntry().getName());
-					}catch (NullPointerException e) {
-						zentry = null;
-					}
-				}
-			}
-		}.start();
-		bp.logMessage("DONE");
-	}
-}
- */

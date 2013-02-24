@@ -288,6 +288,17 @@ public class MainForm extends MCUApp {
 		JScrollPane serverScroller = new JScrollPane(serverList);
 		pnlLeft.add(serverScroller, BorderLayout.CENTER);
 						
+		JButton btnReload = new JButton("Reload instances");
+		btnReload.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				updateInstanceList();
+			}
+			
+		});
+		pnlLeft.add(btnReload, BorderLayout.SOUTH);
+		
 		pnlRight = new JPanel();
 		frmMain.getContentPane().add(pnlRight, BorderLayout.EAST);
 		pnlRight.setLayout(new BorderLayout(0, 0));
@@ -957,7 +968,7 @@ public class MainForm extends MCUApp {
 					setStatus("Installing mods");
 					log("Installing mods...");
 					setProgressBar(25);
-					mcu.installMods(selected, toInstall, chkHardUpdate.isSelected());
+					mcu.installMods(selected, toInstall, chkHardUpdate.isSelected(), instData);
 					if (selected.isGenerateList()) {
 						setStatus("Writing servers.dat");
 						log("Writing servers.dat");

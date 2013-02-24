@@ -488,26 +488,20 @@ public class MCUpdater {
 		return jar.exists();
 	}
 	
-	public void installMods(ServerList server, List<Module> toInstall, boolean clearExisting) throws FileNotFoundException {
+	public void installMods(ServerList server, List<Module> toInstall, boolean clearExisting, Properties instData) throws FileNotFoundException {
 		if (Version.requestedFeatureLevel(server.getMCUVersion(), "2.2")) {
 			// Sort mod list for InJar
 			Collections.sort(toInstall, new ModuleComparator());
 		}
 		Path instancePath = instanceRoot.resolve(server.getServerId());
-		//File folder;
-//		try {
-//			folder = Files.readSymbolicLink(MCFolder).toFile();
-//			System.out.println(MCFolder.toString());
-//			System.out.println(MCFolder.toFile().getAbsolutePath());
-//			System.out.println((Files.readSymbolicLink(MCFolder).toString()));
-//		} catch (IOException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//			folder = MCFolder.toFile();
-//		} catch (UnsupportedOperationException uoe) {
-//			folder = MCFolder.toFile();
-//		}
-		//folder = instanceRoot.resolve(server.getServerId()).toFile();
+		Boolean updateJar = false;
+		Iterator<Module> iMods = toInstall.iterator();
+		while (iMods.hasNext() && !updateJar) {
+			Module current = iMods.next();
+			if (current.getInJar() && !current.getMD5().equalsIgnoreCase(instData.getProperty("mod:" + current.getId(), "NoHash"))) {
+				updateJar = true;
+			}
+		}
 		System.out.println(instancePath.toString());
 		List<File> contents = recurseFolder(instancePath.toFile(), true);
 		File jar = archiveFolder.resolve("mc-" + server.getVersion() + ".jar").toFile();
@@ -531,17 +525,21 @@ public class MCUpdater {
 				entry.delete();
 			}
 		}
-		parent.setStatus("Preparing to build minecraft.jar");
-		parent.log("Preparing to build minecraft.jar...");
 		Iterator<Module> itMods = toInstall.iterator();
 		File tmpFolder = archiveFolder.resolve("temp").toFile();
 		tmpFolder.mkdirs();
-		File buildJar = archiveFolder.resolve("build.jar").toFile();
+		File buildJar = archiveFolder.resolve("build.jar").toFile();		
 		if(buildJar.exists()) {
 			buildJar.delete();
 		}
-		Archive.extractZip(jar, tmpFolder);
-		
+		if (updateJar) {
+			parent.setStatus("Preparing to build minecraft.jar");
+			parent.log("Preparing to build minecraft.jar...");
+			Archive.extractZip(jar, tmpFolder);
+		} else {
+			parent.log("No jar changes necessary.  Skipping jar rebuild.");
+		}
+
 		File branding = new File(tmpFolder, "fmlbranding.properties");
 		try {
 			branding.createNewFile();
@@ -568,25 +566,30 @@ public class MCUpdater {
 				//String modFilename = modURL.getFile().substring(modURL.getFile().lastIndexOf('/'));
 				File modPath;
 				if(entry.getInJar()) {
-					//modPath = new File(tmpFolder.getPath() + sep + loadOrder + ".zip");
-					//loadOrder++;
-					//_log(modPath.getPath());
-					ModDownload jarMod;
-					try {
-						jarMod = new ModDownload(modURL, new File(tmpFolder, (entry.getId() + ".jar")), entry.getMD5());
-						if( jarMod.cacheHit ) {
-							parent.log("  Adding to jar (cached).");
-						} else {
-							parent.log("  Adding to jar (downloaded).");
+					if (updateJar) {
+						//modPath = new File(tmpFolder.getPath() + sep + loadOrder + ".zip");
+						//loadOrder++;
+						//_log(modPath.getPath());
+						ModDownload jarMod;
+						try {
+							jarMod = new ModDownload(modURL, new File(tmpFolder, (entry.getId() + ".jar")), entry.getMD5());
+							if( jarMod.cacheHit ) {
+								parent.log("  Adding to jar (cached).");
+							} else {
+								parent.log("  Adding to jar (downloaded).");
+							}
+							_debug(jarMod.url + " -> " + jarMod.getDestFile().getPath());
+							//FileUtils.copyURLToFile(modURL, modPath);
+							Archive.extractZip(jarMod.getDestFile(), tmpFolder);
+							jarMod.getDestFile().delete();
+							instData.setProperty("mod:" + entry.getId(), entry.getMD5());
+						} catch (Exception e) {
+							++errorCount;
+							parent.log("! "+e.getMessage());
+							e.printStackTrace();
 						}
-						_debug(jarMod.url + " -> " + jarMod.getDestFile().getPath());
-						//FileUtils.copyURLToFile(modURL, modPath);
-						Archive.extractZip(jarMod.getDestFile(), tmpFolder);
-						jarMod.getDestFile().delete();
-					} catch (Exception e) {
-						++errorCount;
-						parent.log("! "+e.getMessage());
-						e.printStackTrace();
+					} else {
+						parent.log("Skipping jar mod: " + entry.getName());
 					}
 				} else if (entry.getExtract()) {
 					//modPath = new File(tmpFolder.getPath() + sep + modFilename);
@@ -708,16 +711,24 @@ public class MCUpdater {
 				buildList.remove(entry);
 			}
 		}
-		parent.log("Packaging updated jar...");
-		Archive.createJar(buildJar, buildList, tmpFolder.getPath() + sep);
-		//Archive.patchJar(jar, buildJar, new ArrayList<File>(Arrays.asList(tmpFolder.listFiles())));
-		//copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
-		try {
-			Path binPath = instancePath.resolve("bin");
-			Files.copy(new Path(buildJar), binPath.resolve("minecraft.jar"));
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		Path binPath = instancePath.resolve("bin");
+		if (!updateJar) {
+			try {
+				Archive.updateArchive(binPath.resolve("minecraft.jar").toFile(), new File[]{ branding });
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		} else {
+			parent.log("Packaging updated jar...");
+			Archive.createJar(buildJar, buildList, tmpFolder.getPath() + sep);
+			//Archive.patchJar(jar, buildJar, new ArrayList<File>(Arrays.asList(tmpFolder.listFiles())));
+			//copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
+			try {
+				Files.copy(new Path(buildJar), binPath.resolve("minecraft.jar"));
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		List<File> tempFiles = recurseFolder(tmpFolder,true);
 		ListIterator<File> li = tempFiles.listIterator(tempFiles.size());
