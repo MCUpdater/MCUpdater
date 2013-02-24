@@ -165,7 +165,7 @@ public class Archive {
 		tempFile.delete();
 	}
 
-	public static void createJar(File outJar, List<File> inputFiles, String basePath) {
+	public static void createJar(File outJar, List<File> inputFiles, String basePath) throws IOException {
 		Manifest manifest = new Manifest();
 		manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
 		try {
@@ -204,11 +204,9 @@ public class Archive {
 			}
 			jos.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw e;
 		}
 
 	}

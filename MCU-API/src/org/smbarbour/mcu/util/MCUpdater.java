@@ -488,7 +488,7 @@ public class MCUpdater {
 		return jar.exists();
 	}
 	
-	public void installMods(ServerList server, List<Module> toInstall, boolean clearExisting, Properties instData) throws FileNotFoundException {
+	public boolean installMods(ServerList server, List<Module> toInstall, boolean clearExisting, Properties instData) throws FileNotFoundException {
 		if (Version.requestedFeatureLevel(server.getMCUVersion(), "2.2")) {
 			// Sort mod list for InJar
 			Collections.sort(toInstall, new ModuleComparator());
@@ -701,6 +701,7 @@ public class MCUpdater {
 		parent.log("All mods loaded.");
 		if( errorCount > 0 ) {
 			parent.log("WARNING: Errors were detected with this update, please verify your files. There may be a problem with the serverpack configuration or one of your download sites.");
+			return false;
 		}
 		copyFile(jar, buildJar);
 		List<File> buildList = recurseFolder(tmpFolder,true);
@@ -720,7 +721,14 @@ public class MCUpdater {
 			}
 		} else {
 			parent.log("Packaging updated jar...");
-			Archive.createJar(buildJar, buildList, tmpFolder.getPath() + sep);
+			try {
+				Archive.createJar(buildJar, buildList, tmpFolder.getPath() + sep);
+			} catch (IOException e1) {
+				parent.log("Failed to create jar!");
+				parent.log(e1.getMessage());
+				return false;
+				//e1.printStackTrace();
+			}
 			//Archive.patchJar(jar, buildJar, new ArrayList<File>(Arrays.asList(tmpFolder.listFiles())));
 			//copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
 			try {
@@ -736,7 +744,7 @@ public class MCUpdater {
 			File entry = li.previous();
 			entry.delete();
 		}
-		
+		return true;
 	}
 	
 	public void writeMCServerFile(String name, String ip, String instance) {

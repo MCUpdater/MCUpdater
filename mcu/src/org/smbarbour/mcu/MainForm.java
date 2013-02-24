@@ -964,11 +964,12 @@ public class MainForm extends MCUApp {
 						}
 					}
 				}
+				boolean result = false;
 				try {
 					setStatus("Installing mods");
 					log("Installing mods...");
 					setProgressBar(25);
-					mcu.installMods(selected, toInstall, chkHardUpdate.isSelected(), instData);
+					result = mcu.installMods(selected, toInstall, chkHardUpdate.isSelected(), instData);
 					if (selected.isGenerateList()) {
 						setStatus("Writing servers.dat");
 						log("Writing servers.dat");
@@ -989,8 +990,15 @@ public class MainForm extends MCUApp {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				log("Update complete.");
-				JOptionPane.showMessageDialog(frmMain, "Your update is complete.", "Update Complete", JOptionPane.INFORMATION_MESSAGE);
+				if (result) {
+					log("Update complete.");
+					JOptionPane.showMessageDialog(frmMain, "Your update is complete.", "Update Complete", JOptionPane.INFORMATION_MESSAGE);
+				} else {
+					log("Update Failed!");
+					setStatus("Update Failed!");
+					setProgressBar(0);
+					JOptionPane.showMessageDialog(frmMain, "The update failed to complete successfully.", "Update Failed", JOptionPane.ERROR_MESSAGE);
+				}
 				btnUpdate.setEnabled(true);
 				btnLaunchMinecraft.setEnabled(true);
 			}						
