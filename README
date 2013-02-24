@@ -4,4 +4,4 @@ Documentation: http://mcupdater.com/
 Our version numbering scheme:
 - Major numbers indicate significant core changes to the program (such as fundamental structure and design overhauls)
 - Minor numbers indicate feature set changes.  Even numbered minor numbers are development versions. Odd numbered are release versions.
-- Build numbers are used as a reference to a point in time that the version changed.  This number is independent of both major and minor as well as being distinct between development and release.
+- Build numbers are used as a reference to a point in time that the version changed.  This number is reset to 0 on major and minor version changes.
