@@ -494,7 +494,7 @@ public class MCUpdater {
 			Collections.sort(toInstall, new ModuleComparator());
 		}
 		Path instancePath = instanceRoot.resolve(server.getServerId());
-		Boolean updateJar = false;
+		Boolean updateJar = clearExisting;
 		Iterator<Module> iMods = toInstall.iterator();
 		while (iMods.hasNext() && !updateJar) {
 			Module current = iMods.next();
