@@ -217,8 +217,12 @@ public class MainForm extends MCUApp {
 		frmMain.setBounds(100, 100, 1175, 592);
 		frmMain.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
-		mcuIcon = new ImageIcon(MainForm.class.getResource("/art/mcu-icon.png"));	// was "/icons/briefcase.png"
-		frmMain.setIconImage(mcuIcon.getImage());
+		try {
+			mcuIcon = new ImageIcon(MainForm.class.getResource("/art/mcu-icon.png"));	// was "/icons/briefcase.png"
+			frmMain.setIconImage(mcuIcon.getImage());
+		} catch( NullPointerException npe ) {
+			System.out.println("Unable to find mcu-icon.png. Malformed JAR detected.");
+		}
 
 		JPanel pnlFooter = new JPanel();
 		frmMain.getContentPane().add(pnlFooter, BorderLayout.SOUTH);
@@ -1008,7 +1012,31 @@ public class MainForm extends MCUApp {
 		if (serverList.getSelectedIndex() == -1) {
 			JOptionPane.showMessageDialog(null,"You must select an instance first.","MCUpdater",JOptionPane.ERROR_MESSAGE);
 			return;
+		} else {
+			// make sure the selected server actually -exists- first
+			final Path instancePath = MCUpdater.getInstance().getInstanceRoot().resolve(selected.getServerId());
+			final File dir = new File(instancePath.toString());
+			boolean fail = false;
+			if( !dir.exists() ) {
+				fail = true;
+			} else {
+				final Path binPath = instancePath.resolve("bin");
+				final File binDir = new File(binPath.toString());
+				if( !binDir.exists() ) {
+					fail = true;
+				} else {
+					final File mcJar = new File(binPath.resolve("minecraft.jar").toString());
+					if( !mcJar.exists() ) {
+						fail = true;
+					}
+				}
+			}
+			if( fail ) {
+				JOptionPane.showMessageDialog(null, "Selected instance not found. Have you run 'update' yet?", "MCUpdater", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 		}
+		
 		//if (!System.getProperty("os.name").startsWith("Mac")){
 			if (!requestLogin()) {					
 				if (loginData.getUserName().isEmpty()) {
