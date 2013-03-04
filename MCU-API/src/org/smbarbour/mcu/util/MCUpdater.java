@@ -820,7 +820,9 @@ public class MCUpdater {
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
-				doPatch(requestedJar, newestJar, version);
+				if (!requestedJar.toString().equals(newestJar.toString())) {
+					doPatch(requestedJar, newestJar, version);
+				}
 				return true;
 			} else {
 				return false;
