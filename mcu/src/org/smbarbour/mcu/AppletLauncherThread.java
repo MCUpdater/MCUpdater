@@ -96,6 +96,9 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 			javaBin = new Path(binDir).resolve("java").toString();
 		}
 		List<String> args = new ArrayList<String>();
+		if ("true".equals(parent.getConfig().getProperty("optirun"))) {
+			 args.add("optirun");
+		}
 		args.add(javaBin);
 		args.add("-XX:+UseConcMarkSweepGC");
 		args.add("-XX:+CMSIncrementalMode");

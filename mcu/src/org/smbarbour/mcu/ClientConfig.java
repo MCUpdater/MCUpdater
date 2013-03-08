@@ -42,6 +42,7 @@ public class ClientConfig extends JDialog {
 	private JTextField txtJVMOpts;
 	private JTextField txtResWidth;
 	private JTextField txtResHeight;
+	private JCheckBox chckbxOptirun;
 
 	/**
 	 * Create the dialog.
@@ -341,6 +342,22 @@ public class ClientConfig extends JDialog {
 			contentPanel.add(chckbxMinimize, gbc_chckbxMinimize);
 		}
 		
+		// Minimize preference
+		if (System.getProperty("os.name").startsWith("Linux")) {
+			++row;
+			{
+				chckbxOptirun = new JCheckBox("Use optirun");
+				GridBagConstraints gbc_chckbxOptirun = new GridBagConstraints();
+				gbc_chckbxOptirun.anchor = GridBagConstraints.WEST;
+				gbc_chckbxOptirun.gridwidth = 3;
+				gbc_chckbxOptirun.insets = new Insets(0, 0, 5, 5);
+				gbc_chckbxOptirun.gridx = 1;
+				gbc_chckbxOptirun.gridy = row;
+				chckbxOptirun.setSelected(Boolean.parseBoolean(parent.getConfig().getProperty("optirun")));
+				contentPanel.add(chckbxOptirun, gbc_chckbxOptirun);
+			}
+		}
+		
 		/* This option is obsolete with native launcher */
 		/* Suppress update
 		if (System.getProperty("os.name").startsWith("Mac")) {
@@ -381,6 +398,9 @@ public class ClientConfig extends JDialog {
 						newConfig.setProperty("jvmOpts", txtJVMOpts.getText());
 						newConfig.setProperty("width", txtResWidth.getText());
 						newConfig.setProperty("height", txtResHeight.getText());
+						if (System.getProperty("os.name").startsWith("Linux")) {
+							newConfig.setProperty("optirun", Boolean.toString(chckbxOptirun.isSelected()));
+						}
 						parent.writeConfig(newConfig);
 						parent.mcu.setInstanceRoot(new Path(new File(txtInstanceRoot.getText())));
 						dispose();

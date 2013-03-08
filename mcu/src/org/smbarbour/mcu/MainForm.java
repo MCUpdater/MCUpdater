@@ -176,6 +176,7 @@ public class MainForm extends MCUApp {
 		newConfig.setProperty("width", String.valueOf(1280));
 		newConfig.setProperty("height", String.valueOf(720));
 		if (System.getProperty("os.name").startsWith("Mac")) { newConfig.setProperty("jrePath", "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0"); }
+		if (System.getProperty("os.name").startsWith("Linux")) { newConfig.setProperty("optirun", "false"); }
 		newConfig.setProperty("storePassword", "false");
 		try {
 			configFile.getParentFile().mkdirs();
@@ -201,6 +202,7 @@ public class MainForm extends MCUApp {
 		if (current.getProperty("height") == null) { current.setProperty("height", String.valueOf(720)); hasChanged = true; }
 		if (current.getProperty("storePassword") == null) { current.setProperty("storePassword", "false"); hasChanged = true; }
 		if (current.getProperty("jrePath") == null && System.getProperty("os.name").startsWith("Mac")) { current.setProperty("jrePath", "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0"); }
+		if (current.getProperty("optirun") == null && System.getProperty("os.name").startsWith("Linux")) { current.setProperty("optirun", "false"); hasChanged = true; }
 		return hasChanged;
 	}
 
