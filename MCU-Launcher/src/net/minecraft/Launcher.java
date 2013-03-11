@@ -128,6 +128,10 @@ public class Launcher extends Applet implements AppletStub {
 	@Override
 	public void init() {
 		if (mcApplet != null) {
+			mcApplet.setStub(this);
+			mcApplet.setSize(getWidth(),getHeight());
+			this.setLayout(new BorderLayout());
+			this.add(mcApplet, "Center");
 			mcApplet.init();
 		}
 	}
