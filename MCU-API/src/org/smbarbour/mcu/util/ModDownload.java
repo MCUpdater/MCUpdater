@@ -5,7 +5,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -16,11 +19,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.text.Document;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTML.Tag;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 
 public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallback {
 
@@ -30,6 +35,7 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 	private File destFile = null;
 	public final URL url;
 	public final String expectedMD5;
+	private String content;
 	
 	public boolean cacheHit = false;
 
@@ -46,6 +52,7 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 	public ModDownload(URL url, File destination, ModDownload referer, String MD5) throws Exception {
 		this.url = url;
 		this.expectedMD5 = MD5;
+		System.out.println(url.toString());
 		//this.remoteFilename = url.getFile().substring(url.getFile().lastIndexOf('/')+1);
 		// TODO: check for md5 in download cache first
 		if( MD5 != null ) {
@@ -66,6 +73,7 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 			return;
 		}
 		isOptifined = url.getHost().endsWith("optifined.net");
+		isMediafire = url.getHost().toLowerCase().contains("mediafire");
 		HttpURLConnection connection = (HttpURLConnection)url.openConnection();
 		if (referer != null)
 			connection.setRequestProperty("Referer", referer.url.toString());
@@ -83,6 +91,13 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 		String contentType = connection.getContentType();
 		System.out.println("Content type: "+contentType);
 		if (contentType.toLowerCase().startsWith("text/html")) {
+//			InputStreamReader sr = new InputStreamReader(connection.getInputStream());
+//			StringWriter sw = new StringWriter();
+//			IOUtils.copy(sr,sw);
+//			sr.close();
+//			content = sw.toString();
+			//System.out.println(content);
+//			sw.close();
 			InputStreamReader r = new InputStreamReader(connection.getInputStream());
 			javax.swing.text.html.HTMLEditorKit.Parser parser;
 			parser = new javax.swing.text.html.parser.ParserDelegator();
@@ -118,6 +133,9 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 				}
 			}
 		}
+		if (connection == null && redirectURL == null) {
+			System.out.println(content);
+		}
 	}
 
 	public File getDestFile() {
@@ -143,7 +161,10 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 			Enumeration<?> e = attributes.getAttributeNames();
 		    while (e.hasMoreElements()) {
 		    	Object name = e.nextElement();
-		        String value = (String) attributes.getAttribute(name);
+		        String value = "";
+				try {
+					value = (String) attributes.getAttribute(name);
+				} catch (Exception e1) {}
 		        if (name == HTML.Attribute.ID && value.equalsIgnoreCase("adfly_html"))
 		        	isAdfly = true;
 		    }
@@ -156,6 +177,24 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 		        if (name == HTML.Attribute.HREF && value.startsWith("downloadx.php"))
 		        	redirectURL = value;
 		    }
+		}
+		// MediaFire detection - 11-Mar-2013
+		if (t == Tag.A) {
+			Enumeration<?> e = attributes.getAttributeNames();
+		    while (e.hasMoreElements()) {
+		    	Object name = e.nextElement();
+		    	String value = (String) attributes.getAttribute(name);
+		    	String potentialLink = "";
+		    	if (name == HTML.Attribute.HREF) {
+		    		try {
+						URL temp = new URL(value);
+						if (temp.getHost().matches("(([0-1]?[0-9]{1,2}\\.)|(2[0-4][0-9]\\.)|(25[0-5]\\.)){3}(([0-1]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))")) {
+							redirectURL = value;
+				    		System.out.println("Link found: " + potentialLink);
+						}
+					} catch (MalformedURLException e1) {}
+		    	}
+		    }			
 		}
 		readingScript = (t == Tag.SCRIPT);
 	}
@@ -175,22 +214,24 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 		        	readsitename = true;
 		        if (name.toString().equalsIgnoreCase("content") && value.equals("MediaFire"))
 		        	contentmediafire = true;
-		        if (name == HTML.Attribute.HTTPEQUIV && value.equalsIgnoreCase("Refresh"))
-		        	httprefresh = true;
-		        if (name == HTML.Attribute.CONTENT) {
-		        	String[] tokens = value.split(";");
-		        	for (String token : tokens) {
-		        		String[] parts = token.split("=");
-		        		if (parts.length == 2 && parts[0].trim().equalsIgnoreCase("url")) {
-		        			localRedirectURL = parts[1].trim();
-		        		}
-		        	}
-		        }
+//		        if (name == HTML.Attribute.HTTPEQUIV && value.equalsIgnoreCase("Refresh"))
+//		        	httprefresh = true;
+//		        if (name == HTML.Attribute.CONTENT) {
+//		        	String[] tokens = value.split(";");
+//		        	for (String token : tokens) {
+//		        		String[] parts = token.split("=");
+//		        		if (parts.length == 2 && parts[0].trim().equalsIgnoreCase("url")) {
+//		        			localRedirectURL = parts[1].trim();
+//		        		}
+//		        	}
+//		        }
 		    }
 		    if (httprefresh && localRedirectURL != null)
 		    	redirectURL = localRedirectURL;
-		    if (readsitename && contentmediafire)
+		    if (readsitename && contentmediafire) {
 		    	isMediafire = true;
+		    	System.out.println("isMediafire: " + isMediafire);
+		    }
 		}
 	}
 
@@ -198,6 +239,7 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 	public void handleComment(char[] data, int pos) {
 		if (readingScript) {
 			String code = new String(data);
+			//System.out.println(code);
 			if (isAdfly) {
 				String[] tokens = code.split("'");
 				for (int j = 0; j < tokens.length; j++) {
@@ -216,17 +258,39 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 				}
 			}
 			if (isMediafire) {
+				//System.out.println(code);
 				String[] tokens = code.split("\"");
 				for (int j = 0; j < tokens.length; j++) {
-					if (tokens[j].endsWith("kNO = ")) {
+					if (tokens[j].contains("kNO =")) {
 						redirectURL = tokens[j+1];
 						break;
 					}
+					//System.out.println("Token: [[ " + tokens[j] + " ]]");
 				}
 			}
 		}
 	}
 
+/*
+	@Override
+	public void handleText(char[] data, int pos) {
+		System.out.println("Pos: " + pos + " (" + data.length + " bytes)");
+//		if (isMediafire) {
+		String code = new String(data);
+		System.out.println(code);
+		if(code.contains("kNO =")) {
+			String[] tokens = code.split(";");
+			for (int j = 0; j < tokens.length; j++) {
+				if (tokens[j].contains("kNO =")) {
+					String[] pair = tokens[j].split("=");
+					redirectURL = pair[1].replace("\"", "").replace(" ", "");
+				}
+			}
+		}
+//		}
+	}
+*/
+	
 	private static URL redirect(URL url, String newLocation) throws MalformedURLException, URISyntaxException {
 		newLocation = unescape(newLocation);
 		if (newLocation.startsWith("http")) {
