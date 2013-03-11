@@ -495,6 +495,9 @@ public class MCUpdater {
 		}
 		Path instancePath = instanceRoot.resolve(server.getServerId());
 		Boolean updateJar = clearExisting;
+		if (!instancePath.resolve("bin").resolve("minecraft.jar").toFile().exists()) {
+			updateJar = true;
+		}
 		Iterator<Module> iMods = toInstall.iterator();
 		while (iMods.hasNext() && !updateJar) {
 			Module current = iMods.next();
