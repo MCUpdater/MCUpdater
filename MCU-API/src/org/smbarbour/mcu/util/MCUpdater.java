@@ -835,7 +835,7 @@ public class MCUpdater {
 	
 	private void doPatch(File requestedJar, File newestJar, String version) {
 		try {
-			URL patchURL = new URL("http://mcupdater.net46.net/mcu_patches/" + newestMC.replace(".", "") + "to" + version.replace(".","") + ".patch");
+			URL patchURL = new URL("http://files.mcupdater.com/mcu_patches/" + newestMC.replace(".", "") + "to" + version.replace(".","") + ".patch");
 			_debug(patchURL.toString());
 			File patchFile = archiveFolder.resolve("temp.patch").toFile();
 			FileUtils.copyURLToFile(patchURL, patchFile);
