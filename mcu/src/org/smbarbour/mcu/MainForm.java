@@ -90,23 +90,23 @@ import java.awt.GridLayout;
 
 public class MainForm extends MCUApp {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization"); //$NON-NLS-1$
-	
+
 	//Access check booleans
 //	private boolean canWriteMinecraft = false;
 	private boolean canWriteMCUpdater = false;
 	private boolean canWriteInstances = false;
 //	private boolean canCreateLinks = false;
-	
+
 	private static MainForm window;
 	private Properties config = new Properties();
 	private JFrame frmMain;
 	final MCUpdater mcu = MCUpdater.getInstance();
-	
+
 	private JTabbedPane tabs;
 	private final JTextPane browser = new JTextPane();
 	private final ConsoleArea console = new ConsoleArea();
 	private final SimpleDateFormat logSDF = new SimpleDateFormat("[HH:mm:ss.SSS] ");
-	
+
 	private ServerList selected;
 	private JPanel pnlRight;
 	private final JPanel pnlModList = new JPanel();
@@ -115,10 +115,10 @@ public class MainForm extends MCUApp {
 	private JProgressBar progressBar;
 	private JList serverList;
 	private SLListModel slModel;
-	
+
 	private JButton btnUpdate;
 	private JButton btnLaunchMinecraft;
-	
+
 	private boolean minimized;
 	private TrayIcon trayIcon;
 	private ImageIcon mcuIcon;
@@ -127,7 +127,7 @@ public class MainForm extends MCUApp {
 	private LoginData loginData = new LoginData();
 
 	private JLabel lblAvatar;
-	
+
 	public ResourceBundle getCustomization(){
 		return Customization;
 	}
@@ -140,14 +140,14 @@ public class MainForm extends MCUApp {
 		window = this;
 		mcu.setParent(window);
 		initialize();
-		window.frmMain.setVisible(true);		
+		window.frmMain.setVisible(true);
 	}
 
 	public Properties getConfig()
 	{
 		return config;
 	}
-	
+
 	public void writeConfig(Properties newConfig)
 	{
 		System.out.println("Writing configuration file");
@@ -160,7 +160,7 @@ public class MainForm extends MCUApp {
 			e.printStackTrace();
 		} catch (IOException e) {
 			e.printStackTrace();
-		}		
+		}
 	}
 
 	private void createDefaultConfig(File configFile) {
@@ -176,7 +176,6 @@ public class MainForm extends MCUApp {
 		newConfig.setProperty("width", String.valueOf(1280));
 		newConfig.setProperty("height", String.valueOf(720));
 		if (System.getProperty("os.name").startsWith("Mac")) { newConfig.setProperty("jrePath", "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0"); }
-		if (System.getProperty("os.name").startsWith("Linux")) { newConfig.setProperty("optirun", "false"); }
 		newConfig.setProperty("storePassword", "false");
 		try {
 			configFile.getParentFile().mkdirs();
@@ -202,7 +201,6 @@ public class MainForm extends MCUApp {
 		if (current.getProperty("height") == null) { current.setProperty("height", String.valueOf(720)); hasChanged = true; }
 		if (current.getProperty("storePassword") == null) { current.setProperty("storePassword", "false"); hasChanged = true; }
 		if (current.getProperty("jrePath") == null && System.getProperty("os.name").startsWith("Mac")) { current.setProperty("jrePath", "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0"); }
-		if (current.getProperty("optirun") == null && System.getProperty("os.name").startsWith("Linux")) { current.setProperty("optirun", "false"); hasChanged = true; }
 		return hasChanged;
 	}
 
@@ -218,7 +216,7 @@ public class MainForm extends MCUApp {
 		frmMain.setResizable(false);
 		frmMain.setBounds(100, 100, 1175, 592);
 		frmMain.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		
+
 		try {
 			mcuIcon = new ImageIcon(MainForm.class.getResource("/art/mcu-icon.png"));	// was "/icons/briefcase.png"
 			frmMain.setIconImage(mcuIcon.getImage());
@@ -258,42 +256,42 @@ public class MainForm extends MCUApp {
 		lblStatus = new JLabel("Idle");
 		lblStatus.setHorizontalAlignment(SwingConstants.LEFT);
 		pnlStatus.add(lblStatus);
-		
+
 		JPanel panel = new JPanel();
 		pnlStatus.add(panel, BorderLayout.EAST);
 		panel.setLayout(new BorderLayout(0, 0));
-		
+
 		progressBar = new JProgressBar();
 		panel.add(progressBar);
 		progressBar.setStringPainted(true);
-		
+
 		Component TopStrut = Box.createVerticalStrut(5);
 		panel.add(TopStrut, BorderLayout.NORTH);
-		
+
 		Component BottomStrut = Box.createVerticalStrut(5);
 		panel.add(BottomStrut, BorderLayout.SOUTH);
 
 		Component horizontalStrut = Box.createHorizontalStrut(5);
 		pnlFooter.add(horizontalStrut, BorderLayout.WEST);
-		
+
 		JPanel pnlLeft = new JPanel();
 		frmMain.getContentPane().add(pnlLeft, BorderLayout.WEST);
 		pnlLeft.setLayout(new BorderLayout(0, 0));
-		
+
 		JLabel lblServers = new JLabel("Instances");
 		lblServers.setHorizontalAlignment(SwingConstants.CENTER);
 		lblServers.setFont(new Font("Dialog", Font.BOLD, 14));
 		pnlLeft.add(lblServers, BorderLayout.NORTH);
-		
+
 		slModel = new SLListModel();
 		serverList = new JList();
 		serverList.setModel(slModel);
 		serverList.setCellRenderer(new ServerListCellRenderer());
 		serverList.addListSelectionListener(new InstanceListener());
-				
+
 		JScrollPane serverScroller = new JScrollPane(serverList);
 		pnlLeft.add(serverScroller, BorderLayout.CENTER);
-						
+
 		JButton btnReload = new JButton("Reload instances");
 		btnReload.addActionListener(new ActionListener() {
 
@@ -301,10 +299,10 @@ public class MainForm extends MCUApp {
 			public void actionPerformed(ActionEvent e) {
 				updateInstanceList();
 			}
-			
+
 		});
 		pnlLeft.add(btnReload, BorderLayout.SOUTH);
-		
+
 		pnlRight = new JPanel();
 		frmMain.getContentPane().add(pnlRight, BorderLayout.EAST);
 		pnlRight.setLayout(new BorderLayout(0, 0));
@@ -316,27 +314,27 @@ public class MainForm extends MCUApp {
 		lblChanges.setFont(new Font("Dialog", Font.BOLD, 14));
 		pnlChangesTitle.add(lblChanges, BorderLayout.CENTER);
 		pnlRight.add(pnlChangesTitle, BorderLayout.NORTH);
-		
+
 		Component hstrut_ChangesLeft = Box.createHorizontalStrut(75);
 		pnlChangesTitle.add(hstrut_ChangesLeft, BorderLayout.WEST);
-		
+
 		Component hstrut_ChangesRight = Box.createHorizontalStrut(75);
 		pnlChangesTitle.add(hstrut_ChangesRight, BorderLayout.EAST);
 
 		JScrollPane modScroller = new JScrollPane(pnlModList);
 		pnlRight.add(modScroller, BorderLayout.CENTER);
 		pnlModList.setLayout(new BoxLayout(pnlModList, BoxLayout.Y_AXIS));
-		
+
 		JPanel pnlUpdateOptions = new JPanel();
 		pnlRight.add(pnlUpdateOptions, BorderLayout.SOUTH);
 		pnlUpdateOptions.setLayout(new GridLayout(0, 1, 0, 0));
-		
+
 		chkHardUpdate = new JCheckBox("Perform \"hard\" update");
 		pnlUpdateOptions.add(chkHardUpdate);
 		browser.setEditable(false);
 		browser.setContentType("text/html");
 		browser.addHyperlinkListener(new NewsPaneListener());
-		
+
 		tabs = new JTabbedPane();
 
 		browser.setText("<HTML><BODY>Please select an instance from the list on the left.</BODY></HTML>");
@@ -344,7 +342,7 @@ public class MainForm extends MCUApp {
 		browserScrollPane.setViewportBorder(null);
 		browser.setBorder(null);
 		tabs.add("News",browserScrollPane);
-		
+
 		console.setBorder(null);
 		console.setLineWrap(true);
 		console.setEditable(false);
@@ -357,13 +355,13 @@ public class MainForm extends MCUApp {
 		consoleScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		tabs.add("Console",consoleScrollPane);
 		log("MCUpdater starting...");
-		
+
 		frmMain.getContentPane().add(tabs, BorderLayout.CENTER);
-		
+
 		JToolBar toolBar = new JToolBar();
 		toolBar.setFloatable(false);
 		frmMain.getContentPane().add(toolBar, BorderLayout.NORTH);
-		
+
 		JButton btnManageServers = new JButton("");
 		btnManageServers.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -373,7 +371,7 @@ public class MainForm extends MCUApp {
 		btnManageServers.setToolTipText("Manage Servers");
 		btnManageServers.setIcon(new ImageIcon(MainForm.class.getResource("/icons/server_database.png")));
 		toolBar.add(btnManageServers);
-		
+
 		JButton btnOptions = new JButton("");
 		btnOptions.addActionListener(new ActionListener() {
 
@@ -385,7 +383,7 @@ public class MainForm extends MCUApp {
 		btnOptions.setToolTipText("Options");
 		btnOptions.setIcon(new ImageIcon(MainForm.class.getResource("/icons/application_edit.png")));
 		toolBar.add(btnOptions);
-		
+
 //		JButton btnBackups = new JButton("");
 //		btnBackups.addActionListener(new ActionListener() {
 //			public void actionPerformed(ActionEvent e) {
@@ -395,28 +393,28 @@ public class MainForm extends MCUApp {
 //		btnBackups.setIcon(new ImageIcon(MainForm.class.getResource("/icons/folder_database.png")));
 //		btnBackups.setToolTipText("Backups");
 //		toolBar.add(btnBackups);
-		
+
 		Component horizontalGlue = Box.createHorizontalGlue();
 		toolBar.add(horizontalGlue);
-		
+
 		log("minecraft.jar version: " + mcu.getMCVersion());
-		
+
 		JLabel lblPlayerName1 = new JLabel("Player name:  ");
 		toolBar.add(lblPlayerName1);
-		
+
 		lblAvatar = new JLabel();
 		lblAvatar.setOpaque(true);
 		lblAvatar.setHorizontalAlignment(JLabel.CENTER);
 		lblAvatar.setVerticalAlignment(JLabel.CENTER);
 		lblAvatar.setBackground(Color.WHITE);
 		toolBar.add(lblAvatar);
-		
+
 		Component hStrut3 = Box.createHorizontalStrut(5);
 		toolBar.add(hStrut3);
-		
+
 		lblPlayerName2 = new JLabel("Not Logged In");
 		toolBar.add(lblPlayerName2);
-		
+
 		JButton btnLogin = new JButton("");
 		btnLogin.setHorizontalAlignment(SwingConstants.TRAILING);
 		btnLogin.setIcon(new ImageIcon(MainForm.class.getResource("/icons/key.png")));
@@ -425,19 +423,19 @@ public class MainForm extends MCUApp {
 				showLoginForm();
 			}
 		});
-		
+
 		Component horizontalStrut_2 = Box.createHorizontalStrut(5);
 		toolBar.add(horizontalStrut_2);
 		toolBar.add(btnLogin);
-		
+
 		Component horizontalStrut_1 = Box.createHorizontalStrut(5);
 		toolBar.add(horizontalStrut_1);
 		System.out.println("Finished building GUI");
 		initializeInstanceList();
 		checkSelectedInstance();
-		
+
 		initTray();
-		
+
 		if (config.getProperty("storePassword").toLowerCase().equals("true")) {
 			if (config.containsKey("password")) {
 				String user = config.getProperty("userName");
@@ -470,7 +468,7 @@ public class MainForm extends MCUApp {
 			e1.printStackTrace();
 		}
 	}
-	
+
 	private void checkSelectedInstance() {
 //		Properties instData = new Properties();
 //		try {
@@ -484,7 +482,7 @@ public class MainForm extends MCUApp {
 //		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(instData.getProperty("serverID"));
 //		serverList.setSelectedIndex(selectIndex);
 	}
-	
+
 	private void initializeInstanceList() {
 		File serverFile = mcu.getArchiveFolder().resolve("mcuServers.dat").toFile();
 		String packUrl = Customization.getString("InitialServer.text");
@@ -520,11 +518,11 @@ public class MainForm extends MCUApp {
 			Cipher cipher = getCipher(Cipher.ENCRYPT_MODE, "MCUpdater");
 			byte[] utf8 = password.getBytes("UTF8");
 			byte[] enc = cipher.doFinal(utf8);
-			
+
 			return Base64.encodeBase64String(enc);
 		} catch (Exception e) {
 			e.printStackTrace();
-		}		
+		}
 		return null;
 	}
 
@@ -533,14 +531,14 @@ public class MainForm extends MCUApp {
 			Cipher cipher = getCipher(Cipher.DECRYPT_MODE, "MCUpdater");
 			byte[] dec = Base64.decodeBase64(property);
 			byte[] utf8 = cipher.doFinal(dec);
-			
+
 			return new String(utf8, "UTF8");
 		} catch (Exception e) {
 			e.printStackTrace();
-		}		
+		}
 		return null;
 	}
-	
+
 	@Override
 	public boolean requestLogin() {
 		if (this.loginData.getUserName().isEmpty()) {
@@ -552,7 +550,7 @@ public class MainForm extends MCUApp {
 			return true;
 		}
 	}
-	
+
 	private void checkAccess() {
 		//Path MCFolder = mcu.getMCFolder();
 		Path MCUFolder = mcu.getArchiveFolder();
@@ -561,7 +559,7 @@ public class MainForm extends MCUApp {
 		Path testMCUFile = MCUFolder.resolve("MCUTest.dat");
 		Path testInstancesFile = InstancesFolder.resolve("MCUTest.dat");
 		//Path testLink = MCUFolder.resolve("LinkTest.dat");
-		
+
 //		try {
 //			Files.createFile(testMCFile);
 //			Files.delete(testMCFile);
@@ -569,14 +567,14 @@ public class MainForm extends MCUApp {
 //		} catch (IOException ioe) {
 //			canWriteMinecraft = false;
 //		}
-		
+
 		try {
 			Files.createFile(testMCUFile);
 			canWriteMCUpdater = true;
 		} catch (IOException ioe) {
 			canWriteMCUpdater = false;
 		}
-		
+
 		try {
 			Files.createFile(testInstancesFile);
 			Files.delete(testInstancesFile);
@@ -584,7 +582,7 @@ public class MainForm extends MCUApp {
 		} catch (IOException ioe) {
 			canWriteInstances=false;
 		}
-		
+
 //		try {
 //			Files.createSymbolicLink(testLink, testMCUFile);
 //			Files.delete(testLink);
@@ -594,7 +592,7 @@ public class MainForm extends MCUApp {
 //		} catch (UnsupportedOperationException uoe) {
 //			canCreateLinks = false;
 //		}
-		
+
 		Files.delete(testMCUFile);
 
 		log("Access checks: MCU-" + canWriteMCUpdater + " Instance-" + canWriteInstances);
@@ -602,7 +600,7 @@ public class MainForm extends MCUApp {
 //			JOptionPane.showMessageDialog(null, "MCUpdater has detected that symbolic linking cannot be performed.\nTrue instancing will be disabled and switching between instances will take considerably longer.\n\nOn Windows, this can be caused by not running MCUpdater as Administrator.", "MCUpdater", JOptionPane.WARNING_MESSAGE);
 //		}
 	}
-	
+
 	protected void changeSelectedServer(ServerList entry) {
 		try {
 			btnUpdate.setEnabled(true);
@@ -718,9 +716,9 @@ public class MainForm extends MCUApp {
 //			e.printStackTrace();
 //		}
 //	}
-//	
+//
 //	private void removeAndPrepareFolder(Path MCPath, Path instancePath, boolean prepareInstance) {
-//		
+//
 //		if (!Files.exists(instancePath)) {
 //			try {
 //				Files.createDirectory(instancePath);
@@ -744,9 +742,9 @@ public class MainForm extends MCUApp {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
-//		
+//
 //	}
-	
+
 	public void updateInstanceList()
 	{
 		serverList.setVisible(false);
@@ -755,7 +753,7 @@ public class MainForm extends MCUApp {
 		if (servers != null)
 		{
 			Iterator<ServerList> it = servers.iterator();
-			
+
 			//boolean flag = false;
 			while(it.hasNext())
 			{
@@ -766,21 +764,21 @@ public class MainForm extends MCUApp {
 		}
 		serverList.setVisible(true);
 	}
-		
+
 	@Override
 	public void setStatus(String text) {
 		lblStatus.setText(text);
 	}
-	
+
 	@Override
 	public void setProgressBar(int value) {
 		progressBar.setValue(value);
 	}
-	
+
 	public void setPlayerName(String playerName) {
 		this.lblPlayerName2.setText(playerName);
 	}
-	
+
 	@Override
 	public void log(String msg) {
 		final StringBuilder str = new StringBuilder(logSDF.format(new Date()));
@@ -788,27 +786,27 @@ public class MainForm extends MCUApp {
 		str.append('\n');
 		console.log(str.toString());
 	}
-	
+
 	private void initTray() {
 		if( !SystemTray.isSupported() ) {
 			System.out.println("System tray is NOT supported :(");
 			return;
 		}
-		
+
 		// change minimize behavior to go to tray
 		frmMain.addWindowListener(new WindowAdapter() {
 			public void windowIconified(WindowEvent e) {
 				minimize(false);	// this is a manual minimize event
 			}
 		});
-		
+
 		final String label = "MCUpdater "+Version.VERSION;
-		
+
 		trayIcon = new TrayIcon(mcuIcon.getImage(),label);
 		trayIcon.setImageAutoSize(true);
 		final SystemTray tray = SystemTray.getSystemTray();
 		final PopupMenu menu = new PopupMenu();
-		
+
 		final MenuItem restoreItem = new MenuItem("Restore MCU");
 		ActionListener restoreAL = new ActionListener(){
 			@Override
@@ -819,19 +817,19 @@ public class MainForm extends MCUApp {
 		restoreItem.addActionListener(restoreAL);
 		final MenuItem killItem = new MenuItem("Kill Minecraft");
 		killItem.setEnabled(false);
-		
+
 		menu.add(restoreItem);
 		menu.add(killItem);
-		
+
 		trayIcon.setPopupMenu(menu);
 		trayIcon.addActionListener(restoreAL);
-		
+
 		try {
 			tray.add(trayIcon);
 		} catch (AWTException e) {
 			trayIcon = null;
 			e.printStackTrace();
-		}		
+		}
 	}
 	public void minimize(boolean auto) {
 		if( trayIcon == null ) {
@@ -907,7 +905,7 @@ public class MainForm extends MCUApp {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private Cipher getCipher(int mode, String password) throws Exception {
 		Random random = new Random(92845025L);
 		byte[] salt = new byte[8];
@@ -1007,7 +1005,7 @@ public class MainForm extends MCUApp {
 				}
 				btnUpdate.setEnabled(true);
 				btnLaunchMinecraft.setEnabled(true);
-			}						
+			}
 		}.start();
 	}
 	private void launchMinecraft() {
@@ -1038,9 +1036,9 @@ public class MainForm extends MCUApp {
 				return;
 			}
 		}
-		
+
 		//if (!System.getProperty("os.name").startsWith("Mac")){
-			if (!requestLogin()) {					
+			if (!requestLogin()) {
 				if (loginData.getUserName().isEmpty()) {
 					JOptionPane.showMessageDialog(null,"You must login first.","MCUpdater",JOptionPane.ERROR_MESSAGE);
 					return;
@@ -1113,7 +1111,7 @@ public class MainForm extends MCUApp {
 		sm.setLocationRelativeTo(frmMain);
 		sm.setVisible(true);
 	}
-	
+
 	private final class NewsPaneListener implements HyperlinkListener {
 		@Override
 		public void hyperlinkUpdate(HyperlinkEvent he) {
@@ -1144,18 +1142,18 @@ public class MainForm extends MCUApp {
 				final boolean needUpdate = !selected.getRevision().equals(instData.getProperty("revision"));
 				// check for mcu version update
 				final boolean needMCUUpgrade = Version.isVersionOld(selected.getMCUVersion());
-				
+
 				String warningMessage = null;
 				if( needUpdate ) {
 					warningMessage = "Your configuration is out of sync with the server. Updating is necessary.";
 				} else if( needMCUUpgrade ) {
 					warningMessage = "The server requires a newer version of MCUpdater than you currently have installed.\nPlease upgrade as soon as possible, things are not likely to update correctly otherwise.";
 				}
-				
+
 				if ( warningMessage != null ) {
 					JOptionPane.showMessageDialog(null, warningMessage, "MCUpdater", JOptionPane.WARNING_MESSAGE);
 				}
-				
+
 			}
 		}
 	}
@@ -1165,7 +1163,7 @@ public class MainForm extends MCUApp {
 class JModuleCheckBox extends JCheckBox
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 8124564072878896685L;
 	private Module entry;
@@ -1188,16 +1186,16 @@ class JModuleCheckBox extends JCheckBox
 class SLListModel extends AbstractListModel
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -6829288390151952427L;
 	List<ServerListPacket> model;
-	
+
 	public SLListModel()
 	{
 		model = new ArrayList<ServerListPacket>();
 	}
-	
+
 	public int getEntryIdByTag(String tag) {
 		int foundId = 0;
 		Iterator<ServerListPacket> it = model.iterator();
@@ -1228,12 +1226,12 @@ class SLListModel extends AbstractListModel
 		model.add(element);
 		fireContentsChanged(this, 0, getSize());
 	}
-	
+
 	public Iterator<ServerListPacket> iterator()
 	{
 		return model.iterator();
 	}
-	
+
 	public boolean removeElement(ServerListPacket element)
 	{
 		boolean removed = model.remove(element);
@@ -1242,7 +1240,7 @@ class SLListModel extends AbstractListModel
 		}
 		return removed;
 	}
-	
+
 	public void clear()
 	{
 		model.clear();

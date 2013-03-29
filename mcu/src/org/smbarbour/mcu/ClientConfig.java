@@ -29,7 +29,7 @@ import javax.swing.JCheckBox;
 public class ClientConfig extends JDialog {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 6628969370506234011L;
 	private final JPanel contentPanel = new JPanel();
@@ -42,7 +42,7 @@ public class ClientConfig extends JDialog {
 	private JTextField txtJVMOpts;
 	private JTextField txtResWidth;
 	private JTextField txtResHeight;
-	private JCheckBox chckbxOptirun;
+	private JTextField txtJVMContainer;
 
 	/**
 	 * Create the dialog.
@@ -61,7 +61,7 @@ public class ClientConfig extends JDialog {
 		gbl_contentPanel.rowHeights = new int[]{0, 20, 0, 0, 0, 0, 0, 0, 0, 0};
 		gbl_contentPanel.columnWeights = new double[]{0.0, 0.0, 1.0, 0.0, Double.MIN_VALUE};
 		gbl_contentPanel.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
-		
+
 		int row = 0;
 		contentPanel.setLayout(gbl_contentPanel);
 		{
@@ -72,7 +72,7 @@ public class ClientConfig extends JDialog {
 			gbc_rigidArea.gridy = row;
 			contentPanel.add(rigidArea, gbc_rigidArea);
 		}
-		
+
 		// memory
 		++row;
 		{
@@ -157,7 +157,7 @@ public class ClientConfig extends JDialog {
 			gbc_lblResolution.gridx = 1;
 			gbc_lblResolution.gridy = row;
 			contentPanel.add(lblResolution, gbc_lblResolution);
-			
+
 			JPanel pnlResolution = new JPanel();
 			pnlResolution.setLayout(new BorderLayout());
 			GridBagConstraints gbc_pnlResolution = new GridBagConstraints();
@@ -172,11 +172,11 @@ public class ClientConfig extends JDialog {
 				txtResWidth.setText(parent.getConfig().getProperty("width"));
 				txtResWidth.setColumns(10);
 				pnlResolution.add(txtResWidth, BorderLayout.WEST);
-				
+
 				JLabel lblResX = new JLabel("X");
 				lblResX.setHorizontalAlignment(SwingConstants.CENTER);
 				pnlResolution.add(lblResX, BorderLayout.CENTER);
-				
+
 
 				txtResHeight = new JTextField();
 				txtResHeight.setText(parent.getConfig().getProperty("height"));
@@ -252,7 +252,7 @@ public class ClientConfig extends JDialog {
 			gbc_lblJVMOpts.gridx = 1;
 			gbc_lblJVMOpts.gridy = row;
 			contentPanel.add(lblJVMOpts, gbc_lblJVMOpts);
-			
+
 			txtJVMOpts = new JTextField();
 			txtJVMOpts.setText(parent.getConfig().getProperty("jvmOpts"));
 			GridBagConstraints gbc_txtJVMOpts = new GridBagConstraints();
@@ -263,7 +263,7 @@ public class ClientConfig extends JDialog {
 			gbc_txtJVMOpts.gridwidth = 2;
 			contentPanel.add(txtJVMOpts, gbc_txtJVMOpts);
 			txtJVMOpts.setColumns(10);
-			
+
 		}
 		// Instance
 		++row;
@@ -305,10 +305,10 @@ public class ClientConfig extends JDialog {
 					JFileChooser jfc = new JFileChooser();
 					jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 					jfc.showOpenDialog(contentPanel);
-					
+
 					txtInstanceRoot.setText(jfc.getSelectedFile().getAbsolutePath());
 				}
-				
+
 			});
 			GridBagConstraints gbc_btnInstanceRoot = new GridBagConstraints();
 			gbc_btnInstanceRoot.anchor = GridBagConstraints.WEST;
@@ -317,7 +317,7 @@ public class ClientConfig extends JDialog {
 			gbc_btnInstanceRoot.gridy = row;
 			contentPanel.add(btnInstanceRoot, gbc_btnInstanceRoot);
 		}
-		
+
 		++row;
 		{
 			Component verticalStrut = Box.createVerticalStrut(5);
@@ -327,7 +327,7 @@ public class ClientConfig extends JDialog {
 			gbc_verticalStrut.gridy = row;
 			contentPanel.add(verticalStrut, gbc_verticalStrut);
 		}
-		
+
 		// Minimize preference
 		++row;
 		{
@@ -341,23 +341,31 @@ public class ClientConfig extends JDialog {
 			chckbxMinimize.setSelected(Boolean.parseBoolean(parent.getConfig().getProperty("minimizeOnLaunch")));
 			contentPanel.add(chckbxMinimize, gbc_chckbxMinimize);
 		}
-		
-		// Minimize preference
-		if (System.getProperty("os.name").startsWith("Linux")) {
-			++row;
-			{
-				chckbxOptirun = new JCheckBox("Use optirun");
-				GridBagConstraints gbc_chckbxOptirun = new GridBagConstraints();
-				gbc_chckbxOptirun.anchor = GridBagConstraints.WEST;
-				gbc_chckbxOptirun.gridwidth = 3;
-				gbc_chckbxOptirun.insets = new Insets(0, 0, 5, 5);
-				gbc_chckbxOptirun.gridx = 1;
-				gbc_chckbxOptirun.gridy = row;
-				chckbxOptirun.setSelected(Boolean.parseBoolean(parent.getConfig().getProperty("optirun")));
-				contentPanel.add(chckbxOptirun, gbc_chckbxOptirun);
-			}
+
+		// JVM Container
+		++row;
+		{
+			JLabel lblJVMContainer = new JLabel("Run Minecraft in Container:");
+			GridBagConstraints gbc_lblJVMContainer = new GridBagConstraints();
+			gbc_lblJVMContainer.anchor = GridBagConstraints.EAST;
+			gbc_lblJVMContainer.insets = new Insets(0, 0, 5, 5);
+			gbc_lblJVMContainer.gridx = 1;
+			gbc_lblJVMContainer.gridy = row;
+			contentPanel.add(lblJVMContainer, gbc_lblJVMContainer);
+
+			txtJVMContainer = new JTextField();
+			txtJVMContainer.setText(parent.getConfig().getProperty("jvmContainer"));
+			GridBagConstraints gbc_txtJVMContainer = new GridBagConstraints();
+			gbc_txtJVMContainer.insets = new Insets(0, 0, 5, 5);
+			gbc_txtJVMContainer.fill = GridBagConstraints.HORIZONTAL;
+			gbc_txtJVMContainer.gridx = 2;
+			gbc_txtJVMContainer.gridy = row;
+			gbc_txtJVMContainer.gridwidth = 2;
+			contentPanel.add(txtJVMContainer, gbc_txtJVMContainer);
+			txtJVMContainer.setColumns(10);
+
 		}
-		
+
 		/* This option is obsolete with native launcher */
 		/* Suppress update
 		if (System.getProperty("os.name").startsWith("Mac")) {
@@ -375,10 +383,10 @@ public class ClientConfig extends JDialog {
 			}
 		}
 		 --- */
-		
+
 		// Stretch to make room for the content panel
 		setSize(this.getWidth(), this.getHeight() + (int)contentPanel.getMinimumSize().getHeight());
-		
+
 		// Buttons
 		{
 			JPanel buttonPane = new JPanel();
@@ -398,9 +406,7 @@ public class ClientConfig extends JDialog {
 						newConfig.setProperty("jvmOpts", txtJVMOpts.getText());
 						newConfig.setProperty("width", txtResWidth.getText());
 						newConfig.setProperty("height", txtResHeight.getText());
-						if (System.getProperty("os.name").startsWith("Linux")) {
-							newConfig.setProperty("optirun", Boolean.toString(chckbxOptirun.isSelected()));
-						}
+                        newConfig.setProperty("jvmContainer", txtJVMContainer.getText());
 						parent.writeConfig(newConfig);
 						parent.mcu.setInstanceRoot(new Path(new File(txtInstanceRoot.getText())));
 						dispose();
@@ -413,7 +419,7 @@ public class ClientConfig extends JDialog {
 			{
 				JButton cancelButton = new JButton("Cancel");
 				cancelButton.addActionListener(new ActionListener() {
-					
+
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						dispose();
