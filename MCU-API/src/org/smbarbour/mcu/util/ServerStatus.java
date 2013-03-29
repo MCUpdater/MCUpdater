@@ -9,6 +9,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.UnknownHostException;
 
 public class ServerStatus {
 	
@@ -96,6 +97,7 @@ public class ServerStatus {
 			
 		} catch (SocketException e1) {
 		} catch (SocketTimeoutException e2) {
+		} catch (UnknownHostException uhe) {
 		} finally {
 			if (dis != null) dis.close();
 			if (dos != null) dos.close();

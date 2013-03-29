@@ -495,6 +495,9 @@ public class MCUpdater {
 		}
 		Path instancePath = instanceRoot.resolve(server.getServerId());
 		Boolean updateJar = clearExisting;
+		if (!instancePath.resolve("bin").resolve("minecraft.jar").toFile().exists()) {
+			updateJar = true;
+		}
 		Iterator<Module> iMods = toInstall.iterator();
 		while (iMods.hasNext() && !updateJar) {
 			Module current = iMods.next();
@@ -832,7 +835,7 @@ public class MCUpdater {
 	
 	private void doPatch(File requestedJar, File newestJar, String version) {
 		try {
-			URL patchURL = new URL("http://mcupdater.net46.net/mcu_patches/" + newestMC.replace(".", "") + "to" + version.replace(".","") + ".patch");
+			URL patchURL = new URL("http://files.mcupdater.com/mcu_patches/" + newestMC.replace(".", "") + "to" + version.replace(".","") + ".patch");
 			_debug(patchURL.toString());
 			File patchFile = archiveFolder.resolve("temp.patch").toFile();
 			FileUtils.copyURLToFile(patchURL, patchFile);

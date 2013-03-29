@@ -31,6 +31,7 @@ public class Launcher extends Applet implements AppletStub {
 		params.put("stand-alone", "true");
 		params.put("server", host);
 		params.put("port", port);
+		params.put("fullscreen","false"); //Required param for vanilla. Forge handles the absence gracefully.
 		URL[] urls = new URL[4];
 		urls[0] = pathToUrl(new File(new File(instance,"bin"), "minecraft.jar"));
 		urls[1] = pathToUrl(new File(lwjgl, "lwjgl.jar"));
@@ -127,6 +128,10 @@ public class Launcher extends Applet implements AppletStub {
 	@Override
 	public void init() {
 		if (mcApplet != null) {
+			mcApplet.setStub(this);
+			mcApplet.setSize(getWidth(),getHeight());
+			this.setLayout(new BorderLayout());
+			this.add(mcApplet, "Center");
 			mcApplet.init();
 		}
 	}
