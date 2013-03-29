@@ -84,7 +84,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		if (!parent.getConfig().getProperty("jvmOpts","").isEmpty()){
 			jvmOpts = Arrays.asList(parent.getConfig().getProperty("jvmOpts").split("\\s"));
 		}
-		
+
 		String javaBin = "java";
 		File binDir;
 		if (System.getProperty("os.name").startsWith("Mac")) {
@@ -96,6 +96,9 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 			javaBin = new Path(binDir).resolve("java").toString();
 		}
 		List<String> args = new ArrayList<String>();
+        if (!parent.getConfig().getProperty("jvmContainer", "").isEmpty()) {
+            args.add(parent.getConfig().getProperty("jvmContainer"));
+        }
 		args.add(javaBin);
 		args.add("-XX:+UseConcMarkSweepGC");
 		args.add("-XX:+CMSIncrementalMode");
@@ -120,7 +123,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		args.add(parent.getConfig().getProperty("width"));
 		args.add(parent.getConfig().getProperty("height"));
 		args.add(server.getAddress());
-		
+
 		if (!Version.isMasterBranch()) {
 			parent.log("Process args:");
 			Iterator<String> itArgs = args.iterator();
@@ -129,7 +132,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 				parent.log(entry);
 			}
 		}
-		
+
 		ProcessBuilder pb = new ProcessBuilder(args);
 		System.out.println("Running on: " + System.getProperty("os.name"));
 		if(System.getProperty("os.name").startsWith("Linux")) {
@@ -195,7 +198,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 			buffWrite.flush();
 			buffWrite.close();
 			restoreFrame();
-			
+
 			log("* Exiting Minecraft"+(forceKilled?" (killed)":"")+"\n");
 
 		} catch (IOException ioe) {
@@ -238,7 +241,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 			killItem = null;
 		}
 	}
-	
+
 	@Override
 	public void start() {
 		thread = new Thread(this);
