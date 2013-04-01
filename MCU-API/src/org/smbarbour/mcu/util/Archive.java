@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.jar.*;
 import java.util.zip.*;
 
+import org.apache.commons.io.FileUtils;
 import org.smbarbour.mcu.MCUApp;
 
 public class Archive {
@@ -294,7 +295,9 @@ public class Archive {
        boolean renameOk=zipFile.renameTo(tempFile);
        if (!renameOk)
        {
-           throw new RuntimeException("could not rename the file "+zipFile.getAbsolutePath()+" to "+tempFile.getAbsolutePath());
+    	   FileUtils.copyFile(zipFile, tempFile);
+    	   zipFile.delete();
+           //throw new RuntimeException("could not rename the file "+zipFile.getAbsolutePath()+" to "+tempFile.getAbsolutePath());
        }
        byte[] buf = new byte[1024];
 
