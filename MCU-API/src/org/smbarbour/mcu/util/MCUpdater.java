@@ -435,6 +435,9 @@ public class MCUpdater {
 		if(path.contains("optionsof.txt")){
 			return true;
 		}
+		if(path.contains("voxelMap")) {
+			return true;
+		}
 		//
 		return false;
 	}
