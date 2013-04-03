@@ -502,14 +502,20 @@ public class MCUpdater {
 			updateJar = true;
 		}
 		Iterator<Module> iMods = toInstall.iterator();
+		int jarModCount = 0;
 		while (iMods.hasNext() && !updateJar) {
 			Module current = iMods.next();
 			if (current.getInJar()) {
 				if (current.getMD5().isEmpty() || (!current.getMD5().equalsIgnoreCase(instData.getProperty("mod:" + current.getId(), "NoHash")))) {
 					updateJar = true;
 				}
+				jarModCount++;
 			}
 		}
+		if (jarModCount != Integer.parseInt(instData.getProperty("jarModCount","0"))) {
+			updateJar = true;
+		}
+		jarModCount = 0;
 		System.out.println(instancePath.toString());
 		List<File> contents = recurseFolder(instancePath.toFile(), true);
 		File jar = archiveFolder.resolve("mc-" + server.getVersion() + ".jar").toFile();
@@ -591,6 +597,7 @@ public class MCUpdater {
 							Archive.extractZip(jarMod.getDestFile(), tmpFolder);
 							jarMod.getDestFile().delete();
 							instData.setProperty("mod:" + entry.getId(), entry.getMD5());
+							jarModCount++;
 						} catch (Exception e) {
 							++errorCount;
 							parent.log("! "+e.getMessage());
@@ -701,6 +708,7 @@ public class MCUpdater {
 			parent.setProgressBar((int)( (65 / modCount) * modsLoaded + 25));
 			parent.log("  Done ("+modsLoaded+"/"+modCount+")");
 		}
+		instData.setProperty("jarModsCount", Integer.toString(jarModCount));
 		try {
 			buildJar.createNewFile();
 		} catch (IOException e) {
