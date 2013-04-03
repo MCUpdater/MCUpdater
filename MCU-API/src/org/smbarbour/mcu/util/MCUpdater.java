@@ -686,7 +686,11 @@ public class MCUpdater {
 					}
 					parent.log("  Found config for "+cfEntry.getPath()+", downloading...");
 					_debug(confFile.getPath());
-					FileUtils.copyURLToFile(configURL, confFile);
+					if (cfEntry.isNoOverwrite() && confFile.exists()) {
+						parent.log("  Skipped - NoOverwrite is true");
+					} else {
+						FileUtils.copyURLToFile(configURL, confFile);
+					}
 					// save in cache for future reference
 					if( MD5 != null ) {
 						final boolean cached = DownloadCache.cacheFile(confFile, MD5);
