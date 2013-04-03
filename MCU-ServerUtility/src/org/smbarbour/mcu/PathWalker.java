@@ -82,7 +82,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 				if (sep.equals("\\")) {
 					newPath = newPath.replace("\\", "/");
 				}
-				ConfigFile newConfig = new ConfigFile(downloadURL, newPath, md5);
+				ConfigFile newConfig = new ConfigFile(downloadURL, newPath, false, md5);
 				parent.AddConfig(new ConfigFileWrapper("", newConfig));
 				return FileVisitResult.CONTINUE;
 			}

@@ -126,7 +126,8 @@ public class ServerPackParser {
 		String url = getTextValue(cfEl,"URL");
 		String path = getTextValue(cfEl,"Path");
 		String md5 = getTextValue(cfEl,"MD5");
-		ConfigFile cf = new ConfigFile(url,path,md5);
+		boolean noOverwrite = getBooleanValue(cfEl, "NoOverwrite");
+		ConfigFile cf = new ConfigFile(url,path,noOverwrite,md5);
 		return cf;
 	}
 	

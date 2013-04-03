@@ -5,10 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -19,13 +16,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.text.Document;
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTML.Tag;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 
 public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallback {
 
@@ -204,8 +199,8 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 		if (t == Tag.META) {
 			Enumeration<?> e = attributes.getAttributeNames();
 			boolean readsitename = false, contentmediafire = false;
-			boolean httprefresh = false;
-			String localRedirectURL = null;
+			//boolean httprefresh = false;
+			//String localRedirectURL = null;
 		    while (e.hasMoreElements()) {
 		    	Object name = e.nextElement();
 		        String value = (String) attributes.getAttribute(name);
@@ -226,8 +221,8 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 //		        	}
 //		        }
 		    }
-		    if (httprefresh && localRedirectURL != null)
-		    	redirectURL = localRedirectURL;
+//		    if (httprefresh && localRedirectURL != null)
+//		    	redirectURL = localRedirectURL;
 		    if (readsitename && contentmediafire) {
 		    	isMediafire = true;
 		    	System.out.println("isMediafire: " + isMediafire);

@@ -6,11 +6,13 @@ public class ConfigFile {
 	private String url;
 	private String path;
 	private String md5;
+	private boolean noOverwrite;
 	
-	public ConfigFile(String url, String path, String md5)
+	public ConfigFile(String url, String path, boolean noOverwrite, String md5)
 	{
 		setUrl(url);
 		setPath(path);
+		setNoOverwrite(noOverwrite);
 		setMD5(md5);
 	}
 	
@@ -34,6 +36,14 @@ public class ConfigFile {
 		this.path = path;
 	}
 	
+	public boolean isNoOverwrite() {
+		return noOverwrite;
+	}
+
+	public void setNoOverwrite(boolean noOverwrite) {
+		this.noOverwrite = noOverwrite;
+	}
+
 	public String getMD5()
 	{
 		return md5;

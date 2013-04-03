@@ -176,6 +176,7 @@ public class ServerForm extends MCUApp {
 	private JButton btnConfigRemove;
 	private JButton btnConfigUpdate;
 	private JButton btnConfigImport;
+	private JCheckBox chkConfigNoOverwrite;
 	
 	public ServerForm() {
 		initialize();
@@ -1327,6 +1328,12 @@ public class ServerForm extends MCUApp {
 				@Override
 				public void changedUpdate(DocumentEvent e) {configDirty = true;}				
 			};
+			ChangeListener configChangeListener = new ChangeListener(){
+				@Override
+				public void stateChanged(ChangeEvent e) {
+					configDirty = true;					
+				}
+			};
 
 			int row = 0;
 
@@ -1413,6 +1420,27 @@ public class ServerForm extends MCUApp {
 
 			row++;
 			
+			JLabel lblConfigNoOverwrite = new JLabel("No Overwrite:");
+			lblConfigNoOverwrite.setHorizontalAlignment(SwingConstants.TRAILING);
+			GridBagConstraints gbc_lblConfigNoOverwrite = new GridBagConstraints();
+			gbc_lblConfigNoOverwrite.fill = GridBagConstraints.HORIZONTAL;
+			gbc_lblConfigNoOverwrite.insets = new Insets(0, 0, 5, 5);
+			gbc_lblConfigNoOverwrite.gridx = 3;
+			gbc_lblConfigNoOverwrite.gridy = row;
+			configDetailPanel.add(lblConfigNoOverwrite, gbc_lblConfigNoOverwrite);
+
+			chkConfigNoOverwrite = new JCheckBox("");
+			chkConfigNoOverwrite.addChangeListener(configChangeListener);
+			GridBagConstraints gbc_chkConfigNoOverwrite = new GridBagConstraints();
+			gbc_chkConfigNoOverwrite.insets = new Insets(0, 0, 5, 5);
+			gbc_chkConfigNoOverwrite.anchor = GridBagConstraints.WEST;
+			gbc_chkConfigNoOverwrite.gridx = 4;
+			gbc_chkConfigNoOverwrite.gridy = row;
+			configDetailPanel.add(chkConfigNoOverwrite, gbc_chkConfigNoOverwrite);
+
+			
+			row++;
+			
 			JLabel lblConfigMD5 = new JLabel("MD5 Checksum:");
 			lblConfigMD5.setHorizontalAlignment(SwingConstants.TRAILING);
 			GridBagConstraints gbc_lblConfigMD5 = new GridBagConstraints();
@@ -1458,7 +1486,7 @@ public class ServerForm extends MCUApp {
 			btnConfigAdd.setEnabled(false);
 			btnConfigAdd.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					ConfigFileWrapper newConfig = new ConfigFileWrapper(lstConfigParentId.getSelectedItem().toString(), new ConfigFile(txtConfigUrl.getText(), txtConfigPath.getText(), txtConfigMD5.getText()));
+					ConfigFileWrapper newConfig = new ConfigFileWrapper(lstConfigParentId.getSelectedItem().toString(), new ConfigFile(txtConfigUrl.getText(), txtConfigPath.getText(), chkConfigNoOverwrite.isSelected(), txtConfigMD5.getText()));
 					modelConfig.add(newConfig);
 					serverDirty = true;
 					packDirty = true;
@@ -1632,7 +1660,7 @@ public class ServerForm extends MCUApp {
 			if (lstModules.getSelectedIndex() > -1) {
 				parentId = lstModules.getSelectedValue().getId();
 			}
-			AddConfig(new ConfigFileWrapper(parentId, new ConfigFile(downloadUrl,path,md5)));
+			AddConfig(new ConfigFileWrapper(parentId, new ConfigFile(downloadUrl,path,false,md5)));
 			Files.delete(tempFile);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -1842,7 +1870,7 @@ public class ServerForm extends MCUApp {
 		try {
 			modId = lstConfigParentId.getSelectedItem().toString();
 		} catch (Exception e) { /* no op */ }
-		ConfigFileWrapper newConfig = new ConfigFileWrapper(modId, new ConfigFile(txtConfigUrl.getText(), txtConfigPath.getText(), txtConfigMD5.getText()));
+		ConfigFileWrapper newConfig = new ConfigFileWrapper(modId, new ConfigFile(txtConfigUrl.getText(), txtConfigPath.getText(), chkConfigNoOverwrite.isSelected(), txtConfigMD5.getText()));
 		modelConfig.replace(configCurrentSelection, newConfig);
 		configDirty = false;
 		serverDirty = true;
