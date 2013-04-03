@@ -26,6 +26,7 @@
 												<xs:sequence>
 													<xs:element type="xs:anyURI" name="URL" />
 													<xs:element type="xs:string" name="Path" />
+													<xs:element type="xs:boolean" name="NoOverwrite" />
 													<xs:element type="xs:string" name="MD5" />
 												</xs:sequence>
 											</xs:complexType>
