@@ -80,8 +80,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import java.util.ResourceBundle;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.swing.JList;
 import javax.swing.AbstractListModel;
 import javax.swing.JToolBar;
@@ -136,11 +136,16 @@ public class MainForm extends MCUApp {
 	 */
 	public MainForm() {
 		this.baseLogger = Logger.getLogger("MCUpdater");
+		baseLogger.setLevel(Level.ALL);
+		CALogHandler consoleHandler = new CALogHandler(console);
+		consoleHandler.setLevel(Level.INFO);
+		baseLogger.addHandler(consoleHandler);
 		Version.setApp(this);
 		window = this;
 		mcu.setParent(window);
 		initialize();
 		window.frmMain.setVisible(true);
+		baseLogger.info("MCUpdater initialized.");
 	}
 
 	public Properties getConfig()
@@ -344,7 +349,7 @@ public class MainForm extends MCUApp {
 		tabs.add("News",browserScrollPane);
 
 		console.setBorder(null);
-		console.setLineWrap(true);
+		//console.setLineWrap(true);
 		console.setEditable(false);
 		Font f = new Font("Monospaced",Font.PLAIN,11);
 		console.setFont(f);
