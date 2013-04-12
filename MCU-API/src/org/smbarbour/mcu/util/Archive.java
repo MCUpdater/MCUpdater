@@ -170,11 +170,16 @@ public class Archive {
 		tempFile.delete();
 	}
 
-	public static void createJar(File outJar, List<File> inputFiles, String basePath) throws IOException {
+	public static void createJar(File outJar, List<File> inputFiles, String basePath, boolean doManifest) throws IOException {
 		Manifest manifest = new Manifest();
 		manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
 		try {
-			JarOutputStream jos = new JarOutputStream(new FileOutputStream(outJar), manifest);
+			JarOutputStream jos;
+			if (doManifest) {
+				jos = new JarOutputStream(new FileOutputStream(outJar), manifest);
+			} else {
+				jos = new JarOutputStream(new FileOutputStream(outJar));
+			}
 			BufferedInputStream in;
 			Iterator<File> it = inputFiles.iterator();
 			while(it.hasNext()) {

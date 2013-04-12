@@ -566,6 +566,11 @@ public class MCUpdater {
 			parent.setStatus("Preparing to build minecraft.jar");
 			parent.log("Preparing to build minecraft.jar...");
 			Archive.extractZip(jar, tmpFolder);
+			try {
+				FileUtils.deleteDirectory(new Path(tmpFolder).resolve("META-INF").toFile());
+			} catch (IOException e) {
+				apiLogger.log(Level.SEVERE, "I/O Error", e);
+			}
 		} else {
 			parent.log("No jar changes necessary.  Skipping jar rebuild.");
 		}
@@ -729,16 +734,17 @@ public class MCUpdater {
 		}
 		parent.log("All mods loaded.");
 		if( errorCount > 0 ) {
-			parent.log("WARNING: Errors were detected with this update, please verify your files. There may be a problem with the serverpack configuration or one of your download sites.");
+			parent.baseLogger.severe("Errors were detected with this update, please verify your files. There may be a problem with the serverpack configuration or one of your download sites.");
 			return false;
 		}
 		copyFile(jar, buildJar);
+		boolean doManifest = true;
 		List<File> buildList = recurseFolder(tmpFolder,true);
 		Iterator<File> blIt = new ArrayList<File>(buildList).iterator();
 		while(blIt.hasNext()) {
 			File entry = blIt.next();
 			if(entry.getPath().contains("META-INF")) {
-				buildList.remove(entry);
+				doManifest = false;
 			}
 		}
 		Path binPath = instancePath.resolve("bin");
@@ -751,7 +757,7 @@ public class MCUpdater {
 		} else {
 			parent.log("Packaging updated jar...");
 			try {
-				Archive.createJar(buildJar, buildList, tmpFolder.getPath() + sep);
+				Archive.createJar(buildJar, buildList, tmpFolder.getPath() + sep, doManifest);
 			} catch (IOException e1) {
 				parent.log("Failed to create jar!");
 				apiLogger.log(Level.SEVERE, "I/O Error", e1);
