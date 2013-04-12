@@ -195,8 +195,8 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 						Style lineStyle = null;
 						if (line.contains("WARNING")) { lineStyle = console.warnStyle; }
 						if (line.contains("SEVERE")) { lineStyle = console.errorStyle; }
-						console.log(line, lineStyle);
-						parent.baseLogger.info(line);
+						console.log(line + "\n", lineStyle);
+						//parent.baseLogger.info(line);
 					}
 				}
 			}
