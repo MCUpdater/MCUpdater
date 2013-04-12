@@ -80,6 +80,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import java.util.ResourceBundle;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JList;
@@ -139,7 +140,18 @@ public class MainForm extends MCUApp {
 		baseLogger.setLevel(Level.ALL);
 		CALogHandler consoleHandler = new CALogHandler(console);
 		consoleHandler.setLevel(Level.INFO);
+		FileHandler mcuHandler;
+		try {
+			mcuHandler = new FileHandler(mcu.getArchiveFolder().resolve("MCUpdater.log").toString(), 0, 3);
+			mcuHandler.setFormatter(new FMLStyleFormatter());
+			baseLogger.addHandler(mcuHandler);
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 		baseLogger.addHandler(consoleHandler);
+		mcu.apiLogger.addHandler(consoleHandler);
 		Version.setApp(this);
 		window = this;
 		mcu.setParent(window);
@@ -155,21 +167,21 @@ public class MainForm extends MCUApp {
 
 	public void writeConfig(Properties newConfig)
 	{
-		System.out.println("Writing configuration file");
+		baseLogger.info("Writing configuration file");
 		File configFile = mcu.getArchiveFolder().resolve("config.properties").toFile();
 		try {
 			configFile.getParentFile().mkdirs();
 			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
 			config = newConfig;
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			baseLogger.log(Level.SEVERE, "File not found: " + configFile.getAbsolutePath(), e);
 		} catch (IOException e) {
-			e.printStackTrace();
+			baseLogger.log(Level.SEVERE, "I/O Error writing configuration file", e);
 		}
 	}
 
 	private void createDefaultConfig(File configFile) {
-		System.out.println("Creating default configuration file");
+		baseLogger.info("Creating default configuration file");
 		Properties newConfig = new Properties();
 		newConfig.setProperty("minimumMemory", "512M");
 		newConfig.setProperty("maximumMemory", "1G");
@@ -186,9 +198,9 @@ public class MainForm extends MCUApp {
 			configFile.getParentFile().mkdirs();
 			newConfig.store(new FileOutputStream(configFile), "User-specific configuration options");
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			baseLogger.log(Level.SEVERE, "File not found: " + configFile.getAbsolutePath(), e);
 		} catch (IOException e) {
-			e.printStackTrace();
+			baseLogger.log(Level.SEVERE, "I/O Error writing configuration file", e);
 		}
 	}
 
@@ -215,7 +227,7 @@ public class MainForm extends MCUApp {
 	void initialize() {
 		loadConfig();
 		checkAccess();
-		System.out.println("Start building GUI");
+		baseLogger.fine("Start building GUI");
 		frmMain = new JFrame();
 		frmMain.setTitle("[No Server Selected] - MCUpdater " + Version.VERSION + Version.BUILD_LABEL);
 		frmMain.setResizable(false);
@@ -226,7 +238,7 @@ public class MainForm extends MCUApp {
 			mcuIcon = new ImageIcon(MainForm.class.getResource("/art/mcu-icon.png"));	// was "/icons/briefcase.png"
 			frmMain.setIconImage(mcuIcon.getImage());
 		} catch( NullPointerException npe ) {
-			System.out.println("Unable to find mcu-icon.png. Malformed JAR detected.");
+			baseLogger.log(Level.SEVERE, "Unable to find mcu-icon.png. Malformed JAR detected.", npe);
 		}
 
 		JPanel pnlFooter = new JPanel();
@@ -435,7 +447,7 @@ public class MainForm extends MCUApp {
 
 		Component horizontalStrut_1 = Box.createHorizontalStrut(5);
 		toolBar.add(horizontalStrut_1);
-		System.out.println("Finished building GUI");
+		baseLogger.fine("Finished building GUI");
 		initializeInstanceList();
 		checkSelectedInstance();
 
@@ -449,7 +461,7 @@ public class MainForm extends MCUApp {
 					login(user, password);
 				} catch (MCLoginException e1) {
 				} catch (Exception e1) {
-					e1.printStackTrace();
+					baseLogger.log(Level.SEVERE, "General error", e1);
 				}
 			}
 		}
@@ -468,9 +480,9 @@ public class MainForm extends MCUApp {
 			}
 			mcu.setInstanceRoot(new Path(new File(config.getProperty("instanceRoot"))));
 		} catch (FileNotFoundException e1) {
-			e1.printStackTrace();
+			baseLogger.log(Level.SEVERE, "File not found: " + configFile.getAbsolutePath(), e1);
 		} catch (IOException e1) {
-			e1.printStackTrace();
+			baseLogger.log(Level.SEVERE, "I/O Error reading configuration file", e1);
 		}
 	}
 
@@ -481,7 +493,6 @@ public class MainForm extends MCUApp {
 //		} catch (NoSuchFileException nsfe) {
 //			instData.setProperty("serverID", "unmanaged");
 //		} catch (IOException e1) {
-//			// TODO Auto-generated catch block
 //			e1.printStackTrace();
 //		}
 //		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(instData.getProperty("serverID"));
@@ -510,7 +521,7 @@ public class MainForm extends MCUApp {
 				servers.add(sl);
 				mcu.writeServerList(servers);
 			} catch (Exception x) {
-				x.printStackTrace();
+				baseLogger.log(Level.SEVERE, "General error", x);
 				packUrl = "";
 			}
 		}
@@ -526,7 +537,7 @@ public class MainForm extends MCUApp {
 
 			return Base64.encodeBase64String(enc);
 		} catch (Exception e) {
-			e.printStackTrace();
+			baseLogger.log(Level.SEVERE, "General error", e);
 		}
 		return null;
 	}
@@ -539,7 +550,7 @@ public class MainForm extends MCUApp {
 
 			return new String(utf8, "UTF8");
 		} catch (Exception e) {
-			e.printStackTrace();
+			baseLogger.log(Level.SEVERE, "General error", e);
 		}
 		return null;
 	}
@@ -700,14 +711,13 @@ public class MainForm extends MCUApp {
 			//					copyInstanceFolder(instancePath, MCPath);
 			//				}
 			//			} catch (IOException e) {
-			//				// TODO Auto-generated catch block
 			//				e.printStackTrace();
 			//				return;
 			//			}
 
 			this.frmMain.repaint();
 		} catch (IOException ioe) {
-			ioe.printStackTrace();
+			baseLogger.log(Level.SEVERE, "I/O error", ioe);
 		}
 
 	}
@@ -717,7 +727,6 @@ public class MainForm extends MCUApp {
 //		try {
 //			Files.walkFileTree(instancePath, cf);
 //		} catch (IOException e) {
-//			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
 //	}
@@ -728,7 +737,6 @@ public class MainForm extends MCUApp {
 //			try {
 //				Files.createDirectory(instancePath);
 //			} catch (IOException e) {
-//				// TODO Auto-generated catch block
 //				e.printStackTrace();
 //			}
 //		}
@@ -744,7 +752,6 @@ public class MainForm extends MCUApp {
 //				instData.store(Files.newOutputStream(instanceFile), "Instance data");
 //			}
 //		} catch (IOException e) {
-//			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
 //
@@ -786,15 +793,16 @@ public class MainForm extends MCUApp {
 
 	@Override
 	public void log(String msg) {
-		final StringBuilder str = new StringBuilder(logSDF.format(new Date()));
-		str.append(msg);
-		str.append('\n');
-		console.log(str.toString());
+//		final StringBuilder str = new StringBuilder(logSDF.format(new Date()));
+//		str.append(msg);
+//		str.append('\n');
+//		console.log(str.toString());
+		baseLogger.info(msg);
 	}
 
 	private void initTray() {
 		if( !SystemTray.isSupported() ) {
-			System.out.println("System tray is NOT supported :(");
+			baseLogger.warning("System tray is NOT supported.");
 			return;
 		}
 
@@ -833,7 +841,7 @@ public class MainForm extends MCUApp {
 			tray.add(trayIcon);
 		} catch (AWTException e) {
 			trayIcon = null;
-			e.printStackTrace();
+			baseLogger.log(Level.SEVERE, "Java AWT error", e);
 		}
 	}
 	public void minimize(boolean auto) {
@@ -896,7 +904,7 @@ public class MainForm extends MCUApp {
 		} catch (MCLoginException mcle) {
 			throw mcle;
 		} catch (Exception localException) {
-			localException.printStackTrace();
+			baseLogger.log(Level.SEVERE, "General error", localException);
 			throw localException;
 		}
 	}
@@ -907,7 +915,7 @@ public class MainForm extends MCUApp {
 		try {
 			this.lblAvatar.setIcon(new ImageIcon(new URL("http://cravatar.tomheinan.com/" + response.getUserName() + "/16")));
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+			baseLogger.log(Level.SEVERE, "Bad URL", e);
 		}
 	}
 
@@ -953,19 +961,17 @@ public class MainForm extends MCUApp {
 				try {
 					instData.load(Files.newInputStream(instanceFile));
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					baseLogger.log(Level.SEVERE, "I/O error", e1);
 				}
 
 				List<Module> toInstall = new ArrayList<Module>();
 				List<Component> selects = new ArrayList<Component>(Arrays.asList(pnlModList.getComponents()));
 				Iterator<Component> it = selects.iterator();
 				setStatus("Preparing module list");
-				log("Preparing module list...");
+				log("Preparing module list for instance (" + selected.getName() + ")...");
 				setProgressBar(20);
 				while(it.hasNext()) {
 					Component baseEntry = it.next();
-					//System.out.println(baseEntry.getClass().toString());
 					if(baseEntry.getClass().toString().equals("class org.smbarbour.mcu.JModuleCheckBox")) {
 						JModuleCheckBox entry = (JModuleCheckBox) baseEntry;
 						if(entry.isSelected()){
@@ -996,8 +1002,7 @@ public class MainForm extends MCUApp {
 				try {
 					instData.store(Files.newOutputStream(instanceFile), "Instance Data");
 				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					baseLogger.log(Level.SEVERE, "I/O error", e);
 				}
 				if (result) {
 					log("Update complete.");
@@ -1124,7 +1129,7 @@ public class MainForm extends MCUApp {
 				try {
 					MCUpdater.openLink(he.getURL().toURI());
 				} catch (Exception e) {
-					e.printStackTrace();
+					baseLogger.log(Level.SEVERE, "General error", e);
 				}
 			}
 		}
@@ -1141,8 +1146,7 @@ public class MainForm extends MCUApp {
 				try {
 					instData.load(Files.newInputStream(mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("instance.dat")));
 				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					baseLogger.log(Level.SEVERE, "I/O error", e1);
 				}
 				final boolean needUpdate = !selected.getRevision().equals(instData.getProperty("revision"));
 				// check for mcu version update

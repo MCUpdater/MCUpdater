@@ -19,13 +19,16 @@ public class CALogHandler extends Handler {
 	
 	@Override
 	public void publish(LogRecord record) {
-		Calendar recordDate = Calendar.getInstance();
-		recordDate.setTimeInMillis(record.getMillis());
-		Style a = null;
-		if (record.getLevel() == Level.INFO) { a = console.infoStyle; }
-		if (record.getLevel() == Level.WARNING) { a = console.warnStyle; }
-		if (record.getLevel() == Level.SEVERE) { a = console.errorStyle; } 
-		console.log(sdFormat.format(recordDate.getTime()) + record.getLevel().getLocalizedName() + ": " + record.getMessage() + "\n", a);
+		if (this.isLoggable(record)){
+			Calendar recordDate = Calendar.getInstance();
+			recordDate.setTimeInMillis(record.getMillis());
+			Style a = null;
+			if (record.getLevel() == Level.INFO) { a = console.infoStyle; }
+			if (record.getLevel() == Level.WARNING) { a = console.warnStyle; }
+			if (record.getLevel() == Level.SEVERE) { a = console.errorStyle; }
+			Throwable thrown = record.getThrown();
+			console.log(sdFormat.format(recordDate.getTime()) + record.getMessage() + (thrown != null ? " (stacktrace in " + record.getLoggerName() + " log)" : "") + "\n", a);
+		}
 	}
 
 	@Override

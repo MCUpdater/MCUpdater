@@ -22,6 +22,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
@@ -29,6 +33,7 @@ import javax.swing.ImageIcon;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.smbarbour.mcu.FMLStyleFormatter;
 import org.smbarbour.mcu.MCUApp;
 import org.smbarbour.mcu.Version;
 import org.smbarbour.mcu.util.Archive;
@@ -47,6 +52,7 @@ public class MCUpdater {
 	public ImageIcon defaultIcon;
 	private String newestMC = "";
 	private Map<String,String> versionMap = new HashMap<String,String>();
+	public Logger apiLogger;
 	
 	private static MCUpdater INSTANCE;
 
@@ -54,7 +60,7 @@ public class MCUpdater {
 		try {
 			return new File(MCUpdater.class.getProtectionDomain().getCodeSource().getLocation().toURI());
 		} catch (URISyntaxException e) {
-			e.printStackTrace();
+			INSTANCE.apiLogger.log(Level.SEVERE, "Error getting MCUpdater JAR URI", e);
 		}
 		return null;
 	}
@@ -77,11 +83,8 @@ public class MCUpdater {
 	
 	private MCUpdater()
 	{
-		try {
-			md5 = MessageDigest.getInstance("MD5");
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
+		apiLogger = Logger.getLogger("MCU-API");
+		apiLogger.setLevel(Level.ALL);
 		if(System.getProperty("os.name").startsWith("Windows"))
 		{
 			MCFolder = new Path(System.getenv("APPDATA")).resolve(".minecraft");
@@ -96,7 +99,22 @@ public class MCUpdater {
 			MCFolder = new Path(System.getProperty("user.home")).resolve(".minecraft");
 			archiveFolder = new Path(System.getProperty("user.home")).resolve(".MCUpdater");
 		}
-		//defaultIcon = new ImageIcon(new URL("http://www.minecraft.net/favicon.png"));
+		try {
+			FileHandler apiHandler = new FileHandler(archiveFolder.resolve("MCU-API.log").toString(), 0, 3);
+			apiHandler.setFormatter(new FMLStyleFormatter());
+			apiLogger.addHandler(apiHandler);
+			
+		} catch (SecurityException e1) {
+			e1.printStackTrace(); // Will only be thrown if there is a problem with logging.
+		} catch (IOException e1) {
+			e1.printStackTrace(); // Will only be thrown if there is a problem with logging.
+		}
+		try {
+			md5 = MessageDigest.getInstance("MD5");
+		} catch (NoSuchAlgorithmException e) {
+			apiLogger.log(Level.SEVERE, "No MD5 support!", e);
+		}
+
 		try {
 			defaultIcon = new ImageIcon(MCUpdater.class.getResource("/minecraft.png"));
 		} catch( NullPointerException e ) {
@@ -127,12 +145,12 @@ public class MCUpdater {
 			}
 			buffer.close();
 			input.close();
-			_debug("Took "+(System.currentTimeMillis()-start)+"ms to load md5.dat");
-			_debug("newest Minecraft in md5.dat: " + newestMC);
+			apiLogger.fine("Took "+(System.currentTimeMillis()-start)+"ms to load md5.dat");
+			apiLogger.fine("newest Minecraft in md5.dat: " + newestMC);
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+			apiLogger.log(Level.SEVERE, "Bad URL", e);
 		} catch (IOException e) {
-			e.printStackTrace();
+			apiLogger.log(Level.SEVERE, "I/O Error", e);
 		}
 	}
 	
@@ -170,7 +188,7 @@ public class MCUpdater {
 		}
 		catch( IOException x)
 		{
-			x.printStackTrace();
+			apiLogger.log(Level.SEVERE, "I/O Error", x);
 		}
 	}
 	
@@ -189,9 +207,9 @@ public class MCUpdater {
 			return bList;
 			
 		} catch(FileNotFoundException notfound) {
-			_debug("File not found");
+			apiLogger.log(Level.SEVERE, "File not found", notfound);
 		} catch(IOException ioe) {
-			ioe.printStackTrace();		
+			apiLogger.log(Level.SEVERE, "I/O Error", ioe);		
 		}
 		return bList;
 	}
@@ -210,7 +228,7 @@ public class MCUpdater {
 			
 			writer.close();
 		} catch(IOException ioe) {
-			ioe.printStackTrace();
+			apiLogger.log(Level.SEVERE, "I/O Error", ioe);
 		}
 	}
 	
@@ -251,10 +269,10 @@ public class MCUpdater {
 							slList.add(new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), serverUrl, parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), ServerPackParser.parseBoolean(parent.getAttribute("generateList")), parent.getAttribute("revision")));
 						}
 					} else {
-						_log("Unable to get server information from " + serverUrl);
+						apiLogger.warning("Unable to get server information from " + serverUrl);
 					}
 				} catch (Exception e) {
-					e.printStackTrace();
+					apiLogger.log(Level.SEVERE, "General Error", e);
 				}
 			}
 			//	String[] arrString = entry.split("\\|");
@@ -265,11 +283,11 @@ public class MCUpdater {
 		}
 		catch( FileNotFoundException notfound)
 		{
-			_debug("File not found");
+			apiLogger.log(Level.SEVERE, "File not found", notfound);
 		}
 		catch (IOException x)
 		{
-			x.printStackTrace();
+			apiLogger.log(Level.SEVERE, "I/O Error", x);
 		}
 		return slList;
 	}
@@ -299,10 +317,9 @@ public class MCUpdater {
 			hash = DigestUtils.md5(is);
 			is.close();		
 		} catch (FileNotFoundException e) {
-			//e.printStackTrace();
 			return "Not found";
 		} catch (IOException e) {
-			e.printStackTrace();
+			apiLogger.log(Level.SEVERE, "I/O Error", e);
 			return "Error reading file";
 		}
 		String hashString = new String(Hex.encodeHex(hash));
@@ -340,7 +357,7 @@ public class MCUpdater {
 			in.close();
 			out.close();
 		} catch(IOException ioe) {
-			ioe.printStackTrace();
+			apiLogger.log(Level.SEVERE, "I/O Error", ioe);
 		}
 	}
 
@@ -365,7 +382,7 @@ public class MCUpdater {
 			_debug("DEBUG: writeBackupList");
 			writeBackupList(bList);
 		} catch (IOException e) {
-			e.printStackTrace();
+			apiLogger.log(Level.SEVERE, "I/O Error", e);
 		}
 	}
 
@@ -561,7 +578,7 @@ public class MCUpdater {
 			propBrand.setProperty("fmlbranding", "MCUpdater: " + server.getName() + " (rev " + server.getRevision() + ")");
 			propBrand.store(new FileOutputStream(branding), "MCUpdater ServerPack branding");
 		} catch (IOException e1) {
-			e1.printStackTrace();
+			apiLogger.log(Level.SEVERE, "I/O Error", e1);
 		}
 		
 		int modCount = toInstall.size();
@@ -600,9 +617,7 @@ public class MCUpdater {
 							jarModCount++;
 						} catch (Exception e) {
 							++errorCount;
-							parent.log("! "+e.getMessage());
-							e.printStackTrace();
-						}
+							apiLogger.log(Level.SEVERE, "General Error", e);						}
 					} else {
 						parent.log("Skipping jar mod: " + entry.getName());
 					}
@@ -626,8 +641,7 @@ public class MCUpdater {
 						extractMod.getDestFile().delete();
 					} catch (Exception e) {
 						++errorCount;
-						parent.log("! "+e.getMessage());
-						e.printStackTrace();
+						apiLogger.log(Level.SEVERE, "General Error", e);
 					}
 				} else if (entry.getCoreMod()) {
 					modPath = instancePath.resolve("coremods").resolve(entry.getId() + ".jar").toFile();
@@ -642,8 +656,7 @@ public class MCUpdater {
 						_debug(normalMod.url + " -> " + normalMod.getDestFile().getPath());
 					} catch (Exception e) {
 						++errorCount;
-						parent.log("! "+e.getMessage());
-						e.printStackTrace();
+						apiLogger.log(Level.SEVERE, "General Error", e);
 					}					
 				} else {
 					if (entry.getPath().equals("")){
@@ -663,8 +676,7 @@ public class MCUpdater {
 						_debug(normalMod.url + " -> " + normalMod.getDestFile().getPath());
 					} catch (Exception e) {
 						++errorCount;
-						parent.log("! "+e.getMessage());
-						e.printStackTrace();
+						apiLogger.log(Level.SEVERE, "General Error", e);
 					}
 					//FileUtils.copyURLToFile(modURL, modPath);
 				}
@@ -695,18 +707,16 @@ public class MCUpdater {
 					if( MD5 != null ) {
 						final boolean cached = DownloadCache.cacheFile(confFile, MD5);
 						if( cached ) {
-							_debug("\nSaved in cache");							
+							_debug(confFile.getName() + " saved in cache");							
 						}
 					}
 				}
 			} catch (MalformedURLException e) {
 				++errorCount;
-				parent.log("! "+e.getMessage());
-				_log(e.getMessage());
+				apiLogger.log(Level.SEVERE, "General Error", e);
 			} catch (IOException e) {
 				++errorCount;
-				parent.log("! "+e.getMessage());
-				e.printStackTrace();
+				apiLogger.log(Level.SEVERE, "General Error", e);
 			}
 			modsLoaded++;
 			parent.setProgressBar((int)( (65 / modCount) * modsLoaded + 25));
@@ -716,7 +726,7 @@ public class MCUpdater {
 		try {
 			buildJar.createNewFile();
 		} catch (IOException e) {
-			e.printStackTrace();
+			apiLogger.log(Level.SEVERE, "I/O Error", e);
 		}
 		parent.log("All mods loaded.");
 		if( errorCount > 0 ) {
@@ -737,7 +747,7 @@ public class MCUpdater {
 			try {
 				Archive.updateArchive(binPath.resolve("minecraft.jar").toFile(), new File[]{ branding });
 			} catch (IOException e1) {
-				e1.printStackTrace();
+				apiLogger.log(Level.SEVERE, "I/O Error", e1);
 			}
 		} else {
 			parent.log("Packaging updated jar...");
@@ -745,17 +755,15 @@ public class MCUpdater {
 				Archive.createJar(buildJar, buildList, tmpFolder.getPath() + sep);
 			} catch (IOException e1) {
 				parent.log("Failed to create jar!");
-				parent.log(e1.getMessage());
+				apiLogger.log(Level.SEVERE, "I/O Error", e1);
 				return false;
-				//e1.printStackTrace();
 			}
 			//Archive.patchJar(jar, buildJar, new ArrayList<File>(Arrays.asList(tmpFolder.listFiles())));
 			//copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
 			try {
 				Files.copy(new Path(buildJar), binPath.resolve("minecraft.jar"));
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				apiLogger.log(Level.SEVERE, "Failed to copy new jar to instance!", e);
 			}
 		}
 		List<File> tempFiles = recurseFolder(tmpFolder,true);
@@ -797,7 +805,7 @@ public class MCUpdater {
 			fos.write(full,0,full.length);
 			fos.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			apiLogger.log(Level.SEVERE, "I/O Error", e);
 		}
 		
 	}
@@ -812,14 +820,10 @@ public class MCUpdater {
 	}
 	
 	private static void _log(String msg) {
-		if( INSTANCE.parent != null ) {
-			INSTANCE.parent.log(msg);
-		} else {
-			System.out.println(msg);
-		}
+		INSTANCE.apiLogger.info(msg);
 	}
 	private static void _debug(String msg) {
-		System.out.println(msg);
+		INSTANCE.apiLogger.fine(msg);
 	}
 
 	public boolean checkVersionCache(String version) {
@@ -834,9 +838,9 @@ public class MCUpdater {
 				try {
 					FileUtils.copyURLToFile(new URL("http://assets.minecraft.net/" + newestMC.replace(".","_") + "/minecraft.jar"), newestJar);
 				} catch (MalformedURLException e) {
-					e.printStackTrace();
+					apiLogger.log(Level.SEVERE, "Bad URL", e);
 				} catch (IOException e) {
-					e.printStackTrace();
+					apiLogger.log(Level.SEVERE, "I/O Error", e);
 				}
 				if (!requestedJar.toString().equals(newestJar.toString())) {
 					doPatch(requestedJar, newestJar, version);
@@ -857,7 +861,7 @@ public class MCUpdater {
 			Transmogrify.applyPatch(new Path(newestJar), new Path(requestedJar), new Path(patchFile));
 			patchFile.delete();
 		} catch (Exception e) {
-			e.printStackTrace();
+			apiLogger.log(Level.SEVERE, "General Error", e);
 		}
 	}
 
