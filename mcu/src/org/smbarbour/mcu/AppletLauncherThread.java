@@ -25,6 +25,7 @@ import java.util.logging.Level;
 
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import javax.swing.text.Style;
 
 import org.smbarbour.mcu.util.LoginData;
 import org.smbarbour.mcu.util.MCUpdater;
@@ -45,19 +46,21 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 	private JButton launchButton;
 	private MenuItem killItem;
 	private boolean ready;
+	private ConsoleArea console;
 
-	public AppletLauncherThread(MainForm parent, LoginData session,	String jrePath, String minMem, String maxMem, File output, ServerList server) {
+	public AppletLauncherThread(MainForm parent, LoginData session,	String jrePath, String minMem, String maxMem, File output, ConsoleArea console, ServerList server) {
 		this.parent = parent;
 		this.session = session;
 		this.jrePath = jrePath;
 		this.minMem = minMem;
 		this.maxMem = maxMem;
 		this.output = output;
+		this.console = console;
 		this.server = server;
 	}
 
-	public static AppletLauncherThread launch(MainForm parent, LoginData session, String jrePath, String minMem, String maxMem, File output, ServerList server) {
-		AppletLauncherThread me = new AppletLauncherThread(parent, session, jrePath, minMem, maxMem, output, server);
+	public static AppletLauncherThread launch(MainForm parent, LoginData session, String jrePath, String minMem, String maxMem, File output, ConsoleArea console, ServerList server) {
+		AppletLauncherThread me = new AppletLauncherThread(parent, session, jrePath, minMem, maxMem, output, console, server);
 		return me;
 	}
 
@@ -189,6 +192,10 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 						parent.baseLogger.fine(line);
 					}
 					if( line.length() > 0) {
+						Style lineStyle = null;
+						if (line.contains("WARNING")) { lineStyle = console.warnStyle; }
+						if (line.contains("SEVERE")) { lineStyle = console.errorStyle; }
+						console.log(line, lineStyle);
 						parent.baseLogger.info(line);
 					}
 				}

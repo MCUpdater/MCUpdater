@@ -1087,7 +1087,7 @@ public class MainForm extends MCUApp {
 //
 //		} else {
 			//thread = NativeLauncherThread.launch(window, loginData, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), outFile, console);
-			thread = AppletLauncherThread.launch(window, loginData, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), outFile, selected);
+			thread = AppletLauncherThread.launch(window, loginData, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), outFile, console, selected);
 //		}
 		thread.register(window, btnLaunchMinecraft, killItem );
 		thread.start();
