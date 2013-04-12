@@ -44,14 +44,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-//import java.nio.channels.Channels;
-//import java.nio.channels.ReadableByteChannel;
-//import java.nio.file.NoSuchFileException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-//import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -106,7 +100,6 @@ public class MainForm extends MCUApp {
 	private JTabbedPane tabs;
 	private final JTextPane browser = new JTextPane();
 	private final ConsoleArea console = new ConsoleArea();
-	private final SimpleDateFormat logSDF = new SimpleDateFormat("[HH:mm:ss.SSS] ");
 
 	private ServerList selected;
 	private JPanel pnlRight;
@@ -1094,7 +1087,7 @@ public class MainForm extends MCUApp {
 //
 //		} else {
 			//thread = NativeLauncherThread.launch(window, loginData, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), outFile, console);
-			thread = AppletLauncherThread.launch(window, loginData, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), outFile, console, selected);
+			thread = AppletLauncherThread.launch(window, loginData, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), outFile, selected);
 //		}
 		thread.register(window, btnLaunchMinecraft, killItem );
 		thread.start();

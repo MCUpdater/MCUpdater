@@ -10,7 +10,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.logging.Level;
+
 import org.apache.commons.io.FileUtils;
+import org.smbarbour.mcu.util.MCUpdater;
 
 public class Files {
 
@@ -18,7 +21,7 @@ public class Files {
 		try {
 			return new BufferedWriter(new FileWriter(path.toFile()));
 		} catch (IOException e) {
-			e.printStackTrace();
+			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "I/O Error", e);
 		}
 		return null;
 	}
@@ -27,7 +30,7 @@ public class Files {
 		try {
 			return new BufferedReader(new FileReader(path.toFile()));
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "File not found", e);
 		}
 		return null;
 	}

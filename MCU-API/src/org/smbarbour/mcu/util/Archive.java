@@ -14,6 +14,7 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.jar.*;
+import java.util.logging.Level;
 import java.util.zip.*;
 
 import org.apache.commons.io.FileUtils;
@@ -22,6 +23,7 @@ import org.smbarbour.mcu.MCUApp;
 public class Archive {
 
 	public static void extractZip(File archive, File destination) {
+		MCUpdater mcu = MCUpdater.getInstance();
 		try{
 			ZipInputStream zis = new ZipInputStream(new FileInputStream(archive));
 			ZipEntry entry;
@@ -33,14 +35,14 @@ public class Archive {
 				if(entry.isDirectory()) {
 					File newDir = new Path(destination).resolve(entryName).toFile();
 					newDir.mkdirs();
-					System.out.println("   Directory: " + newDir.getPath());
+					mcu.apiLogger.finest("   Directory: " + newDir.getPath());
 				} else {
 					if (entryName.contains("aux.class")) {
 						entryName = "mojangDerpyClass1.class";
 					}
 					File outFile = new Path(destination).resolve(entryName).toFile();
 					outFile.getParentFile().mkdirs();
-					System.out.println("   Extract: " + outFile.getPath());
+					mcu.apiLogger.finest("   Extract: " + outFile.getPath());
 					FileOutputStream fos = new FileOutputStream(outFile);
 
 					int len;
@@ -56,14 +58,15 @@ public class Archive {
 			}
 			zis.close();
 		} catch (FileNotFoundException fnf) {
-			fnf.printStackTrace();
+			mcu.apiLogger.log(Level.SEVERE, "File not found", fnf);
 		} catch (IOException ioe) {
-			ioe.printStackTrace();
+			mcu.apiLogger.log(Level.SEVERE, "I/O error", ioe);
 		}
 	}
 
 	public static void createZip(File archive, List<File> files, Path mCFolder, MCUApp parent) throws IOException
 	{
+		MCUpdater mcu = MCUpdater.getInstance();
 		if(!archive.getParentFile().exists()){
 			archive.getParentFile().mkdirs();
 		}
@@ -76,7 +79,7 @@ public class Archive {
 			filePos++;
 			parent.setStatus("Writing backup: (" + filePos + "/" + fileCount + ")");
 			String relPath = entry.getPath().replace(mCFolder.toString(), "");
-			System.out.println(relPath);
+			mcu.apiLogger.finest(relPath);
 			if(entry.isDirectory()) {
 				out.putNextEntry(new ZipEntry(relPath + "/"));
 				out.closeEntry();
@@ -99,6 +102,7 @@ public class Archive {
 
 	public static void addToZip(File archive, List<File> files, File basePath) throws IOException
 	{
+		MCUpdater mcu = MCUpdater.getInstance();
 		File tempFile = File.createTempFile(archive.getName(), null);
 		tempFile.delete();
 
@@ -147,12 +151,12 @@ public class Archive {
 		{
 			File f = iterator.next();
 			if(f.isDirectory()) {
-				System.out.println("addToZip: " + f.getPath().replace(basePath.getPath(), "") + "/");
+				mcu.apiLogger.finer("addToZip: " + f.getPath().replace(basePath.getPath(), "") + "/");
 				zos.putNextEntry(new ZipEntry(f.getPath().replace(basePath.getPath(), "") + "/"));
 				zos.closeEntry();
 			} else {
 				InputStream in = new FileInputStream(f);
-				System.out.println("addToZip: " + f.getPath().replace(basePath.getPath(), ""));
+				mcu.apiLogger.finer("addToZip: " + f.getPath().replace(basePath.getPath(), ""));
 				zos.putNextEntry(new ZipEntry(f.getPath().replace(basePath.getPath(), "")));
 				int len;
 				while ((len = in.read(buf)) > 0) {
@@ -205,88 +209,12 @@ public class Archive {
 			}
 			jos.close();
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "File not found", e);
 		} catch (IOException e) {
 			throw e;
 		}
 
 	}
-
-//	public static void patchJar(final File jar, final ArrayList<File> inputFiles)
-//	{
-//		File tempFile = null;
-//		try {
-//			tempFile = File.createTempFile(jar.getName(), null);
-//			tempFile.delete();
-//			jar.renameTo(tempFile);
-//		} catch (IOException e1) {
-//			e1.printStackTrace();
-//		}
-//		if(inputFiles.size() <= 0) {
-//			return;
-//		}
-//		new Thread() {
-//			@Override
-//			public void run() {
-//				ZipInputStream zipIn;
-//
-//				try {
-//					JarOutputStream out = new JarOutputStream(new BufferedOutputStream(new FileOutputStream(outputFile, true)));
-//
-//					zipIn = new ZipInputStream(new FileInputStream(jar));
-//					putIntoJar(zipIn, out);
-//					zipIn.close();
-//
-//					Iterator<File> iterator = inputFiles.iterator();
-//					while(iterator.hasNext())
-//					{
-//						File inFile = iterator.next();
-//						//TODO: Log message("Adding " + inFile.getName() + " ...")
-//						System.out.println("JAR: " + inFile.getPath());
-//						zipIn = new ZipInputStream(new FileInputStream(inFile));
-//						putIntoJar(zipIn, out);
-//						zipIn.close();
-//						//TODO: Log progress
-//					}
-//					out.close();
-//					//TODO: Log progress (complete)
-//				} catch (FileNotFoundException fnfe)
-//				{
-//					fnfe.printStackTrace();
-//					//TODO: Log message ("File not found: " + fnfe.getMessage())
-//				} catch (IOException ioe)
-//				{
-//					ioe.printStackTrace();
-//					//TODO: Log message ("Could not read zip file!")
-//				}
-//			}
-//
-//			private void putIntoJar(ZipInputStream zipIn, JarOutputStream out) throws IOException {
-//				ZipEntry zentry = new ZipEntry(zipIn.getNextEntry().getName());	
-//				while(zentry != null) {
-//					try {
-//						out.putNextEntry(zentry);
-//					}catch (ZipException e) {
-//						//TODO: Log message("Skipping existing entry: " + e.getMessage());
-//						zentry = new ZipEntry(zipIn.getNextEntry().getName());
-//						continue;
-//					}
-//					byte[] buffer = new byte[1024];
-//					int len;
-//					while((len = zipIn.read(buffer)) > 0) {
-//						out.write(buffer, 0, len);
-//					}
-//					out.closeEntry();
-//					try {
-//						zentry = new ZipEntry(zipIn.getNextEntry().getName());
-//					}catch (NullPointerException e) {
-//						zentry = null;
-//					}
-//				}				
-//			}
-//		}.start();
-//		//TODO: Log message ("Done")
-//	}
 
     public static void updateArchive(File zipFile, File[] files) throws IOException {
        File tempFile = File.createTempFile(zipFile.getName(), null);
@@ -297,7 +225,6 @@ public class Archive {
        {
     	   FileUtils.copyFile(zipFile, tempFile);
     	   zipFile.delete();
-           //throw new RuntimeException("could not rename the file "+zipFile.getAbsolutePath()+" to "+tempFile.getAbsolutePath());
        }
        byte[] buf = new byte[1024];
 

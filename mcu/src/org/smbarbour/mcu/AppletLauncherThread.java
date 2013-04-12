@@ -21,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 
@@ -30,7 +32,6 @@ import org.smbarbour.mcu.util.ServerList;
 
 public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 
-	private ConsoleArea console;
 	private MainForm parent;
 	private LoginData session;
 	private String jrePath;
@@ -55,10 +56,8 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		this.server = server;
 	}
 
-	public static AppletLauncherThread launch(MainForm parent, LoginData session, String jrePath, String minMem, String maxMem, File output, ConsoleArea console, ServerList server) {
+	public static AppletLauncherThread launch(MainForm parent, LoginData session, String jrePath, String minMem, String maxMem, File output, ServerList server) {
 		AppletLauncherThread me = new AppletLauncherThread(parent, session, jrePath, minMem, maxMem, output, server);
-		me.console = console;
-		console.setText("");
 		return me;
 	}
 
@@ -134,7 +133,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		}
 
 		ProcessBuilder pb = new ProcessBuilder(args);
-		System.out.println("Running on: " + System.getProperty("os.name"));
+		parent.baseLogger.fine("Running on: " + System.getProperty("os.name"));
 		if(System.getProperty("os.name").startsWith("Linux")) {
 			if (new Path(new File(jrePath)).resolve("lib").resolve("amd64").toFile().exists()) {
 				pb.environment().put("LD_LIBRARY_PATH", new Path(new File(jrePath)).resolve("lib").resolve("amd64").toString());
@@ -149,8 +148,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		try {
 			buffWrite = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(output)));
 		} catch (FileNotFoundException e) {
-			log(e.getMessage()+"\n");
-			e.printStackTrace();
+			parent.baseLogger.log(Level.SEVERE, "File not found", e);
 		}
 		try {
 			task = pb.start();
@@ -162,19 +160,19 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 			if (firstLine == null ||
 					firstLine.startsWith("Error occurred during initialization of VM") ||
 					firstLine.startsWith("Could not create the Java virtual machine.")) {
-				log("!!! Failure to launch detected.\n");
+				parent.baseLogger.severe("Failure to launch detected.");
 				// fetch the whole error message
 				StringBuilder err = new StringBuilder(firstLine);
 				while ((line = buffRead.readLine()) != null) {
 					err.append('\n');
 					err.append(line);
+					parent.baseLogger.severe(line);
 				}
-				log(err+"\n");
 				JOptionPane.showMessageDialog(null, err);
 			} else {
 				buffRead.reset();
 				minimizeFrame();
-				log("* Launching client...\n");
+				parent.baseLogger.info("Launching client...");
 				int counter = 0;
 				while ((line = buffRead.readLine()) != null)
 				{
@@ -188,10 +186,10 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 							counter = 0;
 						}
 					} else {
-						System.out.println(line);
+						parent.baseLogger.fine(line);
 					}
 					if( line.length() > 0) {
-						log(line+"\n");
+						parent.baseLogger.info(line);
 					}
 				}
 			}
@@ -199,10 +197,10 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 			buffWrite.close();
 			restoreFrame();
 
-			log("* Exiting Minecraft"+(forceKilled?" (killed)":"")+"\n");
+			parent.baseLogger.info("Exiting Minecraft"+(forceKilled?" (killed)":""));
 
 		} catch (IOException ioe) {
-			ioe.printStackTrace();
+			parent.baseLogger.log(Level.SEVERE, "I/O Error", ioe);
 		}
 	}
 
@@ -263,16 +261,16 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 					task.destroy();
 				} catch( Exception e ) {
 					// maximum paranoia here
-					e.printStackTrace();
+					parent.baseLogger.log(Level.SEVERE, "General error", e);
 				}
 			}
 		}
 	}
 
-	private void log(String msg) {
-		if( console == null ) return;
-		console.log(msg);
-	}
+//	private void log(String msg) {
+//		if( console == null ) return;
+//		console.log(msg);
+//	}
 
 	@Override
 	public void register(MainForm form, JButton btnLaunchMinecraft, MenuItem killItem) {

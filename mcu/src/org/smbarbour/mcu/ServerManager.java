@@ -13,6 +13,7 @@ import javax.swing.JButton;
 import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -88,7 +89,7 @@ public class ServerManager extends JFrame {
 					ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packURL, docEle.getAttribute("newsUrl"), docEle.getAttribute("logoUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
 					model.add(sl);
 				} catch (Exception x) {
-					x.printStackTrace();
+					parent.baseLogger.log(Level.SEVERE, "General error", x);
 				}
 
 			}

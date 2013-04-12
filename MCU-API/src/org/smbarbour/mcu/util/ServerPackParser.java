@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -26,19 +27,19 @@ public class ServerPackParser {
 		try {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			return db.parse(packFile);
-		} catch (ParserConfigurationException pce) {
-			pce.printStackTrace();
-		} catch (SAXException se) {
-			se.printStackTrace();
-		} catch (IOException ioe) {
-			ioe.printStackTrace();
+		}catch(ParserConfigurationException pce) {
+			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "Parser error", pce);
+		}catch(SAXException se) {
+			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "Parser error", se);
+		}catch(IOException ioe) {
+			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "I/O error", ioe);
 		}
 		return null;
 	}
 	
 	public static Document readXmlFromUrl(String serverUrl) throws Exception
 	{
-		System.out.println("readXMLFromUrl(" + serverUrl + ")");
+		MCUpdater.getInstance().apiLogger.fine("readXMLFromUrl(" + serverUrl + ")");
 		if (serverUrl.equals("http://www.example.org/ServerPack.xml")) {
 			return null;
 		}
@@ -47,7 +48,7 @@ public class ServerPackParser {
 		try {
 			server = new URL(serverUrl);
 		} catch( MalformedURLException e ) {
-			System.out.println("Malformed URL: "+e.getMessage());
+			MCUpdater.getInstance().apiLogger.log(Level.WARNING, "Malformed URL", e);
 			return null;
 		}
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -56,11 +57,11 @@ public class ServerPackParser {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			return db.parse(server.openStream());
 		}catch(ParserConfigurationException pce) {
-			pce.printStackTrace();
+			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "Parser error", pce);
 		}catch(SAXException se) {
-			se.printStackTrace();
+			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "Parser error", se);
 		}catch(IOException ioe) {
-			ioe.printStackTrace();
+			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "I/O error", ioe);
 		}
 		return null;
 	}
@@ -165,7 +166,7 @@ public class ServerPackParser {
 		try {
 			return parseDocument(readXmlFromFile(packFile), serverId);
 		} catch (Exception e) {
-			e.printStackTrace();
+			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "General error", e);
 			return null;
 		}
 		//return modList;
@@ -176,7 +177,7 @@ public class ServerPackParser {
 		try {
 			return parseDocument(readXmlFromUrl(serverUrl), serverId);
 		} catch (Exception e) {
-			e.printStackTrace();
+			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "General error", e);
 			return null;
 		}
 		//return modList;

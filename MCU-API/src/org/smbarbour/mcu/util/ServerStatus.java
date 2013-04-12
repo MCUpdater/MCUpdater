@@ -10,6 +10,7 @@ import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
+import java.util.logging.Level;
 
 public class ServerStatus {
 	
@@ -55,7 +56,7 @@ public class ServerStatus {
 				port = 25565;
 			}
 		} catch (URISyntaxException e1) {
-			e1.printStackTrace();
+			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "URI Syntax error", e1);
 		}
 		
 		try {

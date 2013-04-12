@@ -25,7 +25,6 @@ import java.util.UUID;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
@@ -123,7 +122,7 @@ public class MCUpdater {
 		}
 		// configure the download cache
 		try {
-			DownloadCache.init(archiveFolder.resolve("cache").toFile());
+			DownloadCache.init(archiveFolder.resolve("cache").toFile(), this);
 		} catch (IllegalArgumentException e) {
 			_debug( "Suppressed attempt to re-init download cache?!" );
 		}
@@ -533,7 +532,7 @@ public class MCUpdater {
 			updateJar = true;
 		}
 		jarModCount = 0;
-		System.out.println(instancePath.toString());
+		apiLogger.info("Instance path: " + instancePath.toString());
 		List<File> contents = recurseFolder(instancePath.toFile(), true);
 		File jar = archiveFolder.resolve("mc-" + server.getVersion() + ".jar").toFile();
 		if(!jar.exists()) {
@@ -722,7 +721,7 @@ public class MCUpdater {
 			parent.setProgressBar((int)( (65 / modCount) * modsLoaded + 25));
 			parent.log("  Done ("+modsLoaded+"/"+modCount+")");
 		}
-		instData.setProperty("jarModsCount", Integer.toString(jarModCount));
+		instData.setProperty("jarModCount", Integer.toString(jarModCount));
 		try {
 			buildJar.createNewFile();
 		} catch (IOException e) {

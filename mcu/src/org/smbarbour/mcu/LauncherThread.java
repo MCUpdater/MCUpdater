@@ -17,6 +17,7 @@ import java.io.OutputStreamWriter;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
 
+@Deprecated
 public class LauncherThread implements Runnable, GenericLauncherThread {
 	private File launcher;
 	private String minMem;

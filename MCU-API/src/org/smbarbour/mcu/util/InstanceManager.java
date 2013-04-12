@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
+import java.util.logging.Level;
 
 import org.apache.commons.io.FileUtils;
 
@@ -66,11 +67,9 @@ public class InstanceManager {
 			nativesFile.delete();
 			return instance;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "I/O Error", e);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "General Error", e);
 		}
 		return null;
 	}

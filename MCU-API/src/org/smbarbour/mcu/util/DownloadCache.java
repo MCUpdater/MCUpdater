@@ -7,6 +7,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.logging.Level;
+
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -20,11 +22,11 @@ public class DownloadCache {
 		this.dir.mkdirs();
 	}
 	
-	public static void init(File dir) {
+	public static void init(File dir, MCUpdater mcu) {
 		if( instance != null ) {
 			throw new IllegalArgumentException("Attempt to reinitialize download cache.");
 		}
-		System.out.println("Initializing DownloadCache in "+dir);
+		mcu.apiLogger.info("Initializing DownloadCache in "+dir);
 		instance = new DownloadCache(dir);
 	}
 	
@@ -40,10 +42,10 @@ public class DownloadCache {
 			hash = DigestUtils.md5(is);
 			is.close();		
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "File not found", e);
 			return false;
 		} catch (IOException e) {
-			e.printStackTrace();
+			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "I/O Error", e);
 			return false;
 		}
 		String chksum = new String(Hex.encodeHex(hash));
@@ -57,7 +59,7 @@ public class DownloadCache {
 			try {
 				FileUtils.copyFile(file, destFile);
 			} catch (IOException e) {
-				e.printStackTrace();
+				MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "I/O Error", e);
 				return false;
 			}
 		}

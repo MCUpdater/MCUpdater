@@ -15,6 +15,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
@@ -24,6 +25,8 @@ import org.apache.commons.io.FileUtils;
 
 public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallback {
 
+	@SuppressWarnings("static-access")
+	Logger logger = MCUpdater.getInstance().apiLogger.getLogger("ModDownload");
 	private boolean isAdfly = false, isMediafire = false, isOptifined = false, readingScript = false;
 	private String redirectURL = null;
 	//private String remoteFilename;
@@ -47,19 +50,19 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 	public ModDownload(URL url, File destination, ModDownload referer, String MD5) throws Exception {
 		this.url = url;
 		this.expectedMD5 = MD5;
-		System.out.println(url.toString());
+		logger.fine("URL: " + url.toString());
 		//this.remoteFilename = url.getFile().substring(url.getFile().lastIndexOf('/')+1);
 		// TODO: check for md5 in download cache first
 		if( MD5 != null ) {
 			final File cacheFile = DownloadCache.getFile(MD5);
 			if( cacheFile.exists() ) {
 				cacheHit = true;
-				System.out.println("\n\nCache hit - "+MD5);
+				logger.fine(" Cache hit - "+MD5);
 				this.destFile = destination;
 				FileUtils.copyFile(cacheFile, this.destFile);
 				return;
 			} else {
-				System.out.println("\n\nCache miss - "+MD5);
+				logger.fine(" Cache miss - "+MD5);
 			}
 		}
 		if (url.getProtocol().equals("file")){
@@ -74,7 +77,7 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 			connection.setRequestProperty("Referer", referer.url.toString());
 		connection.setUseCaches(false);
 		connection.setInstanceFollowRedirects(false);
-		System.out.println("\n\nDownloading: "+url+"\n\n");printheaders(connection.getHeaderFields());
+		logger.fine(" Downloading: "+url);printheaders(connection.getHeaderFields());
 		if (connection.getResponseCode() / 100 == 3) {
 			String newLocation = connection.getHeaderField("Location");
 			url = redirect(url, newLocation);
@@ -84,7 +87,7 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 			return;
 		}
 		String contentType = connection.getContentType();
-		System.out.println("Content type: "+contentType);
+		logger.fine(" Content type: "+contentType);
 		if (contentType.toLowerCase().startsWith("text/html")) {
 //			InputStreamReader sr = new InputStreamReader(connection.getInputStream());
 //			StringWriter sw = new StringWriter();
@@ -124,12 +127,12 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 			if( MD5 != null ) {
 				final boolean cached = DownloadCache.cacheFile(destFile, MD5);
 				if( cached ) {
-					System.out.println("\nSaved in cache");
+					logger.fine(destFile.getName() + " saved in cache");
 				}
 			}
 		}
 		if (connection == null && redirectURL == null) {
-			System.out.println(content);
+			logger.finest(content);
 		}
 	}
 
@@ -185,7 +188,7 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 						URL temp = new URL(value);
 						if (temp.getHost().matches("(([0-1]?[0-9]{1,2}\\.)|(2[0-4][0-9]\\.)|(25[0-5]\\.)){3}(([0-1]?[0-9]{1,2})|(2[0-4][0-9])|(25[0-5]))")) {
 							redirectURL = value;
-				    		System.out.println("Link found: " + potentialLink);
+							logger.fine("Link found: " + potentialLink);
 						}
 					} catch (MalformedURLException e1) {}
 		    	}
@@ -225,7 +228,7 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 //		    	redirectURL = localRedirectURL;
 		    if (readsitename && contentmediafire) {
 		    	isMediafire = true;
-		    	System.out.println("isMediafire: " + isMediafire);
+		    	logger.fine(" isMediafire: " + isMediafire);
 		    }
 		}
 	}
