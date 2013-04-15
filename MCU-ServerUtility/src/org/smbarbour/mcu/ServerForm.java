@@ -177,6 +177,7 @@ public class ServerForm extends MCUApp {
 	private JButton btnConfigUpdate;
 	private JButton btnConfigImport;
 	private JCheckBox chkConfigNoOverwrite;
+	//private String[] sides = new String[]{"BOTH", "CLIENT", "SERVER"};
 	
 	public ServerForm() {
 		initialize();
@@ -935,7 +936,10 @@ public class ServerForm extends MCUApp {
 				gbc_lblModSide.gridy = row;
 				modDetailPanel.add(lblModSide, gbc_lblModSide);
 
-				lstModSide = new JComboBox<String>(new String[]{"BOTH", "CLIENT", "SERVER"});
+				lstModSide = new JComboBox<String>();
+				lstModSide.addItem("BOTH");
+				lstModSide.addItem("CLIENT");
+				lstModSide.addItem("SERVER");
 				lstModSide.addItemListener(new ItemListener(){
 					@Override
 					public void itemStateChanged(ItemEvent e) {
@@ -1419,28 +1423,7 @@ public class ServerForm extends MCUApp {
 			txtConfigPath.setColumns(10);
 
 			row++;
-			
-			JLabel lblConfigNoOverwrite = new JLabel("No Overwrite:");
-			lblConfigNoOverwrite.setHorizontalAlignment(SwingConstants.TRAILING);
-			GridBagConstraints gbc_lblConfigNoOverwrite = new GridBagConstraints();
-			gbc_lblConfigNoOverwrite.fill = GridBagConstraints.HORIZONTAL;
-			gbc_lblConfigNoOverwrite.insets = new Insets(0, 0, 5, 5);
-			gbc_lblConfigNoOverwrite.gridx = 3;
-			gbc_lblConfigNoOverwrite.gridy = row;
-			configDetailPanel.add(lblConfigNoOverwrite, gbc_lblConfigNoOverwrite);
-
-			chkConfigNoOverwrite = new JCheckBox("");
-			chkConfigNoOverwrite.addChangeListener(configChangeListener);
-			GridBagConstraints gbc_chkConfigNoOverwrite = new GridBagConstraints();
-			gbc_chkConfigNoOverwrite.insets = new Insets(0, 0, 5, 5);
-			gbc_chkConfigNoOverwrite.anchor = GridBagConstraints.WEST;
-			gbc_chkConfigNoOverwrite.gridx = 4;
-			gbc_chkConfigNoOverwrite.gridy = row;
-			configDetailPanel.add(chkConfigNoOverwrite, gbc_chkConfigNoOverwrite);
-
-			
-			row++;
-			
+						
 			JLabel lblConfigMD5 = new JLabel("MD5 Checksum:");
 			lblConfigMD5.setHorizontalAlignment(SwingConstants.TRAILING);
 			GridBagConstraints gbc_lblConfigMD5 = new GridBagConstraints();
@@ -1480,6 +1463,27 @@ public class ServerForm extends MCUApp {
 			gbc_btnConfigMD5Calc.gridy = row;
 			configDetailPanel.add(btnConfigMD5Calc, gbc_btnConfigMD5Calc);
 
+			row++;
+
+			JLabel lblConfigNoOverwrite = new JLabel("No Overwrite:");
+			lblConfigNoOverwrite.setHorizontalAlignment(SwingConstants.TRAILING);
+			GridBagConstraints gbc_lblConfigNoOverwrite = new GridBagConstraints();
+			gbc_lblConfigNoOverwrite.fill = GridBagConstraints.HORIZONTAL;
+			gbc_lblConfigNoOverwrite.insets = new Insets(0, 0, 5, 5);
+			gbc_lblConfigNoOverwrite.gridx = 3;
+			gbc_lblConfigNoOverwrite.gridy = row;
+			configDetailPanel.add(lblConfigNoOverwrite, gbc_lblConfigNoOverwrite);
+
+			chkConfigNoOverwrite = new JCheckBox("");
+			chkConfigNoOverwrite.addChangeListener(configChangeListener);
+			GridBagConstraints gbc_chkConfigNoOverwrite = new GridBagConstraints();
+			gbc_chkConfigNoOverwrite.insets = new Insets(0, 0, 5, 5);
+			gbc_chkConfigNoOverwrite.anchor = GridBagConstraints.WEST;
+			gbc_chkConfigNoOverwrite.gridx = 4;
+			gbc_chkConfigNoOverwrite.gridy = row;
+			configDetailPanel.add(chkConfigNoOverwrite, gbc_chkConfigNoOverwrite);
+
+			
 			row++;
 			
 			btnConfigAdd = new JButton("Add");

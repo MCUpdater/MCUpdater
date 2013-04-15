@@ -629,33 +629,35 @@ public class MainForm extends MCUApp {
 			while(itMods.hasNext())
 			{
 				Module modEntry = itMods.next();
-				if (modEntry.getId().equals("")) {
-					modEntry.setId(modEntry.getName().replace(" ", ""));
+				if (modEntry.isClientSide()){
+					if (modEntry.getId().equals("")) {
+						modEntry.setId(modEntry.getName().replace(" ", ""));
+					}
+					if (modIds.contains(modEntry.getId())) {
+						tabs.setSelectedIndex(tabs.getTabCount()-1);
+						this.log("The " + selected.getName() + " ServerPack contains multiple mods with id (" + modEntry.getId() + ").  This is an invalid ServerPack.  Please contact the server operator.");
+						//JOptionPane.showMessageDialog(frmMain, "This ServerPack contains multiple mods with id (" + modEntry.getId() + ").  This is an invalid ServerPack.  Please contact the server operator.", "MCUpdater", JOptionPane.ERROR_MESSAGE);
+						btnUpdate.setEnabled(false);
+					} else {
+						modIds.add(modEntry.getId());
+					}
+					JModuleCheckBox chkModule = new JModuleCheckBox(modEntry.getName());
+					if(modEntry.getInJar())
+					{
+						chkModule.setFont(chkModule.getFont().deriveFont(Font.BOLD));
+					}
+					chkModule.setModule(modEntry);
+					if(modEntry.getRequired())
+					{
+						chkModule.setSelected(true);
+						chkModule.setEnabled(false);
+					}
+					if(modEntry.getIsDefault())
+					{
+						chkModule.setSelected(true);
+					}
+					pnlModList.add(chkModule);
 				}
-				if (modIds.contains(modEntry.getId())) {
-					tabs.setSelectedIndex(tabs.getTabCount()-1);
-					this.log("The " + selected.getName() + " ServerPack contains multiple mods with id (" + modEntry.getId() + ").  This is an invalid ServerPack.  Please contact the server operator.");
-					//JOptionPane.showMessageDialog(frmMain, "This ServerPack contains multiple mods with id (" + modEntry.getId() + ").  This is an invalid ServerPack.  Please contact the server operator.", "MCUpdater", JOptionPane.ERROR_MESSAGE);
-					btnUpdate.setEnabled(false);
-				} else {
-					modIds.add(modEntry.getId());
-				}
-				JModuleCheckBox chkModule = new JModuleCheckBox(modEntry.getName());
-				if(modEntry.getInJar())
-				{
-					chkModule.setFont(chkModule.getFont().deriveFont(Font.BOLD));
-				}
-				chkModule.setModule(modEntry);
-				if(modEntry.getRequired())
-				{
-					chkModule.setSelected(true);
-					chkModule.setEnabled(false);
-				}
-				if(modEntry.getIsDefault())
-				{
-					chkModule.setSelected(true);
-				}
-				pnlModList.add(chkModule);
 			}
 			pnlModList.setVisible(true);
 			pnlRight.setVisible(true);

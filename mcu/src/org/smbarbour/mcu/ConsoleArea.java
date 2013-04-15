@@ -28,18 +28,18 @@ public class ConsoleArea extends JTextPane {
 	public void log(String msg) {
 		try {
 			doc.insertString(doc.getLength(), msg, null);
+			setCaretPosition(getText().length());
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
-		setCaretPosition(getText().length());
 	}
 	
 	public void log(String msg, Style a) {
 		try {
 			doc.insertString(doc.getLength(), msg, a);
+			setCaretPosition(getText().length());
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
-		setCaretPosition(getText().length());
 	}
 }
