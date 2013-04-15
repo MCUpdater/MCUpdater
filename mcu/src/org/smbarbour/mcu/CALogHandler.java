@@ -27,7 +27,11 @@ public class CALogHandler extends Handler {
 			if (record.getLevel() == Level.WARNING) { a = console.warnStyle; }
 			if (record.getLevel() == Level.SEVERE) { a = console.errorStyle; }
 			Throwable thrown = record.getThrown();
-			console.log(sdFormat.format(recordDate.getTime()) + record.getMessage() + (thrown != null ? " (stacktrace in " + record.getLoggerName() + " log)" : "") + "\n", a);
+			try {
+				console.log(sdFormat.format(recordDate.getTime()) + record.getMessage() + (thrown != null ? " (stacktrace in " + record.getLoggerName() + " log)" : "") + "\n", a);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
