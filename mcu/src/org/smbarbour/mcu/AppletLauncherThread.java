@@ -125,7 +125,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		args.add(parent.getConfig().getProperty("width"));
 		args.add(parent.getConfig().getProperty("height"));
 		String address = server.getAddress();
-		if (address == null) {
+		if (address.isEmpty()) {
 			address = "localhost";
 		}
 		args.add(address);
