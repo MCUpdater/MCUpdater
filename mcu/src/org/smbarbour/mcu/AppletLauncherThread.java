@@ -124,7 +124,11 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		args.add((server.getIconUrl().equals("")) ? "https://minecraft.net/favicon.png" : server.getIconUrl());
 		args.add(parent.getConfig().getProperty("width"));
 		args.add(parent.getConfig().getProperty("height"));
-		args.add(server.getAddress());
+		String address = server.getAddress();
+		if (address == null) {
+			address = "localhost";
+		}
+		args.add(address);
 		args.add(Boolean.toString(server.isAutoConnect() && Boolean.parseBoolean(parent.getConfig().getProperty("allowAutoConnect"))));
 
 		if (!Version.isMasterBranch()) {
