@@ -239,7 +239,7 @@ public class ServerForm extends MCUApp {
 							NodeList servers = parent.getElementsByTagName("Server");
 							for (int i = 0; i < servers.getLength(); i++){
 								docEle = (Element)servers.item(i);
-								ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), "", docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
+								ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), "", docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList")), ServerPackParser.parseBoolean(docEle.getAttribute("autoConnect")), docEle.getAttribute("revision"));
 								List<Module> modules = new ArrayList<Module>(ServerPackParser.loadFromFile(currentFile.toFile(), docEle.getAttribute("id")));
 								List<ConfigFileWrapper> configs = new ArrayList<ConfigFileWrapper>();
 								for (Module modEntry : modules) {
@@ -254,7 +254,7 @@ public class ServerForm extends MCUApp {
 							}					
 						} else {
 							docEle = parent;
-							ServerList sl = new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), "", parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), ServerPackParser.parseBoolean(parent.getAttribute("generateList")), parent.getAttribute("revision"));
+							ServerList sl = new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), "", parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), ServerPackParser.parseBoolean(parent.getAttribute("generateList")), ServerPackParser.parseBoolean(parent.getAttribute("autoConnect")), parent.getAttribute("revision"));
 							List<Module> modules = new ArrayList<Module>(ServerPackParser.loadFromFile(currentFile.toFile(), docEle.getAttribute("id")));
 							List<ConfigFileWrapper> configs = new ArrayList<ConfigFileWrapper>();
 							for (Module modEntry : modules) {
@@ -434,7 +434,7 @@ public class ServerForm extends MCUApp {
 				JButton btnServerNew = new JButton("New");
 				btnServerNew.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						modelServer.add(new ServerDefinition(new ServerList("newServer","New Server","","","","","",true,"1"), new ArrayList<Module>(), new ArrayList<ConfigFileWrapper>()));
+						modelServer.add(new ServerDefinition(new ServerList("newServer","New Server","","","","","",true,true,"1"), new ArrayList<Module>(), new ArrayList<ConfigFileWrapper>()));
 						packDirty = true;
 					}
 				});
@@ -1850,7 +1850,7 @@ public class ServerForm extends MCUApp {
 	}
 
 	private void updateServerEntry() {
-		ServerList entry = new ServerList(txtServerID.getText(),txtServerName.getText(),"",txtServerNewsUrl.getText(),txtServerIconUrl.getText(),txtServerMCVersion.getText(),txtServerAddress.getText(),chkServerGenerateList.isSelected(),txtServerRevision.getText());
+		ServerList entry = new ServerList(txtServerID.getText(),txtServerName.getText(),"",txtServerNewsUrl.getText(),txtServerIconUrl.getText(),txtServerMCVersion.getText(),txtServerAddress.getText(),chkServerGenerateList.isSelected(),true,txtServerRevision.getText());
 		List<Module> newModules = new ArrayList<Module>();
 		newModules.addAll(modelModule.getContents());
 		List<ConfigFileWrapper> newConfigs = new ArrayList<ConfigFileWrapper>();

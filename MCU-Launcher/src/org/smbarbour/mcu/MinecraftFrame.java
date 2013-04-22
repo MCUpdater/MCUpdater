@@ -34,7 +34,8 @@ public class MinecraftFrame extends Frame implements WindowListener {
 		File lwjglPath = new File(args[4]);
 		int width = Integer.parseInt(args[6]);
 		int height = Integer.parseInt(args[7]);
-		String serverAddress = args[8];		
+		String serverAddress = args[8];
+		boolean doConnect = Boolean.parseBoolean(args[9]);
 		ImageIcon icon = null;
 		try {
 			icon = new ImageIcon(new URL(args[5]));
@@ -45,7 +46,7 @@ public class MinecraftFrame extends Frame implements WindowListener {
 			
 		MinecraftFrame me = new MinecraftFrame("MCUpdater - " + serverName, icon);
 		Dimension windowSize = new Dimension(width, height); //new Dimension(1280, 720)
-		me.launch(instPath, lwjglPath, username, sessionid, serverAddress, windowSize);
+		me.launch(instPath, lwjglPath, username, sessionid, serverAddress, windowSize, doConnect);
 	}
 	
 	public MinecraftFrame(String title, ImageIcon icon) {
@@ -62,7 +63,7 @@ public class MinecraftFrame extends Frame implements WindowListener {
 		g2d.dispose();
 	}
 	
-	public void launch(File instance, File lwjgl, String username, String sessionid, String serverAddress, Dimension windowSize) {
+	public void launch(File instance, File lwjgl, String username, String sessionid, String serverAddress, Dimension windowSize, boolean doConnect) {
 		try {
 			URI address;
 			String port;
@@ -72,7 +73,7 @@ public class MinecraftFrame extends Frame implements WindowListener {
 			} else {
 				port = Integer.toString(25565);
 			}
-			applet = new Launcher(instance, lwjgl, username, sessionid, address.getHost(), port);
+			applet = new Launcher(instance, lwjgl, username, sessionid, address.getHost(), port, doConnect);
 			System.setProperty("minecraft.applet.TargetDirectory", instance.toString());
 			System.setProperty("org.lwjgl.librarypath", new File(lwjgl, "natives").getAbsolutePath());
 			System.setProperty("net.java.games.input.librarypath", new File(lwjgl, "natives").getAbsolutePath());

@@ -125,6 +125,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		args.add(parent.getConfig().getProperty("width"));
 		args.add(parent.getConfig().getProperty("height"));
 		args.add(server.getAddress());
+		args.add(Boolean.toString(server.isAutoConnect() && Boolean.parseBoolean(parent.getConfig().getProperty("allowAutoConnect"))));
 
 		if (!Version.isMasterBranch()) {
 			parent.log("Process args:");

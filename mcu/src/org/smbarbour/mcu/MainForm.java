@@ -185,6 +185,7 @@ public class MainForm extends MCUApp {
 		newConfig.setProperty("instanceRoot", mcu.getArchiveFolder().resolve("instances").toString());
 		newConfig.setProperty("width", String.valueOf(1280));
 		newConfig.setProperty("height", String.valueOf(720));
+		newConfig.setProperty("allowAutoConnect", "true");
 		if (System.getProperty("os.name").startsWith("Mac")) { newConfig.setProperty("jrePath", "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0"); }
 		newConfig.setProperty("storePassword", "false");
 		try {
@@ -209,6 +210,7 @@ public class MainForm extends MCUApp {
 		if (current.getProperty("instanceRoot") == null) { current.setProperty("instanceRoot", mcu.getArchiveFolder().resolve("instances").toString()); }
 		if (current.getProperty("width") == null) { current.setProperty("width", String.valueOf(1280)); hasChanged = true; }
 		if (current.getProperty("height") == null) { current.setProperty("height", String.valueOf(720)); hasChanged = true; }
+		if (current.getProperty("allowAutoConnect") == null) { current.setProperty("allowAutoConnect", "true"); hasChanged = true; }
 		if (current.getProperty("storePassword") == null) { current.setProperty("storePassword", "false"); hasChanged = true; }
 		if (current.getProperty("jrePath") == null && System.getProperty("os.name").startsWith("Mac")) { current.setProperty("jrePath", "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0"); }
 		return hasChanged;
@@ -509,7 +511,7 @@ public class MainForm extends MCUApp {
 			try {
 				Document serverHeader = ServerPackParser.readXmlFromUrl(packUrl);
 				Element docEle = serverHeader.getDocumentElement();
-				ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList")), docEle.getAttribute("revision"));
+				ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList")), ServerPackParser.parseBoolean(docEle.getAttribute("autoConnect")), docEle.getAttribute("revision"));
 				List<ServerList> servers = new ArrayList<ServerList>();
 				servers.add(sl);
 				mcu.writeServerList(servers);

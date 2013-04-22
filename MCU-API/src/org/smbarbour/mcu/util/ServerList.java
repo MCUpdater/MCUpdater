@@ -9,10 +9,11 @@ public class ServerList {
 	private String mcuVersion;	// minimum version of MCU required to use this pack
 	private String address;
 	private boolean generateList = true;
+	private boolean autoConnect = true;
 	private String revision;	// serverpack revision
 	private String serverId;
 	
-	public ServerList(String serverId, String name, String packUrl, String newsUrl, String iconUrl, String version, String address, boolean generateList, String revision)
+	public ServerList(String serverId, String name, String packUrl, String newsUrl, String iconUrl, String version, String address, boolean generateList, boolean autoConnect, String revision)
 	{
 		this.serverId = serverId;
 		this.name = name;
@@ -22,6 +23,7 @@ public class ServerList {
 		this.version = version;
 		this.address = address;
 		this.generateList = generateList;
+		this.setAutoConnect(autoConnect);
 		this.revision = revision;
 	}
 	
@@ -111,5 +113,17 @@ public class ServerList {
 	
 	public String toString() {
 		return this.name;
+	}
+
+	public boolean isAutoConnect() {
+		if (!this.generateList) {
+			return false;
+		} else {
+			return autoConnect;
+		}
+	}
+
+	public void setAutoConnect(boolean autoConnect) {
+		this.autoConnect = autoConnect;
 	}
 }

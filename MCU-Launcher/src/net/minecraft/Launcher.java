@@ -24,13 +24,15 @@ public class Launcher extends Applet implements AppletStub {
 	private boolean active;
 	private URLClassLoader classLoader;
 	
-	public Launcher(File instance, File lwjgl, String username, String sessionid, String host, String port) {
+	public Launcher(File instance, File lwjgl, String username, String sessionid, String host, String port, boolean doConnect) {
 		params = new HashMap<String, String>();
 		params.put("username", username);
 		params.put("sessionid", sessionid);
 		params.put("stand-alone", "true");
-		params.put("server", host);
-		params.put("port", port);
+		if (doConnect) {
+			params.put("server", host);
+			params.put("port", port);
+		}
 		params.put("fullscreen","false"); //Required param for vanilla. Forge handles the absence gracefully.
 		URL[] urls = new URL[4];
 		urls[0] = pathToUrl(new File(new File(instance,"bin"), "minecraft.jar"));

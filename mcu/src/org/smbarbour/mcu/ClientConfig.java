@@ -43,6 +43,7 @@ public class ClientConfig extends JDialog {
 	private JTextField txtResWidth;
 	private JTextField txtResHeight;
 	private JTextField txtJVMContainer;
+	private JCheckBox chckbxAutoConnect;
 
 	/**
 	 * Create the dialog.
@@ -366,6 +367,20 @@ public class ClientConfig extends JDialog {
 
 		}
 
+		// Allow Auto-Connect
+		++row;
+		{
+			chckbxAutoConnect = new JCheckBox("Automatically connect to server");
+			GridBagConstraints gbc_chckbxAutoConnect = new GridBagConstraints();
+			gbc_chckbxAutoConnect.anchor = GridBagConstraints.WEST;
+			gbc_chckbxAutoConnect.gridwidth = 3;
+			gbc_chckbxAutoConnect.insets = new Insets(0, 0, 5, 5);
+			gbc_chckbxAutoConnect.gridx = 1;
+			gbc_chckbxAutoConnect.gridy = row;
+			chckbxAutoConnect.setSelected(Boolean.parseBoolean(parent.getConfig().getProperty("allowAutoConnect")));
+			contentPanel.add(chckbxAutoConnect, gbc_chckbxAutoConnect);
+		}
+
 		/* This option is obsolete with native launcher */
 		/* Suppress update
 		if (System.getProperty("os.name").startsWith("Mac")) {
@@ -406,6 +421,7 @@ public class ClientConfig extends JDialog {
 						newConfig.setProperty("jvmOpts", txtJVMOpts.getText());
 						newConfig.setProperty("width", txtResWidth.getText());
 						newConfig.setProperty("height", txtResHeight.getText());
+						newConfig.setProperty("allowAutoConnect", Boolean.toString(chckbxAutoConnect.isSelected()));
                         newConfig.setProperty("jvmContainer", txtJVMContainer.getText());
 						parent.writeConfig(newConfig);
 						parent.mcu.setInstanceRoot(new Path(new File(txtInstanceRoot.getText())));

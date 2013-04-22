@@ -56,6 +56,8 @@
 							use="required" />
 						<xs:attribute type="xs:boolean" name="generateList"
 							use="optional" default="true" />
+						<xs:attribute type="xs:boolean" name="autoConnect"
+							use="optional" default="true" />
 						<xs:attribute type="xs:string" name="revision" use="required" />
 					</xs:complexType>
 				</xs:element>
