@@ -648,7 +648,7 @@ public class MCUpdater {
 						apiLogger.log(Level.SEVERE, "General Error", e);
 					}
 				} else if (entry.getCoreMod()) {
-					modPath = instancePath.resolve("coremods").resolve(entry.getId() + ".jar").toFile();
+					modPath = instancePath.resolve("coremods").resolve(cleanForFile(entry.getId()) + ".jar").toFile();
 					modPath.getParentFile().mkdirs();
 					try {
 						ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
@@ -664,7 +664,7 @@ public class MCUpdater {
 					}					
 				} else {
 					if (entry.getPath().equals("")){
-						modPath = instancePath.resolve("mods").resolve(entry.getId() + ".jar").toFile();
+						modPath = instancePath.resolve("mods").resolve(cleanForFile(entry.getId()) + ".jar").toFile();
 					} else {
 						modPath = instancePath.resolve(entry.getPath()).toFile();
 					}
@@ -780,6 +780,10 @@ public class MCUpdater {
 		return true;
 	}
 	
+	private String cleanForFile(String id) {
+		return id.replaceAll("[^a-zA-Z_0-9]", "_");
+	}
+
 	public void writeMCServerFile(String name, String ip, String instance) {
 		byte[] header = new byte[]{
 				0x0A,0x00,0x00,0x09,0x00,0x07,0x73,0x65,0x72,0x76,0x65,0x72,0x73,0x0A,
