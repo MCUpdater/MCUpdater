@@ -665,12 +665,6 @@ public class MainForm extends MCUApp {
 			pnlRight.setVisible(true);
 			btnUpdate.setEnabled(true);
 			btnLaunchMinecraft.setEnabled(true);
-			ServerStatus status = ServerStatus.getStatus(selected.getAddress());
-			if (status != null) {
-				setStatus("Idle - Server status: " + status.getMOTD() + " (" + status.getPlayers() + "/" + status.getMaxPlayers() + ")");
-			} else {
-				setStatus("Idle - Server status: Unable to connect!");
-			}
 			//			} else {
 			//				pnlModList.removeAll();
 			//				pnlRight.setVisible(false);
@@ -711,7 +705,12 @@ public class MainForm extends MCUApp {
 			//				e.printStackTrace();
 			//				return;
 			//			}
-
+			ServerStatus status = ServerStatus.getStatus(selected.getAddress());
+			if (status != null) {
+				setStatus("Idle - Server status: " + status.getMOTD() + " (" + status.getPlayers() + "/" + status.getMaxPlayers() + ")");
+			} else {
+				setStatus("Idle - Server status: Unable to connect!");
+			}
 			this.frmMain.repaint();
 		} catch (IOException ioe) {
 			baseLogger.log(Level.SEVERE, "I/O error", ioe);
