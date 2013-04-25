@@ -57,6 +57,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.smbarbour.mcu.MCUApp;
 import org.smbarbour.mcu.MCLoginException.ResponseType;
 import org.smbarbour.mcu.util.InstanceManager;
+import org.smbarbour.mcu.util.Localization;
 import org.smbarbour.mcu.util.LoginData;
 import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.Module;
@@ -245,24 +246,24 @@ public class MainForm extends MCUApp {
 		JPanel pnlButtons = new JPanel();
 		pnlFooter.add(pnlButtons, BorderLayout.EAST);
 
-		btnUpdate = new JButton("Update");
+		btnUpdate = new JButton(Localization.getText("btn_Update"));
 		btnUpdate.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				updateInstance();
 			}
 		});
 		btnUpdate.setEnabled(false);
-		btnUpdate.setToolTipText("Download any changes to this serverpack.");
+		btnUpdate.setToolTipText(Localization.getText("tip_Update"));
 		pnlButtons.add(btnUpdate);
 
-		btnLaunchMinecraft = new JButton("Launch Minecraft");
+		btnLaunchMinecraft = new JButton(Localization.getText("btn_Launch"));
 		btnLaunchMinecraft.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				launchMinecraft();
 			}
 		});
 		btnLaunchMinecraft.setEnabled(false);
-		btnLaunchMinecraft.setToolTipText("Launch Minecraft using the currently selected configuration.");
+		btnLaunchMinecraft.setToolTipText(Localization.getText("tip_Launch"));
 		pnlButtons.add(btnLaunchMinecraft);
 
 		JPanel pnlStatus = new JPanel();
@@ -345,8 +346,8 @@ public class MainForm extends MCUApp {
 		pnlRight.add(pnlUpdateOptions, BorderLayout.SOUTH);
 		pnlUpdateOptions.setLayout(new GridLayout(0, 1, 0, 0));
 
-		chkHardUpdate = new JCheckBox("Perform \"hard\" update");
-		chkHardUpdate.setToolTipText("Delete this instance's folder completely before updating.");
+		chkHardUpdate = new JCheckBox(Localization.getText("btn_Hard_Update"));
+		chkHardUpdate.setToolTipText(Localization.getText("tip_Hard_Update"));
 		pnlUpdateOptions.add(chkHardUpdate);
 		browser.setEditable(false);
 		browser.setContentType("text/html");
@@ -354,7 +355,7 @@ public class MainForm extends MCUApp {
 
 		tabs = new JTabbedPane();
 
-		browser.setText("<HTML><BODY>Please select an instance from the list on the left.</BODY></HTML>");
+		browser.setText(Localization.getText("Default_News"));
 		JScrollPane browserScrollPane = new JScrollPane(browser);
 		browserScrollPane.setViewportBorder(null);
 		browser.setBorder(null);
@@ -385,7 +386,7 @@ public class MainForm extends MCUApp {
 				showServerManager();
 			}
 		});
-		btnManageServers.setToolTipText("Manage Servers");
+		btnManageServers.setToolTipText(Localization.getText("hdr_Manage_Servers"));
 		btnManageServers.setIcon(new ImageIcon(MainForm.class.getResource("/icons/server_database.png")));
 		toolBar.add(btnManageServers);
 
@@ -396,7 +397,7 @@ public class MainForm extends MCUApp {
 				showClientConfig();
 			}
 		});
-		btnOptions.setToolTipText("Options");
+		btnOptions.setToolTipText(Localization.getText("hdr_Options"));
 		btnOptions.setIcon(new ImageIcon(MainForm.class.getResource("/icons/application_edit.png")));
 		toolBar.add(btnOptions);
 

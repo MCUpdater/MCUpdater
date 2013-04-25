@@ -20,12 +20,12 @@ import javax.swing.JTable;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.ListSelectionModel;
 
+import org.smbarbour.mcu.util.Localization;
 import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.ServerList;
 import org.smbarbour.mcu.util.ServerPackParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
 
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -49,7 +49,7 @@ public class ServerManager extends JFrame {
 	public ServerManager(final MainForm parent) {
 		setResizable(false);
 		setModalExclusionType(ModalExclusionType.APPLICATION_EXCLUDE);
-		setTitle("Manage Servers");
+		setTitle(Localization.getText("hdr_Manage_Servers"));
 		
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, 562, 300);
