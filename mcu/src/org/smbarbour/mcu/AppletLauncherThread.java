@@ -38,6 +38,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 	private String jrePath;
 	private String minMem;
 	private String maxMem;
+	private String maxPerm;
 	private File output;
 	private Thread thread;
 	private boolean forceKilled;
@@ -48,19 +49,20 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 	private boolean ready;
 	private ConsoleArea console;
 
-	public AppletLauncherThread(MainForm parent, LoginData session,	String jrePath, String minMem, String maxMem, File output, ConsoleArea console, ServerList server) {
+	public AppletLauncherThread(MainForm parent, LoginData session,	String jrePath, String minMem, String maxMem, String maxPerm, File output, ConsoleArea console, ServerList server) {
 		this.parent = parent;
 		this.session = session;
 		this.jrePath = jrePath;
 		this.minMem = minMem;
 		this.maxMem = maxMem;
+		this.maxPerm = maxPerm;
 		this.output = output;
 		this.console = console;
 		this.server = server;
 	}
 
-	public static AppletLauncherThread launch(MainForm parent, LoginData session, String jrePath, String minMem, String maxMem, File output, ConsoleArea console, ServerList server) {
-		AppletLauncherThread me = new AppletLauncherThread(parent, session, jrePath, minMem, maxMem, output, console, server);
+	public static AppletLauncherThread launch(MainForm parent, LoginData session, String jrePath, String minMem, String maxMem, String maxPerm, File output, ConsoleArea console, ServerList server) {
+		AppletLauncherThread me = new AppletLauncherThread(parent, session, jrePath, minMem, maxMem, maxPerm, output, console, server);
 		return me;
 	}
 
@@ -111,6 +113,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		args.addAll(jvmOpts);
 		args.add("-Xms" + this.minMem);
 		args.add("-Xmx" + this.maxMem);
+		args.add("-XX:MaxPermSize=" + this.maxPerm);
 		args.add("-classpath");
 		args.add(MCUpdater.getJarFile().toString());
 		args.add("org.smbarbour.mcu.MinecraftFrame");

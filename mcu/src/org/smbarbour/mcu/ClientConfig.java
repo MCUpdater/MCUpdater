@@ -35,6 +35,7 @@ public class ClientConfig extends JDialog {
 	private final JPanel contentPanel = new JPanel();
 	private JTextField txtMinimum;
 	private JTextField txtMaximum;
+	private JTextField txtPermGen;
 	private JTextField txtJavaPath;
 	private JCheckBox chckbxMinimize;
 	//private JCheckBox chckbxSuppressVanillaUpdate;
@@ -88,6 +89,8 @@ public class ClientConfig extends JDialog {
 		{
 			txtMinimum = new JTextField();
 			txtMinimum.setText(parent.getConfig().getProperty("minimumMemory"));
+			txtMinimum.setToolTipText("<html>Minimum RAM that Minecraft will use. 1G is usually sufficient.<br/>"+
+					"Should not exceed max memory for obvious reasons.</html>");
 			GridBagConstraints gbc_txtMinimum = new GridBagConstraints();
 			gbc_txtMinimum.insets = new Insets(0, 0, 5, 5);
 			gbc_txtMinimum.anchor = GridBagConstraints.WEST;
@@ -119,6 +122,10 @@ public class ClientConfig extends JDialog {
 		{
 			txtMaximum = new JTextField();
 			txtMaximum.setText(parent.getConfig().getProperty("maximumMemory"));
+			txtMaximum.setToolTipText("<html>Maximum RAM that Minecraft will use. 2G is usually sufficient.<br/>"+
+					"On 32-bit systems, you will not be able to specify more than 3G.<br/>"+
+					"Ridiculous amounts of RAM (more than 4G) may work on 64-bit<br/>"+
+					"systems but probably won't actually help you any.</html>");
 			GridBagConstraints gbc_txtMaximum = new GridBagConstraints();
 			gbc_txtMaximum.anchor = GridBagConstraints.WEST;
 			gbc_txtMaximum.insets = new Insets(0, 0, 5, 5);
@@ -131,7 +138,32 @@ public class ClientConfig extends JDialog {
 		}
 		++row;
 		{
-			JLabel lblMemoryCanBe = new JLabel("Memory can be specified in MB or GB (i.e. 512M or 1G)");
+			JLabel lblMaximumPermGen = new JLabel("Maximum PermGen:");
+			GridBagConstraints gbc_lblMaximumPermGen = new GridBagConstraints();
+			gbc_lblMaximumPermGen.anchor = GridBagConstraints.EAST;
+			gbc_lblMaximumPermGen.insets = new Insets(0, 0, 5, 5);
+			gbc_lblMaximumPermGen.gridx = 1;
+			gbc_lblMaximumPermGen.gridy = row;
+			contentPanel.add(lblMaximumPermGen, gbc_lblMaximumPermGen);
+		}
+		{
+			txtPermGen = new JTextField();
+			txtPermGen.setText(parent.getConfig().getProperty("permGen"));
+			txtPermGen.setToolTipText("<html>Max PermGen space used by the Minecraft process.<br/>Only change this if you know what you're doing.</html>");
+			GridBagConstraints gbc_txtPermGen = new GridBagConstraints();
+			gbc_txtPermGen.anchor = GridBagConstraints.WEST;
+			gbc_txtPermGen.insets = new Insets(0, 0, 5, 5);
+			gbc_txtPermGen.fill = GridBagConstraints.HORIZONTAL;
+			gbc_txtPermGen.gridx = 2;
+			gbc_txtPermGen.gridy = row;
+			gbc_txtPermGen.gridwidth = 2;
+			contentPanel.add(txtPermGen, gbc_txtPermGen);
+			txtPermGen.setColumns(10);
+		}
+		++row;
+		{
+			JLabel lblMemoryCanBe = new JLabel("<html>Memory can be specified in MB or GB (i.e. 512M or 1G).<br/>"+
+					"Increasing memory may help performance, but often has no measurable impact.</html>");
 			GridBagConstraints gbc_lblMemoryCanBe = new GridBagConstraints();
 			gbc_lblMemoryCanBe.gridwidth = 3;
 			gbc_lblMemoryCanBe.insets = new Insets(0, 0, 5, 5);
@@ -210,6 +242,7 @@ public class ClientConfig extends JDialog {
 		{
 			txtJavaPath = new JTextField();
 			txtJavaPath.setText(parent.getConfig().getProperty("jrePath",System.getProperty("java.home")));
+			txtJavaPath.setToolTipText("Path to the JRE you wish to launch Minecraft with.");
 			GridBagConstraints gbc_txtJavaPath = new GridBagConstraints();
 			gbc_txtJavaPath.anchor = GridBagConstraints.WEST;
 			gbc_txtJavaPath.insets = new Insets(0, 0, 5, 5);
@@ -256,6 +289,7 @@ public class ClientConfig extends JDialog {
 
 			txtJVMOpts = new JTextField();
 			txtJVMOpts.setText(parent.getConfig().getProperty("jvmOpts"));
+			txtJVMOpts.setToolTipText("<html>Additional advanced JVM settings.<br/>Only edit if you know what you're doing.</html>");
 			GridBagConstraints gbc_txtJVMOpts = new GridBagConstraints();
 			gbc_txtJVMOpts.insets = new Insets(0, 0, 5, 5);
 			gbc_txtJVMOpts.fill = GridBagConstraints.HORIZONTAL;
@@ -414,6 +448,7 @@ public class ClientConfig extends JDialog {
 						Properties newConfig = parent.getConfig();
 						newConfig.setProperty("minimumMemory", txtMinimum.getText());
 						newConfig.setProperty("maximumMemory", txtMaximum.getText());
+						newConfig.setProperty("permGen", txtPermGen.getText());
 						newConfig.setProperty("jrePath", txtJavaPath.getText());
 						newConfig.setProperty("minimizeOnLaunch", Boolean.toString(chckbxMinimize.isSelected()));
 						//newConfig.setProperty("suppressUpdates", Boolean.toString(chckbxSuppressVanillaUpdate.isSelected()));

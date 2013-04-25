@@ -178,6 +178,7 @@ public class MainForm extends MCUApp {
 		Properties newConfig = new Properties();
 		newConfig.setProperty("minimumMemory", "512M");
 		newConfig.setProperty("maximumMemory", "1G");
+		newConfig.setProperty("permGen", "128M");
 		//newConfig.setProperty("currentConfig", "");
 		//newConfig.setProperty("packRevision","");
 		//newConfig.setProperty("suppressUpdates", "false");
@@ -203,6 +204,7 @@ public class MainForm extends MCUApp {
 		boolean hasChanged = false;
 		if (current.getProperty("minimumMemory") == null) {	current.setProperty("minimumMemory", "512M"); hasChanged = true; }
 		if (current.getProperty("maximumMemory") == null) {	current.setProperty("maximumMemory", "1G"); hasChanged = true; }
+		if (current.getProperty("permGen") == null) {	current.setProperty("permGen", "128M"); hasChanged = true; }
 		//if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; } // Made obsolete by instancing
 		//if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; } // Made obsolete by instancing
 		if (current.getProperty("minimizeOnLaunch") == null) { current.setProperty("minimizeOnLaunch", (System.getProperty("os.name").startsWith("Mac")) ? "false" : "true"); hasChanged = true; }
@@ -250,6 +252,7 @@ public class MainForm extends MCUApp {
 			}
 		});
 		btnUpdate.setEnabled(false);
+		btnUpdate.setToolTipText("Download any changes to this serverpack.");
 		pnlButtons.add(btnUpdate);
 
 		btnLaunchMinecraft = new JButton("Launch Minecraft");
@@ -259,6 +262,7 @@ public class MainForm extends MCUApp {
 			}
 		});
 		btnLaunchMinecraft.setEnabled(false);
+		btnLaunchMinecraft.setToolTipText("Launch Minecraft using the currently selected configuration.");
 		pnlButtons.add(btnLaunchMinecraft);
 
 		JPanel pnlStatus = new JPanel();
@@ -342,6 +346,7 @@ public class MainForm extends MCUApp {
 		pnlUpdateOptions.setLayout(new GridLayout(0, 1, 0, 0));
 
 		chkHardUpdate = new JCheckBox("Perform \"hard\" update");
+		chkHardUpdate.setToolTipText("Delete this instance's folder completely before updating.");
 		pnlUpdateOptions.add(chkHardUpdate);
 		browser.setEditable(false);
 		browser.setContentType("text/html");
@@ -386,7 +391,6 @@ public class MainForm extends MCUApp {
 
 		JButton btnOptions = new JButton("");
 		btnOptions.addActionListener(new ActionListener() {
-
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				showClientConfig();
@@ -1090,7 +1094,12 @@ public class MainForm extends MCUApp {
 //
 //		} else {
 			//thread = NativeLauncherThread.launch(window, loginData, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), outFile, console);
-			thread = AppletLauncherThread.launch(window, loginData, config.getProperty("jrePath",System.getProperty("java.home")), config.getProperty("minimumMemory"), config.getProperty("maximumMemory"), outFile, console, selected);
+			thread = AppletLauncherThread.launch(window, loginData,
+					config.getProperty("jrePath",System.getProperty("java.home")),
+					config.getProperty("minimumMemory"),
+					config.getProperty("maximumMemory"),
+					config.getProperty("permGen"),
+					outFile, console, selected);
 //		}
 		thread.register(window, btnLaunchMinecraft, killItem );
 		thread.start();
