@@ -406,6 +406,10 @@ public class MCUpdater {
 			// never delete resources unless it is under the mods directory
 			return true;
 		}
+		if(path.contains("lib" + sep)) {
+			// never delete the lib/ folder
+			return true;
+		}
 		if(path.contains("saves")) {
 			// never delete saves
 			return true;
