@@ -33,6 +33,8 @@ public enum Localization {
 		dict.put("btn_Launch", "Launch Minecraft");
 		dict.put("tip_Launch", "Launch Minecraft using the currently selected configuration.");
 		
+		dict.put("tip_StorePassword", "<html>Enabling this will store the password for use in the future using the same<br/>encryption method that the vanilla launcher uses.<br/><br/>Encryption in such a way as this requires is not particularly secure,<br/>nor can it be by virtue of how it must be implemented.");
+		
 		dict.put("Default_News", "<HTML><BODY>Please select an instance from the list on the left.</BODY></HTML>");
 	}
 	

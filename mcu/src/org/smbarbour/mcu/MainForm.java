@@ -458,7 +458,7 @@ public class MainForm extends MCUApp {
 				String user = config.getProperty("userName");
 				String password = decrypt(config.getProperty("password"));
 				try {
-					login(user, password);
+					login(user, password, true);
 				} catch (MCLoginException e1) {
 				} catch (Exception e1) {
 					baseLogger.log(Level.SEVERE, "General error", e1);
@@ -866,7 +866,7 @@ public class MainForm extends MCUApp {
 		frmMain.setExtendedState(Frame.NORMAL);
 	}
 
-	public LoginData login(String username, String password) throws Exception {
+	public LoginData login(String username, String password, Boolean storePassword) throws Exception {
 		try {
 			HashMap<String, Object> localHashMap = new HashMap<String, Object>();
 			localHashMap.put("user", username);
@@ -896,8 +896,12 @@ public class MainForm extends MCUApp {
 			login.setSessionId(arrayOfString[3].trim());
 			setLoginData(login);
 			getConfig().setProperty("userName", username);
-			if (getConfig().getProperty("storePassword").toLowerCase().equals("true")) {
+			if (storePassword == true ) {
 				getConfig().setProperty("password", encrypt(password));
+				getConfig().setProperty("storePassword", "true");
+			} else {
+				getConfig().remove("password");
+				getConfig().setProperty("storePassword", "false");
 			}
 			writeConfig(getConfig());
 			return login;

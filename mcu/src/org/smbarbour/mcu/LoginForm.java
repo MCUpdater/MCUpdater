@@ -9,6 +9,7 @@ import java.awt.Insets;
 import javax.swing.AbstractAction;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -17,6 +18,8 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
+
+import org.smbarbour.mcu.util.Localization;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -34,6 +37,7 @@ public class LoginForm extends JDialog {
 	private final JPanel buttonPane = new JPanel();
 	private JTextField txtUsername;
 	private JPasswordField txtPassword;
+	private JCheckBox chkStorePassword;
 	private JLabel lblStatus;
 	private JButton cancelButton;
 	/**
@@ -115,7 +119,16 @@ public class LoginForm extends JDialog {
 					gbc_txtPassword.gridy = 2;
 					contentPanel.add(txtPassword, gbc_txtPassword);
 				}
-		
+				{
+					chkStorePassword = new JCheckBox("Store password", false);
+					chkStorePassword.setToolTipText(Localization.getText("tip_StorePassword"));
+					GridBagConstraints gbc_chkStorePassword = new GridBagConstraints();
+					gbc_chkStorePassword.anchor = GridBagConstraints.NORTH;
+					gbc_chkStorePassword.fill = GridBagConstraints.HORIZONTAL;
+					gbc_chkStorePassword.gridx = 2;
+					gbc_chkStorePassword.gridy = 3;
+					contentPanel.add(chkStorePassword, gbc_chkStorePassword);
+				}
 		{
 			buttonPane.setBorder(new EmptyBorder(0, 5, 5, 5));
 			getContentPane().add(buttonPane, BorderLayout.SOUTH);
@@ -158,7 +171,7 @@ public class LoginForm extends JDialog {
 						public void actionPerformed(ActionEvent arg0) {
 							try {
 								getContentPane().setEnabled(false);
-								parent.login(txtUsername.getText(), String.valueOf(txtPassword.getPassword()));
+								parent.login(txtUsername.getText(), String.valueOf(txtPassword.getPassword()), chkStorePassword.isSelected());
 								window.dispose();
 								
 							} catch (MCLoginException e) {
