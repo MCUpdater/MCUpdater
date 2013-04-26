@@ -28,7 +28,7 @@ public class ConsoleArea extends JTextPane {
 	public void log(String msg) {
 		try {
 			doc.insertString(doc.getLength(), msg, null);
-			setCaretPosition(getText().length());
+			setCaretPosition(doc.getLength());
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
@@ -37,7 +37,7 @@ public class ConsoleArea extends JTextPane {
 	public void log(String msg, Style a) {
 		try {
 			doc.insertString(doc.getLength(), msg, a);
-			setCaretPosition(getText().length());
+			setCaretPosition(doc.getLength());
 		} catch (BadLocationException e) {
 			e.printStackTrace();
 		}
