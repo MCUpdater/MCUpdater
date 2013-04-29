@@ -13,6 +13,7 @@ public class Module {
 	private Boolean required;
 	private Boolean inJar;
 	private int jarOrder;
+	private Boolean keepMeta;
 	private Boolean extract;
 	private Boolean inRoot;
 	private Boolean isDefault;
@@ -21,7 +22,7 @@ public class Module {
 	private ModSide side;
 	private List<ConfigFile> configs;
 	
-	public Module(String name, String id, String url, String depends, Boolean required, Boolean inJar, int jarOrder, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs, String side, String path)
+	public Module(String name, String id, String url, String depends, Boolean required, Boolean inJar, int jarOrder, Boolean keepMeta, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs, String side, String path)
 	{
 		this.setName(name);
 		this.setId(id);
@@ -30,6 +31,7 @@ public class Module {
 		this.setRequired(required);
 		this.setInJar(inJar);
 		this.setJarOrder(jarOrder);
+		this.setKeepMeta(keepMeta);
 		this.setIsDefault(isDefault);
 		this.setExtract(extract);
 		this.setInRoot(inRoot);
@@ -52,7 +54,7 @@ public class Module {
 	@Deprecated
 	public Module(String name, String id, String url, String depends, Boolean required, Boolean inJar, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs)
 	{
-		this(name, id, url, depends, required, inJar, 0, extract, inRoot, isDefault, coreMod, md5, configs, null, null);
+		this(name, id, url, depends, required, inJar, 0, true, extract, inRoot, isDefault, coreMod, md5, configs, null, null);
 	}
 
 	public String getName()
@@ -207,6 +209,14 @@ public class Module {
 
 	public int getJarOrder() {
 		return jarOrder;
+	}
+
+	public Boolean getKeepMeta() {
+		return keepMeta;
+	}
+
+	public void setKeepMeta(Boolean keepMeta) {
+		this.keepMeta = keepMeta;
 	}
 
 }

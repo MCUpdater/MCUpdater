@@ -23,6 +23,10 @@ import org.smbarbour.mcu.MCUApp;
 public class Archive {
 
 	public static void extractZip(File archive, File destination) {
+		extractZip(archive, destination, false);
+	}
+	
+	public static void extractZip(File archive, File destination, Boolean keepMeta) {
 		MCUpdater mcu = MCUpdater.getInstance();
 		try{
 			ZipInputStream zis = new ZipInputStream(new FileInputStream(archive));
@@ -37,6 +41,11 @@ public class Archive {
 					newDir.mkdirs();
 					mcu.apiLogger.finest("   Directory: " + newDir.getPath());
 				} else {
+					if (!keepMeta && entryName.contains("META-INF")) {
+						zis.closeEntry();
+						entry = zis.getNextEntry();
+						continue;
+					}
 					if (entryName.contains("aux.class")) {
 						entryName = "mojangDerpyClass1.class";
 					}

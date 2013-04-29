@@ -15,7 +15,8 @@
 										<xs:element type="xs:boolean" name="Required" />
 										<xs:element type="xs:boolean" name="IsDefault" />
 										<xs:element type="xs:boolean" name="InJar" />
-										<xs:element type="xs:integer" name="JarOrder" minOccurs="0"/>
+										<xs:element type="xs:integer" name="JarOrder" minOccurs="0" />
+										<xs:element type="xs:boolean" name="KeepMeta" minOccurs="0" default="true" />
 										<xs:element type="xs:boolean" name="Extract" />
 										<xs:element type="xs:boolean" name="InRoot" />
 										<xs:element type="xs:boolean" name="CoreMod" />

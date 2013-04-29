@@ -105,6 +105,7 @@ public class ServerPackParser {
 		Boolean isDefault = getBooleanValue(modEl,"IsDefault");
 		Boolean inJar = getBooleanValue(modEl,"InJar");
 		int jarOrder = getIntValue(modEl,"JarOrder");
+		Boolean keepMeta = getBooleanValue(modEl,"KeepMeta");
 		Boolean extract = getBooleanValue(modEl,"Extract");
 		Boolean inRoot = getBooleanValue(modEl,"InRoot");
 		Boolean coreMod = getBooleanValue(modEl,"CoreMod");
@@ -118,7 +119,7 @@ public class ServerPackParser {
 			ConfigFile cf = getConfigFile(el);
 			configs.add(cf);
 		}
-		Module m = new Module(name, id, url, depends, required, inJar, jarOrder, extract, inRoot, isDefault, coreMod, md5, configs, side, path);	
+		Module m = new Module(name, id, url, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path);	
 		return m;
 	}
 	

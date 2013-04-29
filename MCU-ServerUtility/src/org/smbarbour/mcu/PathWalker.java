@@ -111,7 +111,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		} catch (InvalidSyntaxException e) {
 			e.printStackTrace();
 		} finally {
-			Module newMod = new Module(name, id, downloadURL, depends, required, inJar, 0, extract, inRoot, isDefault, coreMod, md5, null, "both", null);
+			Module newMod = new Module(name, id, downloadURL, depends, required, inJar, 0, true, extract, inRoot, isDefault, coreMod, md5, null, "both", null);
 			parent.AddModule(newMod);
 		}			
 		return FileVisitResult.CONTINUE;

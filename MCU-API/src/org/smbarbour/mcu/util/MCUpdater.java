@@ -570,11 +570,6 @@ public class MCUpdater {
 			parent.setStatus("Preparing to build minecraft.jar");
 			parent.log("Preparing to build minecraft.jar...");
 			Archive.extractZip(jar, tmpFolder);
-			try {
-				FileUtils.deleteDirectory(new Path(tmpFolder).resolve("META-INF").toFile());
-			} catch (IOException e) {
-				apiLogger.log(Level.SEVERE, "I/O Error", e);
-			}
 		} else {
 			parent.log("No jar changes necessary.  Skipping jar rebuild.");
 		}
@@ -619,7 +614,7 @@ public class MCUpdater {
 							}
 							_debug(jarMod.url + " -> " + jarMod.getDestFile().getPath());
 							//FileUtils.copyURLToFile(modURL, modPath);
-							Archive.extractZip(jarMod.getDestFile(), tmpFolder);
+							Archive.extractZip(jarMod.getDestFile(), tmpFolder, entry.getKeepMeta());
 							jarMod.getDestFile().delete();
 							instData.setProperty("mod:" + entry.getId(), entry.getMD5());
 							jarModCount++;
@@ -849,6 +844,8 @@ public class MCUpdater {
 		} else {
 			if (this.getParent().requestLogin()) {
 				try {
+					parent.setStatus("Downloading Minecraft");
+					apiLogger.info("Downloading Minecraft (" + newestMC + ")");
 					FileUtils.copyURLToFile(new URL("http://assets.minecraft.net/" + newestMC.replace(".","_") + "/minecraft.jar"), newestJar);
 				} catch (MalformedURLException e) {
 					apiLogger.log(Level.SEVERE, "Bad URL", e);
@@ -870,7 +867,11 @@ public class MCUpdater {
 			URL patchURL = new URL("http://files.mcupdater.com/mcu_patches/" + newestMC.replace(".", "") + "to" + version.replace(".","") + ".patch");
 			_debug(patchURL.toString());
 			File patchFile = archiveFolder.resolve("temp.patch").toFile();
+			parent.setStatus("Downloading downgrade patch");
+			apiLogger.info("Downloading downgrade patch (" + newestMC + " -> " + version + ")");
 			FileUtils.copyURLToFile(patchURL, patchFile);
+			parent.setStatus("Applying downgrade patch");
+			apiLogger.info("Applying downgrade patch");
 			Transmogrify.applyPatch(new Path(newestJar), new Path(requestedJar), new Path(patchFile));
 			patchFile.delete();
 		} catch (Exception e) {

@@ -621,9 +621,13 @@ public class MainForm extends MCUApp {
 		try {
 			btnUpdate.setEnabled(true);
 			selected = entry;
-			browser.setPage(entry.getNewsUrl());
+			try { 
+				browser.setPage(entry.getNewsUrl());
+			} catch (Exception ie) {
+				browser.setText("<HTML><BODY>Unable to read news.</BODY></HTML>");
+			}
 			frmMain.setTitle(entry.getName() + " - MCUpdater " + Version.VERSION + Version.BUILD_LABEL);
-			// switching servers should show news
+			// switching servers should show newst
 			if( tabs != null ) {
 				tabs.setSelectedIndex(0);
 			}
