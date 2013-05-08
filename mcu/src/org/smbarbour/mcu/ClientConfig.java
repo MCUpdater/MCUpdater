@@ -136,7 +136,7 @@ public class ClientConfig extends JDialog {
 		}
 		++row;
 		{
-			JLabel lblMaximumPermGen = new JLabel("Maximum PermGen:");
+			JLabel lblMaximumPermGen = new JLabel("PermGen Space:");
 			GridBagConstraints gbc_lblMaximumPermGen = new GridBagConstraints();
 			gbc_lblMaximumPermGen.anchor = GridBagConstraints.EAST;
 			gbc_lblMaximumPermGen.insets = new Insets(0, 0, 5, 5);

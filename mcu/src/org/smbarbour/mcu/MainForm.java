@@ -892,6 +892,9 @@ public class MainForm extends MCUApp {
 					throw new MCLoginException(str);
 				}
 			}
+			if (!Version.isMasterBranch()) {
+				this.baseLogger.info("Login response string: " + str);
+			}
 			String[] arrayOfString = str.split(":");
 
 			LoginData login = new LoginData();

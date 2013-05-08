@@ -113,7 +113,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		args.addAll(jvmOpts);
 		args.add("-Xms" + this.minMem);
 		args.add("-Xmx" + this.maxMem);
-		args.add("-XX:MaxPermSize=" + this.maxPerm);
+		args.add("-XX:PermSize=" + this.maxPerm);
 		args.add("-classpath");
 		args.add(MCUpdater.getJarFile().toString());
 		args.add("org.smbarbour.mcu.MinecraftFrame");

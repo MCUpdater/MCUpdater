@@ -22,7 +22,7 @@ public enum Localization {
 					"On 32-bit systems, you will not be able to specify more than 3G.<br/>"+
 					"Ridiculous amounts of RAM (more than 4G) may work on 64-bit<br/>"+
 					"systems but probably won't actually help you any.</html>");
-		dict.put("tip_Max_PermGen", "<html>Max PermGen space used by the Minecraft process.<br/>Only change this if you know what you're doing.</html>");
+		dict.put("tip_Max_PermGen", "<html>PermGen space used by the Minecraft process.<br/>Only change this if you know what you're doing.</html>");
 		dict.put("tip_JRE_Path", "Path to the JRE you wish to launch Minecraft with.");
 		dict.put("tip_JVM_Options", "<html>Additional advanced JVM settings.<br/>Only edit if you know what you're doing.</html>");
 		
