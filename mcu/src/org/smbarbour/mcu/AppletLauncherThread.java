@@ -104,9 +104,6 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
             args.add(parent.getConfig().getProperty("jvmContainer"));
         }
 		args.add(javaBin);
-		args.add("-XX:+UseConcMarkSweepGC");
-		args.add("-XX:+CMSIncrementalMode");
-		args.add("-XX:+AggressiveOpts");
 		if (System.getProperty("os.name").startsWith("Mac")) {
 			args.add("-Xdock:name=MCUpdater - " + server.getName());
 		}

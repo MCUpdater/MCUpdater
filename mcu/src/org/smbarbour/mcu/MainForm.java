@@ -180,6 +180,7 @@ public class MainForm extends MCUApp {
 		newConfig.setProperty("minimumMemory", "512M");
 		newConfig.setProperty("maximumMemory", "1G");
 		newConfig.setProperty("permGen", "128M");
+		newConfig.setProperty("jvmOpts", "-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+AggressiveOpts");
 		//newConfig.setProperty("currentConfig", "");
 		//newConfig.setProperty("packRevision","");
 		//newConfig.setProperty("suppressUpdates", "false");
@@ -206,6 +207,7 @@ public class MainForm extends MCUApp {
 		if (current.getProperty("minimumMemory") == null) {	current.setProperty("minimumMemory", "512M"); hasChanged = true; }
 		if (current.getProperty("maximumMemory") == null) {	current.setProperty("maximumMemory", "1G"); hasChanged = true; }
 		if (current.getProperty("permGen") == null) {	current.setProperty("permGen", "128M"); hasChanged = true; }
+		if (current.getProperty("jvmOpts") == null) {	current.setProperty("jvmOpts", "-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+AggressiveOpts"); hasChanged = true; }
 		//if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; } // Made obsolete by instancing
 		//if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; } // Made obsolete by instancing
 		if (current.getProperty("minimizeOnLaunch") == null) { current.setProperty("minimizeOnLaunch", (System.getProperty("os.name").startsWith("Mac")) ? "false" : "true"); hasChanged = true; }
