@@ -55,7 +55,7 @@ public class ServerPackParser {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		URLConnection serverConn = server.openConnection();
 		serverConn.setConnectTimeout(2000);
-		serverConn.setReadTimeout(100);
+		serverConn.setReadTimeout(500);
 		try {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			return db.parse(serverConn.getInputStream());
