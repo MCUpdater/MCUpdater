@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -52,10 +53,12 @@ public class ServerPackParser {
 			return null;
 		}
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		
+		URLConnection serverConn = server.openConnection();
+		serverConn.setConnectTimeout(2000);
+		serverConn.setReadTimeout(100);
 		try {
 			DocumentBuilder db = dbf.newDocumentBuilder();
-			return db.parse(server.openStream());
+			return db.parse(serverConn.getInputStream());
 		}catch(ParserConfigurationException pce) {
 			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "Parser error", pce);
 		}catch(SAXException se) {

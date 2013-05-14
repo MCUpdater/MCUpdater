@@ -129,7 +129,10 @@ public class MCUpdater {
 		try {
 			long start = System.currentTimeMillis();
 			URL md5s = new URL("http://files.mcupdater.com/md5.dat");
-			InputStreamReader input = new InputStreamReader(md5s.openStream());
+			URLConnection md5Con = md5s.openConnection();
+			md5Con.setConnectTimeout(2000);
+			md5Con.setReadTimeout(500);
+			InputStreamReader input = new InputStreamReader(md5Con.getInputStream());
 			BufferedReader buffer = new BufferedReader(input);
 			String currentLine = null;
 			while(true){
@@ -864,12 +867,18 @@ public class MCUpdater {
 	
 	private void doPatch(File requestedJar, File newestJar, String version) {
 		try {
-			URL patchURL = new URL("http://files.mcupdater.com/mcu_patches/" + newestMC.replace(".", "") + "to" + version.replace(".","") + ".patch");
-			_debug(patchURL.toString());
+			URL patchURL;
 			File patchFile = archiveFolder.resolve("temp.patch").toFile();
+			try {
+				patchURL = new URL("http://files.mcupdater.com/mcu_patches/" + newestMC.replace(".", "") + "to" + version.replace(".","") + ".patch");
+				patchURL.openConnection().connect();
+			} catch (IOException ioe) {
+				patchURL = new URL("https://dl.dropboxusercontent.com/u/75552727/mcu_patches/" + newestMC.replace(".", "") + "to" + version.replace(".","") + ".patch");
+			}
+			_debug(patchURL.toString());
 			parent.setStatus("Downloading downgrade patch");
 			apiLogger.info("Downloading downgrade patch (" + newestMC + " -> " + version + ")");
-			FileUtils.copyURLToFile(patchURL, patchFile);
+			FileUtils.copyURLToFile(patchURL, patchFile, 2000, 5000);
 			parent.setStatus("Applying downgrade patch");
 			apiLogger.info("Applying downgrade patch");
 			Transmogrify.applyPatch(new Path(newestJar), new Path(requestedJar), new Path(patchFile));
