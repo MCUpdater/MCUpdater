@@ -1,67 +1,63 @@
 <xs:schema attributeFormDefault="unqualified"
 	elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+	<xs:complexType name="ConfigType">
+		<xs:sequence>
+			<xs:element type="xs:anyURI" name="URL" />
+			<xs:element type="xs:string" name="Path" />
+			<xs:element type="xs:boolean" name="NoOverwrite" />
+			<xs:element type="xs:string" name="MD5" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="ModuleType">
+		<xs:sequence>
+			<xs:element type="xs:anyURI" name="URL" />
+			<xs:element type="xs:string" name="ModPath" minOccurs="0" />
+			<xs:element type="xs:boolean" name="Required" />
+			<xs:element type="xs:boolean" name="IsDefault" />
+			<xs:element type="xs:boolean" name="InJar" />
+			<xs:element type="xs:integer" name="JarOrder" minOccurs="0" />
+			<xs:element type="xs:boolean" name="KeepMeta" minOccurs="0" default="true" />
+			<xs:element type="xs:boolean" name="Extract" />
+			<xs:element type="xs:boolean" name="InRoot" />
+			<xs:element type="xs:boolean" name="CoreMod" />
+			<xs:element type="xs:string" name="MD5" />
+			<xs:element type="ConfigType" name="ConfigFile" maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="name" use="required" />
+		<xs:attribute type="xs:string" name="id" use="required" />
+		<xs:attribute type="xs:string" name="depends" use="optional" />
+		<xs:attribute name="side" use="optional" default="BOTH">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="BOTH" />
+					<xs:enumeration value="CLIENT" />
+					<xs:enumeration value="SERVER" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+
+	<xs:complexType name="ServerType">
+		<xs:sequence>
+			<xs:element type="ModuleType" name="Module" maxOccurs="unbounded" minOccurs="1" />
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="id" use="required" />
+		<xs:attribute type="xs:string" name="name" use="required" />
+		<xs:attribute type="xs:anyURI" name="newsUrl" use="required" />
+		<xs:attribute type="xs:anyURI" name="iconUrl" use="optional" />
+		<xs:attribute type="xs:string" name="version" use="required" />
+		<xs:attribute type="xs:string" name="serverAddress" use="required" />
+		<xs:attribute type="xs:boolean" name="generateList" use="optional" default="true" />
+		<xs:attribute type="xs:boolean" name="autoConnect" use="optional" default="true" />
+		<xs:attribute type="xs:string" name="revision" use="required" />
+	</xs:complexType>
+
 	<xs:element name="ServerPack">
 		<xs:complexType>
 			<xs:sequence>
-				<xs:element name="Server" minOccurs="1">
-					<xs:complexType>
-						<xs:sequence>
-							<xs:element name="Module" maxOccurs="unbounded"
-								minOccurs="1">
-								<xs:complexType>
-									<xs:sequence>
-										<xs:element type="xs:anyURI" name="URL" />
-										<xs:element type="xs:string" name="ModPath" minOccurs="0" />
-										<xs:element type="xs:boolean" name="Required" />
-										<xs:element type="xs:boolean" name="IsDefault" />
-										<xs:element type="xs:boolean" name="InJar" />
-										<xs:element type="xs:integer" name="JarOrder" minOccurs="0" />
-										<xs:element type="xs:boolean" name="KeepMeta" minOccurs="0" default="true" />
-										<xs:element type="xs:boolean" name="Extract" />
-										<xs:element type="xs:boolean" name="InRoot" />
-										<xs:element type="xs:boolean" name="CoreMod" />
-										<xs:element type="xs:string" name="MD5" />
-										<xs:element name="ConfigFile" maxOccurs="unbounded"
-											minOccurs="0">
-											<xs:complexType>
-												<xs:sequence>
-													<xs:element type="xs:anyURI" name="URL" />
-													<xs:element type="xs:string" name="Path" />
-													<xs:element type="xs:boolean" name="NoOverwrite" />
-													<xs:element type="xs:string" name="MD5" />
-												</xs:sequence>
-											</xs:complexType>
-										</xs:element>
-									</xs:sequence>
-									<xs:attribute type="xs:string" name="name" use="required" />
-									<xs:attribute type="xs:string" name="id" use="required" />
-									<xs:attribute type="xs:string" name="depends" use="optional" />
-									<xs:attribute name="side" use="optional" default="BOTH">
-										<xs:simpleType>
-											<xs:restriction base="xs:string">
-												<xs:enumeration value="BOTH"/>
-												<xs:enumeration value="CLIENT"/>
-												<xs:enumeration value="SERVER"/>
-											</xs:restriction>
-										</xs:simpleType>
-									</xs:attribute>
-								</xs:complexType>
-							</xs:element>
-						</xs:sequence>
-						<xs:attribute type="xs:string" name="id" use="required" />
-						<xs:attribute type="xs:string" name="name" use="required" />
-						<xs:attribute type="xs:anyURI" name="newsUrl" use="required" />
-						<xs:attribute type="xs:anyURI" name="iconUrl" use="optional" />
-						<xs:attribute type="xs:string" name="version" use="required" />
-						<xs:attribute type="xs:string" name="serverAddress"
-							use="required" />
-						<xs:attribute type="xs:boolean" name="generateList"
-							use="optional" default="true" />
-						<xs:attribute type="xs:boolean" name="autoConnect"
-							use="optional" default="true" />
-						<xs:attribute type="xs:string" name="revision" use="required" />
-					</xs:complexType>
-				</xs:element>
+				<xs:element type="ServerType" name="Server" minOccurs="1" />
 			</xs:sequence>
 			<xs:attribute type="xs:string" name="version" use="required" />
 		</xs:complexType>
