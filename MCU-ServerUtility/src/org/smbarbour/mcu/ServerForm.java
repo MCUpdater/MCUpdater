@@ -72,6 +72,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
@@ -306,7 +307,14 @@ public class ServerForm extends MCUApp {
 				} catch (IOException e1) {
 					e1.printStackTrace();
 				}
+				modelModule.sort();
 				modelParentId.sort();
+				String defaultId = modelModule.getContents().get(0).getId();
+				Iterator<ConfigFileWrapper> itConfig = modelConfig.getContents().iterator();
+				while(itConfig.hasNext()) {
+					ConfigFileWrapper entry = itConfig.next();
+					entry.setParentId(defaultId);
+				}
 				serverDirty = true;
 				packDirty = true;
 			}
@@ -751,6 +759,7 @@ public class ServerForm extends MCUApp {
 						chkModIsDefault.setSelected(selected.getIsDefault());
 						chkModExtract.setSelected(selected.getExtract());
 						chkModInRoot.setSelected(selected.getInRoot());
+						chkModKeepMeta.setSelected(selected.getKeepMeta());
 						btnModMoveUp.setEnabled(moduleCurrentSelection == 0 ? false : true);
 						btnModMoveDown.setEnabled(moduleCurrentSelection == modelModule.getSize()-1 ? false : true);
 						moduleDirty=false;
@@ -1127,6 +1136,27 @@ public class ServerForm extends MCUApp {
 				row++;
 			}
 			{
+				JLabel lblKeepMeta = new JLabel("Keep META-INF:");
+				lblKeepMeta.setHorizontalAlignment(SwingConstants.TRAILING);
+				GridBagConstraints gbc_lblKeepMeta = new GridBagConstraints();
+				gbc_lblKeepMeta.fill = GridBagConstraints.HORIZONTAL;
+				gbc_lblKeepMeta.insets = new Insets(0, 0, 5, 5);
+				gbc_lblKeepMeta.gridx = 1;
+				gbc_lblKeepMeta.gridy = row;
+				modDetailPanel.add(lblKeepMeta, gbc_lblKeepMeta);
+
+				chkModKeepMeta = new JCheckBox("");
+				chkModKeepMeta.addChangeListener(moduleChangeListener);
+				GridBagConstraints gbc_chkModKeepMeta = new GridBagConstraints();
+				gbc_chkModKeepMeta.insets = new Insets(0, 0, 5, 5);
+				gbc_chkModKeepMeta.anchor = GridBagConstraints.WEST;
+				gbc_chkModKeepMeta.gridx = 2;
+				gbc_chkModKeepMeta.gridy = row;
+				modDetailPanel.add(chkModKeepMeta, gbc_chkModKeepMeta);
+
+				row++;
+			}
+			{
 				btnModAdd = new JButton("Add");
 				btnModAdd.setEnabled(false);
 				btnModAdd.addActionListener(new ActionListener() {
@@ -1293,16 +1323,7 @@ public class ServerForm extends MCUApp {
 							}
 						}
 					}
-					if (lstConfigFiles.getSelectedIndex() > -1) {
-						ConfigFileWrapper selected = lstConfigFiles.getSelectedValue();
-						lstConfigParentId.setSelectedIndex(modelParentId.find(selected.getParentId()));
-						lstConfigParentId.repaint();
-						txtConfigMD5.setText(selected.getConfigFile().getMD5());
-						txtConfigUrl.setText(selected.getConfigFile().getUrl());
-						txtConfigPath.setText(selected.getConfigFile().getPath());
-						configDirty=false;
-						configCurrentSelection = lstConfigFiles.getSelectedIndex();
-					}
+					updateConfigSelectionDetails();
 				}
 			}
 		});
@@ -1785,6 +1806,8 @@ public class ServerForm extends MCUApp {
 						fileWriter.write("\t\t\t<JarOrder>" + (entry.getJarOrder()) + "</JarOrder>");
 						fileWriter.newLine();
 					}
+					fileWriter.write("\t\t\t<KeepMeta>" + (entry.getKeepMeta() == true ? "true" : "false") + "</KeepMeta>");
+					fileWriter.newLine();
 					fileWriter.write("\t\t\t<Extract>" + (entry.getExtract() == true ? "true" : "false") + "</Extract>");
 					fileWriter.newLine();
 					fileWriter.write("\t\t\t<InRoot>" + (entry.getInRoot() == true ? "true" : "false") + "</InRoot>");
@@ -1795,15 +1818,15 @@ public class ServerForm extends MCUApp {
 					fileWriter.newLine();
 					for (ConfigFileWrapper cfw : server.getConfigs()) {
 						if (cfw.getParentId().equals(entry.getId())) {
-							fileWriter.write("\t\t\t\t<ConfigFile>");
+							fileWriter.write("\t\t\t<ConfigFile>");
 							fileWriter.newLine();
-							fileWriter.write("\t\t\t\t\t<URL>" + xmlEscape(cfw.getConfigFile().getUrl()) + "</URL>");
+							fileWriter.write("\t\t\t\t<URL>" + xmlEscape(cfw.getConfigFile().getUrl()) + "</URL>");
 							fileWriter.newLine();
-							fileWriter.write("\t\t\t\t\t<Path>" + xmlEscape(cfw.getConfigFile().getPath()) + "</Path>");
+							fileWriter.write("\t\t\t\t<Path>" + xmlEscape(cfw.getConfigFile().getPath()) + "</Path>");
 							fileWriter.newLine();
-							fileWriter.write("\t\t\t\t\t<MD5>" + xmlEscape(cfw.getConfigFile().getMD5()) + "</MD5>");
+							fileWriter.write("\t\t\t\t<MD5>" + xmlEscape(cfw.getConfigFile().getMD5()) + "</MD5>");
 							fileWriter.newLine();
-							fileWriter.write("\t\t\t\t</ConfigFile>");
+							fileWriter.write("\t\t\t</ConfigFile>");
 							fileWriter.newLine();
 						}
 					}
@@ -1863,9 +1886,18 @@ public class ServerForm extends MCUApp {
 	}
 
 	private void updateModuleEntry() {
+		String oldValue = lstModules.getSelectedValue().getId();
 		modelParentId.replaceEntry(lstModules.getSelectedValue().getId(), txtModId.getText());
 		Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), (int)spinModInJarPriority.getValue(), chkModKeepMeta.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, lstModSide.getSelectedItem().toString(), txtModPath.getText());
 		modelModule.replace(moduleCurrentSelection, newMod);
+		Iterator<ConfigFileWrapper> itConfig = modelConfig.getContents().iterator();
+		while (itConfig.hasNext()) {
+			ConfigFileWrapper entry = itConfig.next();
+			if (entry.getParentId().equals(oldValue)) {
+				entry.setParentId(txtModId.getText());
+			}
+		}
+		updateConfigSelectionDetails();
 		moduleDirty = false;
 		serverDirty = true;
 		packDirty = true;
@@ -1897,6 +1929,25 @@ public class ServerForm extends MCUApp {
 			return true;
 		} else {
 			return false;
+		}
+	}
+
+	@Override
+	public void addServer(ServerList entry) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private void updateConfigSelectionDetails() {
+		if (lstConfigFiles.getSelectedIndex() > -1) {
+			ConfigFileWrapper selected = lstConfigFiles.getSelectedValue();
+			lstConfigParentId.setSelectedIndex(modelParentId.find(selected.getParentId()));
+			lstConfigParentId.repaint();
+			txtConfigMD5.setText(selected.getConfigFile().getMD5());
+			txtConfigUrl.setText(selected.getConfigFile().getUrl());
+			txtConfigPath.setText(selected.getConfigFile().getPath());
+			configDirty=false;
+			configCurrentSelection = lstConfigFiles.getSelectedIndex();
 		}
 	}
 }

@@ -10,8 +10,9 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+
+import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.ServerList;
-import org.smbarbour.mcu.util.ServerListPacket;
 
 final class ServerListCellRenderer extends JPanel implements ListCellRenderer {
 	private static final int LIST_CELL_ICON_SIZE = 32;
@@ -60,8 +61,7 @@ final class ServerListCellRenderer extends JPanel implements ListCellRenderer {
 	@Override
 	public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus)
 	{
-		ServerListPacket slp = (ServerListPacket) value;
-		ServerList entry = slp.getEntry();
+		ServerList entry = (ServerList) value;
 		String serverName = entry.getName();
 		lblServerName.setText(serverName);
 		lblMCVersion.setText("MC Version: " + entry.getVersion());
@@ -70,7 +70,7 @@ final class ServerListCellRenderer extends JPanel implements ListCellRenderer {
 		try {
 			lblIcon.setIcon(new ImageIcon(new URL(entry.getIconUrl())));
 		} catch (MalformedURLException e) {
-			lblIcon.setIcon(slp.getInstance().defaultIcon);
+			lblIcon.setIcon(MCUpdater.getInstance().defaultIcon);
 		}
 		if (isSelected)
 		{

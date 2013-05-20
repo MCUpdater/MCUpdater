@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.smbarbour.mcu.util.ModSide;
+import org.smbarbour.mcu.util.ServerList;
 
 public class MCUCLI extends MCUApp {
 	@Override
@@ -120,5 +121,10 @@ public class MCUCLI extends MCUApp {
 			"--backup                  Save a timestamped backup of the world, mods, and configs\n"+
 			"--launch                  Attempt to launch the world after updating"
 		);
+	}
+	@Override
+	public void addServer(ServerList entry) {
+		// TODO Auto-generated method stub
+		
 	}
 }

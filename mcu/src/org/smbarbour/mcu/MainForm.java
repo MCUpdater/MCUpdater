@@ -62,7 +62,6 @@ import org.smbarbour.mcu.util.LoginData;
 import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.Module;
 import org.smbarbour.mcu.util.ServerList;
-import org.smbarbour.mcu.util.ServerListPacket;
 import org.smbarbour.mcu.util.ServerPackParser;
 import org.smbarbour.mcu.util.ServerStatus;
 import org.w3c.dom.Document;
@@ -777,7 +776,7 @@ public class MainForm extends MCUApp {
 			while(it.hasNext())
 			{
 				ServerList entry = it.next();
-				slModel.add(new ServerListPacket(entry, mcu));
+				slModel.add(entry);
 			}
 			//slModel.add(new ServerListPacket(new ServerList("unmanaged","Unmanaged","http://www.example.org/ServerPack.xml","http://mcupdater.net46.net","","","",false,"0"), mcu));
 		}
@@ -1141,6 +1140,12 @@ public class MainForm extends MCUApp {
 		sm.setVisible(true);
 	}
 
+	@Override
+	public void addServer(ServerList entry) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	private final class NewsPaneListener implements HyperlinkListener {
 		@Override
 		public void hyperlinkUpdate(HyperlinkEvent he) {
@@ -1159,7 +1164,7 @@ public class MainForm extends MCUApp {
 		public void valueChanged(ListSelectionEvent e) {
 			if (!e.getValueIsAdjusting())
 			{
-				changeSelectedServer(((ServerListPacket)serverList.getSelectedValue()).getEntry());
+				changeSelectedServer((ServerList) serverList.getSelectedValue());
 				// check for server version update
 				Properties instData = new Properties();
 				try {
@@ -1185,7 +1190,6 @@ public class MainForm extends MCUApp {
 			}
 		}
 	}
-
 }
 
 class JModuleCheckBox extends JCheckBox
@@ -1217,20 +1221,20 @@ class SLListModel extends AbstractListModel
 	 *
 	 */
 	private static final long serialVersionUID = -6829288390151952427L;
-	List<ServerListPacket> model;
+	List<ServerList> model;
 
 	public SLListModel()
 	{
-		model = new ArrayList<ServerListPacket>();
+		model = new ArrayList<ServerList>();
 	}
 
 	public int getEntryIdByTag(String tag) {
 		int foundId = 0;
-		Iterator<ServerListPacket> it = model.iterator();
+		Iterator<ServerList> it = model.iterator();
 		int searchId = 0;
 		while (it.hasNext()) {
-			ServerListPacket entry = it.next();
-			if (tag.equals(entry.getEntry().getServerId())) {
+			ServerList entry = it.next();
+			if (tag.equals(entry.getServerId())) {
 				foundId = searchId;
 				break;
 			}
@@ -1245,22 +1249,22 @@ class SLListModel extends AbstractListModel
 	}
 
 	@Override
-	public ServerListPacket getElementAt(int index) {
+	public ServerList getElementAt(int index) {
 		return model.get(index);
 	}
 
-	public void add(ServerListPacket element)
+	public void add(ServerList element)
 	{
 		model.add(element);
 		fireContentsChanged(this, 0, getSize());
 	}
 
-	public Iterator<ServerListPacket> iterator()
+	public Iterator<ServerList> iterator()
 	{
 		return model.iterator();
 	}
 
-	public boolean removeElement(ServerListPacket element)
+	public boolean removeElement(ServerList element)
 	{
 		boolean removed = model.remove(element);
 		if (removed) {
