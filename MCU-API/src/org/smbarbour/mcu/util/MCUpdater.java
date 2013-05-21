@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.FileHandler;
@@ -40,7 +41,7 @@ import org.w3c.dom.*;
 
 
 public class MCUpdater {
-	
+	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization");
 	//private List<Module> modList = new ArrayList<Module>();
 	private Path MCFolder;
 	private Path archiveFolder;
@@ -84,6 +85,7 @@ public class MCUpdater {
 	{
 		apiLogger = Logger.getLogger("MCU-API");
 		apiLogger.setLevel(Level.ALL);
+		String customPath = Customization.getString("customPath");
 		if(System.getProperty("os.name").startsWith("Windows"))
 		{
 			MCFolder = new Path(System.getenv("APPDATA")).resolve(".minecraft");
@@ -97,6 +99,9 @@ public class MCUpdater {
 		{
 			MCFolder = new Path(System.getProperty("user.home")).resolve(".minecraft");
 			archiveFolder = new Path(System.getProperty("user.home")).resolve(".MCUpdater");
+		}
+		if (!customPath.isEmpty()) {
+			archiveFolder = new Path(customPath);
 		}
 		try {
 			FileHandler apiHandler = new FileHandler(archiveFolder.resolve("MCU-API.log").toString(), 0, 3);
