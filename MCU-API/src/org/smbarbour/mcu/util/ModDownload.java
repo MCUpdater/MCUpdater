@@ -22,6 +22,7 @@ import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTML.Tag;
 
 import org.apache.commons.io.FileUtils;
+import org.smbarbour.mcu.Version;
 
 public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallback {
 
@@ -73,6 +74,7 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 		isOptifined = url.getHost().endsWith("optifined.net");
 		isMediafire = url.getHost().toLowerCase().contains("mediafire");
 		HttpURLConnection connection = (HttpURLConnection)url.openConnection();
+		connection.setRequestProperty("User-Agent", "MCUpdater/" + Version.VERSION);
 		if (referer != null)
 			connection.setRequestProperty("Referer", referer.url.toString());
 		connection.setUseCaches(false);
