@@ -316,6 +316,9 @@ public class MainForm extends MCUApp {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				updateInstanceList();
+				if (serverList.getSelectedIndex() > -1) {
+					changeSelectedServer((ServerList) serverList.getSelectedValue());
+				}
 			}
 
 		});
