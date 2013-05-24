@@ -23,6 +23,14 @@
 			<xs:element type="xs:boolean" name="InRoot" />
 			<xs:element type="xs:boolean" name="CoreMod" />
 			<xs:element type="xs:string" name="MD5" />
+			<xs:element name="Meta" minOccurs="0">
+				<xs:complexType>
+					<xs:attribute type="xs:string" name="version" />
+					<xs:attribute type="xs:string" name="authors" />
+					<xs:attribute type="xs:anyURI" name="URL" />
+					<xs:attribute type="xs:string" name="description" />
+				</xs:complexType>
+			</xs:element>
 			<xs:element type="ConfigType" name="ConfigFile" maxOccurs="unbounded" minOccurs="0" />
 		</xs:sequence>
 		<xs:attribute type="xs:string" name="name" use="required" />

@@ -98,7 +98,7 @@ public class MainForm extends MCUApp {
 	final MCUpdater mcu = MCUpdater.getInstance();
 
 	private JTabbedPane tabs;
-	private final JTextPane browser = new JTextPane();
+	private final JTextPane browser = new MCUBrowser();
 	private final ConsoleArea console = new ConsoleArea();
 
 	private ServerList selected;
@@ -206,7 +206,7 @@ public class MainForm extends MCUApp {
 		if (current.getProperty("minimumMemory") == null) {	current.setProperty("minimumMemory", "512M"); hasChanged = true; }
 		if (current.getProperty("maximumMemory") == null) {	current.setProperty("maximumMemory", "1G"); hasChanged = true; }
 		if (current.getProperty("permGen") == null) {	current.setProperty("permGen", "128M"); hasChanged = true; }
-		if (current.getProperty("jvmOpts") == null) {	current.setProperty("jvmOpts", "-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+AggressiveOpts"); hasChanged = true; }
+		if (current.getProperty("jvmOpts") == null || current.getProperty("jvmOpts").isEmpty()) {	current.setProperty("jvmOpts", "-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+AggressiveOpts"); hasChanged = true; }
 		//if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; } // Made obsolete by instancing
 		//if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; } // Made obsolete by instancing
 		if (current.getProperty("minimizeOnLaunch") == null) { current.setProperty("minimizeOnLaunch", (System.getProperty("os.name").startsWith("Mac")) ? "false" : "true"); hasChanged = true; }
@@ -625,7 +625,7 @@ public class MainForm extends MCUApp {
 		try {
 			btnUpdate.setEnabled(true);
 			selected = entry;
-			try { 
+			try {
 				browser.setPage(entry.getNewsUrl());
 			} catch (Exception ie) {
 				browser.setText("<HTML><BODY>Unable to read news.</BODY></HTML>");

@@ -699,33 +699,42 @@ public class MCUpdater {
 					URL configURL = new URL(cfEntry.getUrl());
 					final File confFile = instancePath.resolve(cfEntry.getPath()).toFile();
 					confFile.getParentFile().mkdirs();
-					if( MD5 != null ) {
-						final File cacheFile = DownloadCache.getFile(MD5);
-						if( cacheFile.exists() ) {
-							parent.log("  Found config for "+cfEntry.getPath()+" (cached)");
-							FileUtils.copyFile(cacheFile, confFile);
-							continue;
-						}
-					}
-					parent.log("  Found config for "+cfEntry.getPath()+", downloading...");
-					_debug(confFile.getPath());
+//					if( MD5 != null ) {
+//						final File cacheFile = DownloadCache.getFile(MD5);
+//						if( cacheFile.exists() ) {
+//							parent.log("  Found config for "+cfEntry.getPath()+" (cached)");
+//							FileUtils.copyFile(cacheFile, confFile);
+//							continue;
+//						}
+//					}
+					//_debug(confFile.getPath());
 					if (cfEntry.isNoOverwrite() && confFile.exists()) {
-						parent.log("  Skipped - NoOverwrite is true");
+						parent.log("  Config for "+cfEntry.getPath()+" skipped - NoOverwrite is true");
 					} else {
-						FileUtils.copyURLToFile(configURL, confFile);
+						parent.log("  Found config for "+cfEntry.getPath()+", downloading...");
+						try {
+							ModDownload configDL = new ModDownload(configURL, confFile, MD5);
+							if( configDL.cacheHit ) {
+								parent.log("  Found config for "+cfEntry.getPath()+" (cached).");
+							} else {
+								parent.log("  Found config for "+cfEntry.getPath()+" (downloaded).");
+							}
+							_debug(configDL.url + " -> " + configDL.getDestFile().getPath());
+						} catch (Exception e) {
+							++errorCount;
+							apiLogger.log(Level.SEVERE, "General Error", e);
+						}
+						//FileUtils.copyURLToFile(configURL, confFile);
 					}
 					// save in cache for future reference
-					if( MD5 != null ) {
-						final boolean cached = DownloadCache.cacheFile(confFile, MD5);
-						if( cached ) {
-							_debug(confFile.getName() + " saved in cache");							
-						}
-					}
+//					if( MD5 != null ) {
+//						final boolean cached = DownloadCache.cacheFile(confFile, MD5);
+//						if( cached ) {
+//							_debug(confFile.getName() + " saved in cache");							
+//						}
+//					}
 				}
 			} catch (MalformedURLException e) {
-				++errorCount;
-				apiLogger.log(Level.SEVERE, "General Error", e);
-			} catch (IOException e) {
 				++errorCount;
 				apiLogger.log(Level.SEVERE, "General Error", e);
 			}
