@@ -180,6 +180,7 @@ public class MainForm extends MCUApp {
 		newConfig.setProperty("maximumMemory", "1G");
 		newConfig.setProperty("permGen", "128M");
 		newConfig.setProperty("jvmOpts", "-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+AggressiveOpts");
+		newConfig.setProperty("lastInstance", "");
 		//newConfig.setProperty("currentConfig", "");
 		//newConfig.setProperty("packRevision","");
 		//newConfig.setProperty("suppressUpdates", "false");
@@ -204,9 +205,10 @@ public class MainForm extends MCUApp {
 	{
 		boolean hasChanged = false;
 		if (current.getProperty("minimumMemory") == null) {	current.setProperty("minimumMemory", "512M"); hasChanged = true; }
-		if (current.getProperty("maximumMemory") == null) {	current.setProperty("maximumMemory", "1G"); hasChanged = true; }
-		if (current.getProperty("permGen") == null) {	current.setProperty("permGen", "128M"); hasChanged = true; }
-		if (current.getProperty("jvmOpts") == null || current.getProperty("jvmOpts").isEmpty()) {	current.setProperty("jvmOpts", "-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+AggressiveOpts"); hasChanged = true; }
+		if (current.getProperty("maximumMemory") == null) { current.setProperty("maximumMemory", "1G"); hasChanged = true; }
+		if (current.getProperty("permGen") == null) { current.setProperty("permGen", "128M"); hasChanged = true; }
+		if (current.getProperty("jvmOpts") == null || current.getProperty("jvmOpts").isEmpty()) { current.setProperty("jvmOpts", "-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+AggressiveOpts"); hasChanged = true; }
+		if (current.getProperty("lastInstance") == null) { current.setProperty("lastInstance", ""); }
 		//if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; } // Made obsolete by instancing
 		//if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; } // Made obsolete by instancing
 		if (current.getProperty("minimizeOnLaunch") == null) { current.setProperty("minimizeOnLaunch", (System.getProperty("os.name").startsWith("Mac")) ? "false" : "true"); hasChanged = true; }
@@ -491,16 +493,13 @@ public class MainForm extends MCUApp {
 	}
 
 	private void checkSelectedInstance() {
-//		Properties instData = new Properties();
-//		try {
-//			instData.load(Files.newInputStream(mcu.getMCFolder().resolve("instance.dat")));
-//		} catch (NoSuchFileException nsfe) {
-//			instData.setProperty("serverID", "unmanaged");
-//		} catch (IOException e1) {
-//			e1.printStackTrace();
-//		}
-//		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(instData.getProperty("serverID"));
-//		serverList.setSelectedIndex(selectIndex);
+		int selectIndex;
+		if (!config.getProperty("lastInstance").isEmpty()) {
+			selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(config.getProperty("lastInstance"));
+		} else {
+			selectIndex = 0;
+		}
+		serverList.setSelectedIndex(selectIndex);
 	}
 
 	private void initializeInstanceList() {
@@ -1087,6 +1086,8 @@ public class MainForm extends MCUApp {
 			}
 		}
 
+		config.setProperty("lastInstance", selected.getServerId());
+		writeConfig(config);
 		GenericLauncherThread thread;
 //		if (System.getProperty("os.name").startsWith("Mac")) {
 //
