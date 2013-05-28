@@ -1,4 +1,4 @@
-package org.smbarbour.mcu;
+package org.smbarbour.mcu.util;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;

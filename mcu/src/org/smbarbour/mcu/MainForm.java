@@ -3,11 +3,6 @@ package org.smbarbour.mcu;
 import j7compat.Files;
 import j7compat.Path;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.PBEParameterSpec;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -46,19 +41,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Random;
-
-import org.apache.commons.codec.binary.Base64;
-
 import org.smbarbour.mcu.MCUApp;
-import org.smbarbour.mcu.MCLoginException.ResponseType;
 import org.smbarbour.mcu.util.InstanceManager;
 import org.smbarbour.mcu.util.Localization;
 import org.smbarbour.mcu.util.LoginData;
+import org.smbarbour.mcu.util.MCAuth;
+import org.smbarbour.mcu.util.MCLoginException;
 import org.smbarbour.mcu.util.MCUpdater;
 import org.smbarbour.mcu.util.Module;
 import org.smbarbour.mcu.util.ServerList;
@@ -462,10 +453,12 @@ public class MainForm extends MCUApp {
 		if (config.getProperty("storePassword").toLowerCase().equals("true")) {
 			if (config.containsKey("password")) {
 				String user = config.getProperty("userName");
-				String password = decrypt(config.getProperty("password"));
+				String password = mcu.decrypt(config.getProperty("password"));
 				try {
-					login(user, password, true);
+					LoginData login = MCAuth.login(user, password);
+					setLoginData(login);
 				} catch (MCLoginException e1) {
+					baseLogger.log(Level.SEVERE, "Login failure - " + e1.getMessage(), e1);
 				} catch (Exception e1) {
 					baseLogger.log(Level.SEVERE, "General error", e1);
 				}
@@ -528,34 +521,7 @@ public class MainForm extends MCUApp {
 				packUrl = "";
 			}
 		}
-
 		updateInstanceList();
-	}
-
-	private String encrypt(String password) {
-		try {
-			Cipher cipher = getCipher(Cipher.ENCRYPT_MODE, "MCUpdater");
-			byte[] utf8 = password.getBytes("UTF8");
-			byte[] enc = cipher.doFinal(utf8);
-
-			return Base64.encodeBase64String(enc);
-		} catch (Exception e) {
-			baseLogger.log(Level.SEVERE, "General error", e);
-		}
-		return null;
-	}
-
-	private String decrypt(String property) {
-		try {
-			Cipher cipher = getCipher(Cipher.DECRYPT_MODE, "MCUpdater");
-			byte[] dec = Base64.decodeBase64(property);
-			byte[] utf8 = cipher.doFinal(dec);
-
-			return new String(utf8, "UTF8");
-		} catch (Exception e) {
-			baseLogger.log(Level.SEVERE, "General error", e);
-		}
-		return null;
 	}
 
 	@Override
@@ -654,7 +620,17 @@ public class MainForm extends MCUApp {
 						btnUpdate.setEnabled(false);
 					} else {
 						modIds.add(modEntry.getId());
-					}
+					}//			setLoginData(login);
+//					getConfig().setProperty("userName", username);
+//					if (storePassword == true ) {
+//						getConfig().setProperty("password", encrypt(password));
+//						getConfig().setProperty("storePassword", "true");
+//					} else {
+//						getConfig().remove("password");
+//						getConfig().setProperty("storePassword", "false");
+//					}
+//					writeConfig(getConfig());
+
 					JModuleCheckBox chkModule = new JModuleCheckBox(modEntry.getName());
 					if(modEntry.getInJar())
 					{
@@ -873,57 +849,6 @@ public class MainForm extends MCUApp {
 		frmMain.setExtendedState(Frame.NORMAL);
 	}
 
-	public LoginData login(String username, String password, Boolean storePassword) throws Exception {
-		try {
-			HashMap<String, Object> localHashMap = new HashMap<String, Object>();
-			localHashMap.put("user", username);
-			localHashMap.put("password", password);
-			localHashMap.put("version", Integer.valueOf(13));
-			String str = HTTPSUtils.executePost("https://login.minecraft.net/", localHashMap);
-			if (str == null) {
-				//showError("Can't connect to minecraft.net");
-				throw new MCLoginException(ResponseType.NOCONNECTION);
-			}
-			if (!str.contains(":")) {
-				if (str.trim().equals("Bad login")) {
-					throw new MCLoginException(ResponseType.BADLOGIN);
-				} else if (str.trim().equals("Old version")) {
-					throw new MCLoginException(ResponseType.OLDVERSION);
-				} else if (str.trim().equals("User not premium")) {
-					throw new MCLoginException(ResponseType.OLDLAUNCHER);
-				} else {
-					throw new MCLoginException(str);
-				}
-			}
-			if (!Version.isMasterBranch()) {
-				this.baseLogger.info("Login response string: " + str);
-			}
-			String[] arrayOfString = str.split(":");
-
-			LoginData login = new LoginData();
-			login.setUserName(arrayOfString[2].trim());
-			login.setLatestVersion(arrayOfString[0].trim());
-			login.setSessionId(arrayOfString[3].trim());
-			setLoginData(login);
-			getConfig().setProperty("userName", username);
-			if (storePassword == true ) {
-				getConfig().setProperty("password", encrypt(password));
-				getConfig().setProperty("storePassword", "true");
-			} else {
-				getConfig().remove("password");
-				getConfig().setProperty("storePassword", "false");
-			}
-			writeConfig(getConfig());
-			return login;
-
-		} catch (MCLoginException mcle) {
-			throw mcle;
-		} catch (Exception localException) {
-			baseLogger.log(Level.SEVERE, "General error", localException);
-			throw localException;
-		}
-	}
-
 	public void setLoginData(LoginData response) {
 		this.loginData = response;
 		setPlayerName(response.getUserName());
@@ -934,17 +859,6 @@ public class MainForm extends MCUApp {
 		}
 	}
 
-	private Cipher getCipher(int mode, String password) throws Exception {
-		Random random = new Random(92845025L);
-		byte[] salt = new byte[8];
-		random.nextBytes(salt);
-		PBEParameterSpec pbeParamSpec = new PBEParameterSpec(salt, 5);
-
-		SecretKey pbeKey = SecretKeyFactory.getInstance("PBEWithMD5AndDES").generateSecret(new PBEKeySpec(password.toCharArray()));
-		Cipher cipher = Cipher.getInstance("PBEWithMD5AndDES");
-		cipher.init(mode, pbeKey, pbeParamSpec);
-		return cipher;
-	}
 	private void updateInstance() {
 		new Thread() {
 			public void run() {

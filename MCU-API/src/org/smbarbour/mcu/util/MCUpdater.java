@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
@@ -29,7 +30,14 @@ import java.util.logging.Logger;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.PBEParameterSpec;
 import javax.swing.ImageIcon;
+
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -900,6 +908,44 @@ public class MCUpdater {
 		} catch (Exception e) {
 			apiLogger.log(Level.SEVERE, "General Error", e);
 		}
+	}
+
+	private Cipher getCipher(int mode, String password) throws Exception {
+		Random random = new Random(92845025L);
+		byte[] salt = new byte[8];
+		random.nextBytes(salt);
+		PBEParameterSpec pbeParamSpec = new PBEParameterSpec(salt, 5);
+
+		SecretKey pbeKey = SecretKeyFactory.getInstance("PBEWithMD5AndDES").generateSecret(new PBEKeySpec(password.toCharArray()));
+		Cipher cipher = Cipher.getInstance("PBEWithMD5AndDES");
+		cipher.init(mode, pbeKey, pbeParamSpec);
+		return cipher;
+	}
+
+	public String encrypt(String password) {
+		try {
+			Cipher cipher = getCipher(Cipher.ENCRYPT_MODE, "MCUpdater");
+			byte[] utf8 = password.getBytes("UTF8");
+			byte[] enc = cipher.doFinal(utf8);
+
+			return Base64.encodeBase64String(enc);
+		} catch (Exception e) {
+			apiLogger.log(Level.SEVERE, "General error", e);
+		}
+		return null;
+	}
+
+	public String decrypt(String property) {
+		try {
+			Cipher cipher = getCipher(Cipher.DECRYPT_MODE, "MCUpdater");
+			byte[] dec = Base64.decodeBase64(property);
+			byte[] utf8 = cipher.doFinal(dec);
+
+			return new String(utf8, "UTF8");
+		} catch (Exception e) {
+			apiLogger.log(Level.SEVERE, "General error", e);
+		}
+		return null;
 	}
 
 }
