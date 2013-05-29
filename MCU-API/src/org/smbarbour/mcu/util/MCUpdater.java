@@ -719,7 +719,7 @@ public class MCUpdater {
 					if (cfEntry.isNoOverwrite() && confFile.exists()) {
 						parent.log("  Config for "+cfEntry.getPath()+" skipped - NoOverwrite is true");
 					} else {
-						parent.log("  Found config for "+cfEntry.getPath()+", downloading...");
+						//parent.log("  Found config for "+cfEntry.getPath()+", downloading...");
 						try {
 							ModDownload configDL = new ModDownload(configURL, confFile, MD5);
 							if( configDL.cacheHit ) {
