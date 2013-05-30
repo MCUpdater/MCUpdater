@@ -143,8 +143,8 @@ public class MCUpdater {
 			long start = System.currentTimeMillis();
 			URL md5s = new URL("http://files.mcupdater.com/md5.dat");
 			URLConnection md5Con = md5s.openConnection();
-			md5Con.setConnectTimeout(2000);
-			md5Con.setReadTimeout(500);
+			md5Con.setConnectTimeout(5000);
+			md5Con.setReadTimeout(5000);
 			InputStreamReader input = new InputStreamReader(md5Con.getInputStream());
 			BufferedReader buffer = new BufferedReader(input);
 			String currentLine = null;
