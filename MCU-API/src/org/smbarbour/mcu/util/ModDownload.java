@@ -90,7 +90,9 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 		}
 		String contentType = connection.getContentType();
 		logger.fine(" Content type: "+contentType);
-		if (contentType.toLowerCase().startsWith("text/html")) {
+		if( contentType == null ) {
+			logger.warning(" No content type found, download server may have issues.");
+		} else if (contentType.toLowerCase().startsWith("text/html")) {
 //			InputStreamReader sr = new InputStreamReader(connection.getInputStream());
 //			StringWriter sw = new StringWriter();
 //			IOUtils.copy(sr,sw);
