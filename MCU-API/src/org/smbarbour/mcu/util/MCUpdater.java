@@ -1,6 +1,7 @@
 package org.smbarbour.mcu.util;
 
 import java.net.*;
+
 import j7compat.Files;
 //import java.nio.charset.StandardCharsets;
 //import java.nio.file.Files;
@@ -27,6 +28,8 @@ import java.util.UUID;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
@@ -61,6 +64,7 @@ public class MCUpdater {
 	private String newestMC = "";
 	private Map<String,String> versionMap = new HashMap<String,String>();
 	public Logger apiLogger;
+	private Path lwjglFolder;
 	
 	private static MCUpdater INSTANCE;
 
@@ -94,23 +98,32 @@ public class MCUpdater {
 		apiLogger = Logger.getLogger("MCU-API");
 		apiLogger.setLevel(Level.ALL);
 		String customPath = Customization.getString("customPath");
+		String[] nativeNames;
+		String nativePrefix;
 		if(System.getProperty("os.name").startsWith("Windows"))
 		{
 			MCFolder = new Path(System.getenv("APPDATA")).resolve(".minecraft");
 			archiveFolder = new Path(System.getenv("APPDATA")).resolve(".MCUpdater");
+			nativePrefix = "lwjgl-2.9.0/native/windows/";
+			nativeNames = new String[] {"jinput-dx8.dll","jinput-dx8_64.dll","jinput-raw.dll","jinput-raw_64.dll","lwjgl.dll","lwjgl64.dll","OpenAL32.dll","OpenAL64.dll"};
 		} else if(System.getProperty("os.name").startsWith("Mac"))
 		{
 			MCFolder = new Path(System.getProperty("user.home")).resolve("Library").resolve("Application Support").resolve("minecraft");
 			archiveFolder = new Path(System.getProperty("user.home")).resolve("Library").resolve("Application Support").resolve("MCUpdater");
+			nativePrefix = "lwjgl-2.9.0/native/macosx/";
+			nativeNames = new String[] {"libjinput-osx.jnilib","liblwjgl.jnilib","openal.dylib"};
 		}
 		else
 		{
 			MCFolder = new Path(System.getProperty("user.home")).resolve(".minecraft");
 			archiveFolder = new Path(System.getProperty("user.home")).resolve(".MCUpdater");
+			nativePrefix = "lwjgl-2.9.0/native/linux/";
+			nativeNames = new String[] {"libjinput-linux.so","libjinput-linux64.so","liblwjgl.so","liblwjgl64.so","libopenal.so","libopenal64.so"};
 		}
 		if (!customPath.isEmpty()) {
 			archiveFolder = new Path(customPath);
 		}
+		lwjglFolder = this.archiveFolder.resolve("LWJGL");
 		try {
 			FileHandler apiHandler = new FileHandler(archiveFolder.resolve("MCU-API.log").toString(), 0, 3);
 			apiHandler.setFormatter(new FMLStyleFormatter());
@@ -167,6 +180,60 @@ public class MCUpdater {
 		} catch (IOException e) {
 			apiLogger.log(Level.SEVERE, "I/O Error", e);
 		}
+		// Download LWJGL
+		File tempFile = this.archiveFolder.resolve("lwjgl-2.9.0.zip").toFile();
+		if (!tempFile.exists()) {
+			try {
+				String jarPrefix = "lwjgl-2.9.0/jar/";
+				String[] jarNames = new String[] {"lwjgl.jar","lwjgl_util.jar","jinput.jar"};
+				
+				URL lwjglURL = new URL("http://sourceforge.net/projects/java-game-lib/files/Official%20Releases/LWJGL%202.9.0/lwjgl-2.9.0.zip/download");
+				apiLogger.info("Downloading " + lwjglURL.getPath());
+				FileUtils.copyURLToFile(lwjglURL, tempFile);
+				Path nativePath = lwjglFolder.resolve("natives");
+				Files.createDirectories(nativePath);
+				ZipFile zf = new ZipFile(tempFile);
+				ZipEntry entry;
+				for (int index=0; index < jarNames.length; index++) {
+					entry = zf.getEntry(jarPrefix + jarNames[index]);
+					File outFile = lwjglFolder.resolve(jarNames[index]).toFile();
+					apiLogger.finest("   Extract: " + outFile.getPath());
+					FileOutputStream fos = new FileOutputStream(outFile);
+					InputStream zis = zf.getInputStream(entry);
+
+					int len;
+					byte[] buf = new byte[1024];
+					while((len = zis.read(buf, 0, 1024)) > -1) {
+						fos.write(buf, 0, len);
+					}
+
+					fos.close();
+					zis.close();
+				}
+				for (int index=0; index < nativeNames.length; index++) {
+					entry = zf.getEntry(nativePrefix + nativeNames[index]);
+					File outFile = nativePath.resolve(nativeNames[index]).toFile();
+					apiLogger.finest("   Extract: " + outFile.getPath());
+					FileOutputStream fos = new FileOutputStream(outFile);
+					InputStream zis = zf.getInputStream(entry);
+
+					int len;
+					byte[] buf = new byte[1024];
+					while((len = zis.read(buf, 0, 1024)) > -1) {
+						fos.write(buf, 0, len);
+					}
+
+					fos.close();
+					zis.close();
+				}				
+				
+			} catch (MalformedURLException e) {
+				apiLogger.log(Level.SEVERE, "Bad URL", e);
+			} catch (IOException e) {
+				apiLogger.log(Level.SEVERE, "I/O Error", e);
+			}
+		}
+		//
 	}
 	
 	public MCUApp getParent() {
@@ -316,6 +383,9 @@ public class MCUpdater {
 		return archiveFolder;
 	}
 
+	public Path getLWJGLFolder() {
+		return lwjglFolder;
+	}
 	public Path getInstanceRoot() {
 		return instanceRoot;
 	}

@@ -120,7 +120,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		args.add(session.getSessionId());
 		args.add(server.getName());
 		args.add(MCUpdater.getInstance().getInstanceRoot().resolve(server.getServerId()).toString());
-		args.add(MCUpdater.getInstance().getInstanceRoot().resolve(server.getServerId()).resolve("bin").toString());
+		args.add(MCUpdater.getInstance().getLWJGLFolder().toString());
 		args.add((server.getIconUrl().equals("")) ? "https://minecraft.net/favicon.png" : server.getIconUrl());
 		args.add(parent.getConfig().getProperty("width"));
 		args.add(parent.getConfig().getProperty("height"));
