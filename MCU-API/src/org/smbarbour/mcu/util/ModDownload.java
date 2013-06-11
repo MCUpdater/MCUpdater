@@ -1,6 +1,8 @@
 package org.smbarbour.mcu.util;
 // Credit for this class goes to Peter Koeleman, who graciously provided the initial code.
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -22,12 +24,12 @@ import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTML.Tag;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.smbarbour.mcu.Version;
 
 public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallback {
 
-	@SuppressWarnings("static-access")
-	Logger logger = MCUpdater.getInstance().apiLogger.getLogger("ModDownload");
+	Logger logger;
 	private boolean isAdfly = false, isMediafire = false, isOptifined = false, readingScript = false;
 	private String redirectURL = null;
 	//private String remoteFilename;
@@ -49,6 +51,8 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 	}
 
 	public ModDownload(URL url, File destination, ModDownload referer, String MD5) throws Exception {
+		logger = Logger.getLogger("ModDownload");
+		logger.setParent(MCUpdater.apiLogger);
 		this.url = url;
 		this.expectedMD5 = MD5;
 		logger.fine("URL: " + url.toString());
@@ -100,12 +104,38 @@ public class ModDownload extends javax.swing.text.html.HTMLEditorKit.ParserCallb
 //			content = sw.toString();
 			//System.out.println(content);
 //			sw.close();
-			InputStreamReader r = new InputStreamReader(connection.getInputStream());
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			IOUtils.copy(connection.getInputStream(), baos);
+			byte[] bytes = baos.toByteArray();
+			InputStreamReader r = new InputStreamReader(new ByteArrayInputStream(bytes));
 			javax.swing.text.html.HTMLEditorKit.Parser parser;
 			parser = new javax.swing.text.html.parser.ParserDelegator();
 			parser.parse(r, this, true);
 			r.close();
 			connection = null;
+			if (redirectURL == null) {
+				logger.warning(" Content type text/html found but unable to parse redirect. Saving as-is.");
+				this.destFile = destination; 
+				InputStream is = new ByteArrayInputStream(bytes);
+				//InputStreamReader isr = new InputStreamReader(connection.getInputStream());
+				FileOutputStream fos = new FileOutputStream(this.destFile);
+				byte[] inBuffer = new byte[4096];
+				int bytesRead;
+			    while (((bytesRead = is.read(inBuffer)) != -1)) {
+			    	byte[] outBuffer = Arrays.copyOf(inBuffer, bytesRead);
+			    	fos.write(outBuffer);
+			    }
+				is.close();
+				fos.close();
+				// verify md5 && cache the newly retrieved file
+				if( MD5 != null ) {
+					final boolean cached = DownloadCache.cacheFile(destFile, MD5);
+					if( cached ) {
+						logger.fine(destFile.getName() + " saved in cache");
+					}
+				}
+				return;
+			}
 		}
 		if (redirectURL != null) {
 			url = redirect(url, redirectURL);

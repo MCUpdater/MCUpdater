@@ -63,7 +63,7 @@ public class MCUpdater {
 	public ImageIcon defaultIcon;
 	private String newestMC = "";
 	private Map<String,String> versionMap = new HashMap<String,String>();
-	public Logger apiLogger;
+	public static Logger apiLogger;
 	private Path lwjglFolder;
 	
 	private static MCUpdater INSTANCE;
@@ -72,7 +72,7 @@ public class MCUpdater {
 		try {
 			return new File(MCUpdater.class.getProtectionDomain().getCodeSource().getLocation().toURI());
 		} catch (URISyntaxException e) {
-			INSTANCE.apiLogger.log(Level.SEVERE, "Error getting MCUpdater JAR URI", e);
+			apiLogger.log(Level.SEVERE, "Error getting MCUpdater JAR URI", e);
 		}
 		return null;
 	}
@@ -225,7 +225,8 @@ public class MCUpdater {
 
 					fos.close();
 					zis.close();
-				}				
+				}
+				zf.close();
 				
 			} catch (MalformedURLException e) {
 				apiLogger.log(Level.SEVERE, "Bad URL", e);
@@ -797,7 +798,8 @@ public class MCUpdater {
 							} else {
 								parent.log("  Found config for "+cfEntry.getPath()+" (downloaded).");
 							}
-							_debug(configDL.url + " -> " + configDL.getDestFile().getPath());
+							String strPath = configDL.getDestFile() == null ? "???" : configDL.getDestFile().getPath();
+							_debug(configDL.url + " -> " + strPath);
 						} catch (Exception e) {
 							++errorCount;
 							apiLogger.log(Level.SEVERE, "General Error", e);
@@ -923,10 +925,10 @@ public class MCUpdater {
 	}
 	
 	private static void _log(String msg) {
-		INSTANCE.apiLogger.info(msg);
+		apiLogger.info(msg);
 	}
 	private static void _debug(String msg) {
-		INSTANCE.apiLogger.fine(msg);
+		apiLogger.fine(msg);
 	}
 
 	public boolean checkVersionCache(String version) {
