@@ -693,7 +693,7 @@ public class MCUpdater {
 						//_log(modPath.getPath());
 						ModDownload jarMod;
 						try {
-							jarMod = new ModDownload(modURL, new File(tmpFolder, (entry.getId() + ".jar")), entry.getMD5());
+							jarMod = new ModDownload(modURL, File.createTempFile(entry.getId(), ".jar"), entry.getMD5());
 							if( jarMod.cacheHit ) {
 								parent.log("  Adding to jar (cached).");
 							} else {
@@ -717,7 +717,7 @@ public class MCUpdater {
 					//_log(modPath.getPath());
 					ModDownload extractMod;
 					try {
-						extractMod = new ModDownload(modURL, new File(tmpFolder, (entry.getId() + ".jar")), entry.getMD5());
+						extractMod = new ModDownload(modURL, File.createTempFile(entry.getId(), ".jar") , entry.getMD5());
 						if( extractMod.cacheHit ) {
 							parent.log("  Extracting to filesystem (cached).");
 						} else {
