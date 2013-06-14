@@ -6,11 +6,13 @@ import swing2swt.layout.BorderLayout;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 
@@ -56,9 +58,27 @@ public class MainShell {
 		shell.setLayout(new BorderLayout(0, 0));
 		
 		Composite cmpStatus = new Composite(shell, SWT.NONE);
-		cmpStatus.setLayoutData(BorderLayout.SOUTH);
-		cmpStatus.setLayout(new GridLayout(1, false));
-				
+		{
+			cmpStatus.setLayoutData(BorderLayout.SOUTH);
+			cmpStatus.setLayout(new GridLayout(4, false));
+			
+			Label lblStatus = new Label(cmpStatus, SWT.NONE);
+			lblStatus.setLayoutData(new GridData(SWT.FILL,SWT.CENTER,true,false,1,1));
+			lblStatus.setText("Ready");
+			
+			ProgressBar progStatus = new ProgressBar(cmpStatus, SWT.SMOOTH | SWT.HORIZONTAL);
+			progStatus.setLayoutData(new GridData(SWT.LEFT,SWT.CENTER,false,false,1,1));
+			progStatus.setSelection(50);
+			
+			Button btnUpdate = new Button(cmpStatus, SWT.PUSH);
+			btnUpdate.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,false,false,1,1));
+			btnUpdate.setText("Update");
+			
+			Button btnLaunch = new Button(cmpStatus, SWT.PUSH);
+			btnLaunch.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,false,false,1,1));
+			btnLaunch.setText("Launch Minecraft");
+		}
+		
 		Group grpInstances = new Group(shell, SWT.V_SCROLL);
 		grpInstances.setText("Instances");
 		grpInstances.setLayoutData(BorderLayout.WEST);
