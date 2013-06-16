@@ -18,8 +18,8 @@
       <xsl:for-each select="Module">
       <tr>
         <td><xsl:value-of select="@name"/></td>
-        <td><xsl:value-of select="Meta/@version"/></td>
-        <td><a href="{Meta/@URL}"><xsl:value-of select="Meta/@URL"/></a></td>
+        <td><xsl:value-of select="Meta/version"/></td>
+        <td><a href="{Meta/URL}"><xsl:value-of select="Meta/URL"/></a></td>
         <td><xsl:value-of select="MD5"/></td>
       </tr>
       </xsl:for-each>      
