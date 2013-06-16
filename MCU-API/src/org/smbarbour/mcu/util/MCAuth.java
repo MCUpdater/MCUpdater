@@ -32,7 +32,7 @@ public class MCAuth {
 				}
 			}
 			if (!Version.isMasterBranch()) {
-				MCUpdater.getInstance().apiLogger.info("Login response string: " + str);
+				MCUpdater.apiLogger.info("Login response string: " + str);
 			}
 			String[] arrayOfString = str.split(":");
 
@@ -46,7 +46,7 @@ public class MCAuth {
 		} catch (MCLoginException mcle) {
 			throw mcle;
 		} catch (Exception localException) {
-			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "General error", localException);
+			MCUpdater.apiLogger.log(Level.SEVERE, "General error", localException);
 			throw localException;
 		}
 	}

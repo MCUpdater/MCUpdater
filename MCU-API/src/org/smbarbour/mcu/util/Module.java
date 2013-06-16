@@ -1,6 +1,7 @@
 package org.smbarbour.mcu.util;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
@@ -21,8 +22,9 @@ public class Module {
 	private String md5;
 	private ModSide side;
 	private List<ConfigFile> configs;
+	private HashMap<String,String> meta;
 	
-	public Module(String name, String id, String url, String depends, Boolean required, Boolean inJar, int jarOrder, Boolean keepMeta, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs, String side, String path)
+	public Module(String name, String id, String url, String depends, Boolean required, Boolean inJar, int jarOrder, Boolean keepMeta, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta)
 	{
 		this.setName(name);
 		this.setId(id);
@@ -45,6 +47,12 @@ public class Module {
 		} else {
 			this.configs = new ArrayList<ConfigFile>();
 		}
+		if(meta != null)
+		{
+			this.setMeta(meta);
+		} else {
+			this.setMeta(new HashMap<String,String>());
+		}
 	}
 
 	private void setJarOrder(int jarOrder) {
@@ -54,7 +62,7 @@ public class Module {
 	@Deprecated
 	public Module(String name, String id, String url, String depends, Boolean required, Boolean inJar, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs)
 	{
-		this(name, id, url, depends, required, inJar, 0, true, extract, inRoot, isDefault, coreMod, md5, configs, null, null);
+		this(name, id, url, depends, required, inJar, 0, true, extract, inRoot, isDefault, coreMod, md5, configs, null, null, null);
 	}
 
 	public String getName()
@@ -217,6 +225,14 @@ public class Module {
 
 	public void setKeepMeta(Boolean keepMeta) {
 		this.keepMeta = keepMeta;
+	}
+
+	public HashMap<String,String> getMeta() {
+		return meta;
+	}
+
+	public void setMeta(HashMap<String,String> meta) {
+		this.meta = meta;
 	}
 
 }

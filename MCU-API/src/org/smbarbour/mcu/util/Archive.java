@@ -27,7 +27,6 @@ public class Archive {
 	}
 	
 	public static void extractZip(File archive, File destination, Boolean keepMeta) {
-		MCUpdater mcu = MCUpdater.getInstance();
 		try{
 			ZipInputStream zis = new ZipInputStream(new FileInputStream(archive));
 			ZipEntry entry;
@@ -39,7 +38,7 @@ public class Archive {
 				if(entry.isDirectory()) {
 					File newDir = new Path(destination).resolve(entryName).toFile();
 					newDir.mkdirs();
-					mcu.apiLogger.finest("   Directory: " + newDir.getPath());
+					MCUpdater.apiLogger.finest("   Directory: " + newDir.getPath());
 				} else {
 					if (!keepMeta && entryName.contains("META-INF")) {
 						zis.closeEntry();
@@ -51,7 +50,7 @@ public class Archive {
 					}
 					File outFile = new Path(destination).resolve(entryName).toFile();
 					outFile.getParentFile().mkdirs();
-					mcu.apiLogger.finest("   Extract: " + outFile.getPath());
+					MCUpdater.apiLogger.finest("   Extract: " + outFile.getPath());
 					FileOutputStream fos = new FileOutputStream(outFile);
 
 					int len;
@@ -67,15 +66,14 @@ public class Archive {
 			}
 			zis.close();
 		} catch (FileNotFoundException fnf) {
-			mcu.apiLogger.log(Level.SEVERE, "File not found", fnf);
+			MCUpdater.apiLogger.log(Level.SEVERE, "File not found", fnf);
 		} catch (IOException ioe) {
-			mcu.apiLogger.log(Level.SEVERE, "I/O error", ioe);
+			MCUpdater.apiLogger.log(Level.SEVERE, "I/O error", ioe);
 		}
 	}
 
 	public static void createZip(File archive, List<File> files, Path mCFolder, MCUApp parent) throws IOException
 	{
-		MCUpdater mcu = MCUpdater.getInstance();
 		if(!archive.getParentFile().exists()){
 			archive.getParentFile().mkdirs();
 		}
@@ -88,7 +86,7 @@ public class Archive {
 			filePos++;
 			parent.setStatus("Writing backup: (" + filePos + "/" + fileCount + ")");
 			String relPath = entry.getPath().replace(mCFolder.toString(), "");
-			mcu.apiLogger.finest(relPath);
+			MCUpdater.apiLogger.finest(relPath);
 			if(entry.isDirectory()) {
 				out.putNextEntry(new ZipEntry(relPath + "/"));
 				out.closeEntry();
@@ -111,7 +109,6 @@ public class Archive {
 
 	public static void addToZip(File archive, List<File> files, File basePath) throws IOException
 	{
-		MCUpdater mcu = MCUpdater.getInstance();
 		File tempFile = File.createTempFile(archive.getName(), null);
 		tempFile.delete();
 
@@ -160,12 +157,12 @@ public class Archive {
 		{
 			File f = iterator.next();
 			if(f.isDirectory()) {
-				mcu.apiLogger.finer("addToZip: " + f.getPath().replace(basePath.getPath(), "") + "/");
+				MCUpdater.apiLogger.finer("addToZip: " + f.getPath().replace(basePath.getPath(), "") + "/");
 				zos.putNextEntry(new ZipEntry(f.getPath().replace(basePath.getPath(), "") + "/"));
 				zos.closeEntry();
 			} else {
 				InputStream in = new FileInputStream(f);
-				mcu.apiLogger.finer("addToZip: " + f.getPath().replace(basePath.getPath(), ""));
+				MCUpdater.apiLogger.finer("addToZip: " + f.getPath().replace(basePath.getPath(), ""));
 				zos.putNextEntry(new ZipEntry(f.getPath().replace(basePath.getPath(), "")));
 				int len;
 				while ((len = in.read(buf)) > 0) {
@@ -223,7 +220,7 @@ public class Archive {
 			}
 			jos.close();
 		} catch (FileNotFoundException e) {
-			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "File not found", e);
+			MCUpdater.apiLogger.log(Level.SEVERE, "File not found", e);
 		} catch (IOException e) {
 			throw e;
 		}

@@ -63,9 +63,9 @@ public class InstanceManager {
 //			nativesFile.delete();
 			return instance;
 		} catch (IOException e) {
-			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "I/O Error", e);
+			MCUpdater.apiLogger.log(Level.SEVERE, "I/O Error", e);
 		} catch (Exception e) {
-			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "General Error", e);
+			MCUpdater.apiLogger.log(Level.SEVERE, "General Error", e);
 		}
 		return null;
 	}

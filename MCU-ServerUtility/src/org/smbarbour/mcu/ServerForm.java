@@ -43,6 +43,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JSpinner;
+import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.AbstractListModel;
 import javax.swing.JScrollPane;
@@ -72,8 +73,10 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
@@ -81,7 +84,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.JCheckBoxMenuItem;
@@ -180,6 +186,8 @@ public class ServerForm extends MCUApp {
 	private JButton btnConfigImport;
 	private JCheckBox chkConfigNoOverwrite;
 	//private String[] sides = new String[]{"BOTH", "CLIENT", "SERVER"};
+	private DefaultTableModel tmModMeta;
+	private JTable tblModMeta;
 	
 	public ServerForm() {
 		initialize();
@@ -191,7 +199,7 @@ public class ServerForm extends MCUApp {
 	private void initialize() {
 		frmMain = new JFrame();
 		frmMain.setTitle("MCUpdater - ServerPack Utility build " + Version.BUILD_VERSION + " (Implementing MCU-API " + Version.API_VERSION + ")");
-		frmMain.setBounds(100,100,1100,800);
+		frmMain.setBounds(100,100,1100,1000);
 		frmMain.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		frmMain.addWindowListener(new WindowAdapter(){
 			@Override
@@ -752,6 +760,19 @@ public class ServerForm extends MCUApp {
 						txtModMD5.setText(selected.getMD5());
 						txtModDepends.setText(selected.getDepends());
 						txtModUrl.setText(selected.getUrl());
+						tmModMeta.setRowCount(0);
+						tmModMeta.fireTableDataChanged();
+						tblModMeta.invalidate();
+						Iterator<Entry<String, String>> itMeta = selected.getMeta().entrySet().iterator();
+						while (itMeta.hasNext()) {
+							Entry<String,String> metaEntry = itMeta.next();
+							System.out.println(metaEntry.getKey() + "->" + metaEntry.getValue());
+							tmModMeta.insertRow(Math.max(0,tmModMeta.getRowCount()-1), new String[]{metaEntry.getKey(), metaEntry.getValue()});
+						}
+						if (tmModMeta.getRowCount() == 0) {
+							tmModMeta.addRow(new String[]{"",""});
+						}
+						tmModMeta.fireTableDataChanged();
 						chkModRequired.setSelected(selected.getRequired());
 						chkModInJar.setSelected(selected.getInJar());
 						spinModInJarPriority.setValue(selected.getJarOrder());
@@ -1009,6 +1030,41 @@ public class ServerForm extends MCUApp {
 				row++;
 			}
 			{
+				// Meta info here
+				JLabel lblModMeta = new JLabel("Metadata:");
+				lblModMeta.setHorizontalAlignment(SwingConstants.TRAILING);
+				GridBagConstraints gbc_lblModMeta = new GridBagConstraints();
+				gbc_lblModMeta.insets = new Insets(0, 0, 5, 5);
+				gbc_lblModMeta.gridx = 1;
+				gbc_lblModMeta.gridy = row;
+				modDetailPanel.add(lblModMeta, gbc_lblModMeta);
+
+				tmModMeta = new DefaultTableModel(new String[][]{{"",""}}, new String[]{"Key","Value"});
+				tblModMeta = new JTable(tmModMeta);
+				tmModMeta.addTableModelListener(new TableModelListener() {
+					
+					@Override
+					public void tableChanged(TableModelEvent e) {
+						if (tmModMeta.getRowCount() > 0){
+							if (!((String)tmModMeta.getValueAt(tmModMeta.getRowCount()-1, 0)).equals("")) {
+								tmModMeta.insertRow(tmModMeta.getRowCount(), new String[]{"",""});
+							}
+						}
+					}
+				});
+				JScrollPane scrModMeta = new JScrollPane(tblModMeta);
+				GridBagConstraints gbc_scrModMeta = new GridBagConstraints();
+				gbc_scrModMeta.gridwidth = 3;
+				gbc_scrModMeta.insets = new Insets(0, 0, 5, 5);
+				gbc_scrModMeta.fill = GridBagConstraints.HORIZONTAL;
+				gbc_scrModMeta.gridx = 2;
+				gbc_scrModMeta.gridy = row;
+				modDetailPanel.add(scrModMeta, gbc_scrModMeta);
+				scrModMeta.setMinimumSize(new Dimension(30,120));
+				
+				row++;
+			}
+			{
 				JLabel lblRequired = new JLabel("Required:");
 				lblRequired.setHorizontalAlignment(SwingConstants.TRAILING);
 				GridBagConstraints gbc_lblRequired = new GridBagConstraints();
@@ -1161,7 +1217,7 @@ public class ServerForm extends MCUApp {
 				btnModAdd.setEnabled(false);
 				btnModAdd.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), (int)spinModInJarPriority.getValue(), chkModKeepMeta.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, lstModSide.getSelectedItem().toString(), txtModPath.getText());
+						Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), (int)spinModInJarPriority.getValue(), chkModKeepMeta.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, lstModSide.getSelectedItem().toString(), txtModPath.getText(), null);
 						modelModule.add(newMod);
 						modelParentId.add(newMod.getId());
 						modelParentId.sort();
@@ -1646,7 +1702,7 @@ public class ServerForm extends MCUApp {
 			} catch (InvalidSyntaxException e) {
 				e.printStackTrace();
 			} finally {
-				AddModule(new Module(name, id, downloadUrl, depends, required, inJar, 0, keepMeta, extract, inRoot, isDefault, coreMod, md5, null, "both", null));
+				AddModule(new Module(name, id, downloadUrl, depends, required, inJar, 0, keepMeta, extract, inRoot, isDefault, coreMod, md5, null, "both", null, null));
 			}			
 
 			Files.delete(tempFile);
@@ -1782,6 +1838,8 @@ public class ServerForm extends MCUApp {
 			BufferedWriter fileWriter = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
 			fileWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			fileWriter.newLine();
+			fileWriter.write("<?xml-stylesheet href=\"ServerPack.xsl\" type=\"text/xsl\" ?>");
+			fileWriter.newLine();
 			fileWriter.write("<ServerPack version=\"" + Version.API_VERSION + "\" xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xsi:noNamespaceSchemaLocation='https://raw.github.com/smbarbour/MCUpdater/master/MCU-API/ServerPack.xsd'>");
 			fileWriter.newLine();
 			for (ServerDefinition server : modelServer.getContents()) {
@@ -1815,6 +1873,18 @@ public class ServerForm extends MCUApp {
 					fileWriter.write("\t\t\t<CoreMod>" + (entry.getCoreMod() == true ? "true" : "false") + "</CoreMod>");
 					fileWriter.newLine();
 					fileWriter.write("\t\t\t<MD5>" + xmlEscape(entry.getMD5()) + "</MD5>");
+					fileWriter.newLine();
+					fileWriter.write("\t\t\t<Meta>");
+					fileWriter.newLine();
+					Iterator<Entry<String, String>> itMeta = entry.getMeta().entrySet().iterator();
+					while (itMeta.hasNext()) {
+						Entry<String,String> metaEntry = itMeta.next();
+						if(!metaEntry.getKey().isEmpty()){
+							fileWriter.write("\t\t\t\t<"+ metaEntry.getKey() + ">" + metaEntry.getValue() + "</" + metaEntry.getKey() + ">");
+							fileWriter.newLine();
+						}
+					}
+					fileWriter.write("\t\t\t</Meta>");
 					fileWriter.newLine();
 					for (ConfigFileWrapper cfw : server.getConfigs()) {
 						if (cfw.getParentId().equals(entry.getId())) {
@@ -1888,7 +1958,11 @@ public class ServerForm extends MCUApp {
 	private void updateModuleEntry() {
 		String oldValue = lstModules.getSelectedValue().getId();
 		modelParentId.replaceEntry(lstModules.getSelectedValue().getId(), txtModId.getText());
-		Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), (int)spinModInJarPriority.getValue(), chkModKeepMeta.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, lstModSide.getSelectedItem().toString(), txtModPath.getText());
+		HashMap<String,String> mapMeta = new HashMap<String,String>();
+		for (int i=0; i < tmModMeta.getRowCount(); i++) {
+			mapMeta.put(tmModMeta.getValueAt(i, 0).toString(), tmModMeta.getValueAt(i, 1).toString());
+		}
+		Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), (int)spinModInJarPriority.getValue(), chkModKeepMeta.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, lstModSide.getSelectedItem().toString(), txtModPath.getText(), mapMeta);
 		modelModule.replace(moduleCurrentSelection, newMod);
 		Iterator<ConfigFileWrapper> itConfig = modelConfig.getContents().iterator();
 		while (itConfig.hasNext()) {
@@ -1934,8 +2008,6 @@ public class ServerForm extends MCUApp {
 
 	@Override
 	public void addServer(ServerList entry) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	private void updateConfigSelectionDetails() {

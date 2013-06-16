@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <xs:schema attributeFormDefault="unqualified"
 	elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
@@ -7,6 +8,15 @@
 			<xs:element type="xs:string" name="Path" />
 			<xs:element type="xs:boolean" name="NoOverwrite" />
 			<xs:element type="xs:string" name="MD5" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="MetaType">
+		<xs:sequence>
+			<xs:element type="xs:string" name="version" minOccurs="0" />
+			<xs:element type="xs:string" name="authors" minOccurs="0" />
+			<xs:element type="xs:anyURI" name="URL" minOccurs="0" />
+			<xs:element type="xs:string" name="description" minOccurs="0" />
 		</xs:sequence>
 	</xs:complexType>
 
@@ -23,14 +33,7 @@
 			<xs:element type="xs:boolean" name="InRoot" />
 			<xs:element type="xs:boolean" name="CoreMod" />
 			<xs:element type="xs:string" name="MD5" />
-			<xs:element name="Meta" minOccurs="0">
-				<xs:complexType>
-					<xs:attribute type="xs:string" name="version" />
-					<xs:attribute type="xs:string" name="authors" />
-					<xs:attribute type="xs:anyURI" name="URL" />
-					<xs:attribute type="xs:string" name="description" />
-				</xs:complexType>
-			</xs:element>
+			<xs:element type="MetaType" name="Meta" minOccurs="0" />
 			<xs:element type="ConfigType" name="ConfigFile" maxOccurs="unbounded" minOccurs="0" />
 		</xs:sequence>
 		<xs:attribute type="xs:string" name="name" use="required" />
@@ -49,7 +52,8 @@
 
 	<xs:complexType name="ServerType">
 		<xs:sequence>
-			<xs:element type="ModuleType" name="Module" maxOccurs="unbounded" minOccurs="1" />
+			<xs:element type="ModuleType" name="Module" maxOccurs="unbounded"
+				minOccurs="1" />
 		</xs:sequence>
 		<xs:attribute type="xs:string" name="id" use="required" />
 		<xs:attribute type="xs:string" name="name" use="required" />
