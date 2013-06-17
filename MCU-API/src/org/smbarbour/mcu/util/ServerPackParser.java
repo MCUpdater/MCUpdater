@@ -128,11 +128,13 @@ public class ServerPackParser {
 		HashMap<String,String> mapMeta = new HashMap<String,String>();
 		NodeList nlMeta = modEl.getElementsByTagName("Meta");
 		if (nlMeta.getLength() > 0){
-			Element elMeta = (Element) nl.item(0);
+			Element elMeta = (Element) nlMeta.item(0);
 			for(int i = 0; i < elMeta.getChildNodes().getLength(); i++)
 			{
-				Element el = (Element)elMeta.getChildNodes().item(i);
-				mapMeta.put(el.getNodeName(), el.getNodeValue());
+				if (elMeta.getChildNodes().item(i) instanceof Element)	{
+					Element el = (Element)elMeta.getChildNodes().item(i);
+					mapMeta.put(el.getNodeName(), el.getNodeValue());
+				}
 			}
 		}
 		//TODO:Meta

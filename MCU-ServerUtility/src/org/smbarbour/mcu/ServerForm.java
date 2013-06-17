@@ -1896,6 +1896,7 @@ public class ServerForm extends MCUApp {
 							fileWriter.newLine();
 							fileWriter.write("\t\t\t\t<MD5>" + xmlEscape(cfw.getConfigFile().getMD5()) + "</MD5>");
 							fileWriter.newLine();
+							fileWriter.write("\t\t\t\t<NoOverwrite>" + cfw.getConfigFile().isNoOverwrite() + "</NoOverwrite>");
 							fileWriter.write("\t\t\t</ConfigFile>");
 							fileWriter.newLine();
 						}
@@ -2018,6 +2019,7 @@ public class ServerForm extends MCUApp {
 			txtConfigMD5.setText(selected.getConfigFile().getMD5());
 			txtConfigUrl.setText(selected.getConfigFile().getUrl());
 			txtConfigPath.setText(selected.getConfigFile().getPath());
+			chkConfigNoOverwrite.setSelected(selected.getConfigFile().isNoOverwrite());
 			configDirty=false;
 			configCurrentSelection = lstConfigFiles.getSelectedIndex();
 		}
