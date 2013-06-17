@@ -94,6 +94,160 @@ import javax.swing.JCheckBoxMenuItem;
 
 public class ServerForm extends MCUApp {
 
+	protected class ConfigListListener implements ListSelectionListener {
+		private boolean isAutosave;
+
+		public boolean isAutosave() {
+			return isAutosave;
+		}
+
+		public void setAutosave(boolean isAutosave) {
+			this.isAutosave = isAutosave;
+		}
+
+		public void valueChanged(ListSelectionEvent e) {
+			if (e.getValueIsAdjusting() == false) {
+				if (configDirty) {
+					if (isAutosave) {
+						updateConfigEntry();
+					} else {
+						int confirm = JOptionPane.showConfirmDialog(frmMain, "Changes to the currently selected configuration file have been made.  Do you wish to save these changes?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
+						if (confirm == JOptionPane.YES_OPTION) {
+							updateConfigEntry();
+						}
+					}
+				}
+				updateConfigSelectionDetails();
+			}
+		}
+	}
+
+	protected class ModuleListListener implements ListSelectionListener {
+		private boolean isAutosave;
+
+		public boolean isAutosave() {
+			return isAutosave;
+		}
+
+		public void setAutosave(boolean isAutosave) {
+			this.isAutosave = isAutosave;
+		}
+
+		public void valueChanged(ListSelectionEvent e) {
+			if (e.getValueIsAdjusting() == false) {
+				if (moduleDirty) {
+					if (isAutosave) {
+						updateModuleEntry();
+					} else {
+						int confirm = JOptionPane.showConfirmDialog(frmMain, "Changes to the currently selected module have been made.  Do you wish to save these changes?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
+						if (confirm == JOptionPane.YES_OPTION) {
+							updateModuleEntry();
+						}
+					}
+				}
+				if (lstModules.getSelectedIndex() > -1) {
+					Module selected = lstModules.getSelectedValue();
+					txtModName.setText(selected.getName());
+					txtModId.setText(selected.getId());
+					txtModMD5.setText(selected.getMD5());
+					txtModDepends.setText(selected.getDepends());
+					txtModUrl.setText(selected.getUrl());
+					tmModMeta.setRowCount(0);
+					tmModMeta.fireTableDataChanged();
+					tblModMeta.invalidate();
+					Iterator<Entry<String, String>> itMeta = selected.getMeta().entrySet().iterator();
+					while (itMeta.hasNext()) {
+						Entry<String,String> metaEntry = itMeta.next();
+						System.out.println(metaEntry.getKey() + "->" + metaEntry.getValue());
+						tmModMeta.insertRow(Math.max(0,tmModMeta.getRowCount()-1), new String[]{metaEntry.getKey(), metaEntry.getValue()});
+					}
+					if (tmModMeta.getRowCount() == 0) {
+						tmModMeta.addRow(new String[]{"",""});
+					}
+					tmModMeta.fireTableDataChanged();
+					chkModRequired.setSelected(selected.getRequired());
+					chkModInJar.setSelected(selected.getInJar());
+					spinModInJarPriority.setValue(selected.getJarOrder());
+					chkModCoreMod.setSelected(selected.getCoreMod());
+					chkModIsDefault.setSelected(selected.getIsDefault());
+					chkModExtract.setSelected(selected.getExtract());
+					chkModInRoot.setSelected(selected.getInRoot());
+					chkModKeepMeta.setSelected(selected.getKeepMeta());
+					btnModMoveUp.setEnabled(moduleCurrentSelection == 0 ? false : true);
+					btnModMoveDown.setEnabled(moduleCurrentSelection == modelModule.getSize()-1 ? false : true);
+					moduleDirty=false;
+					moduleCurrentSelection = lstModules.getSelectedIndex();
+				}
+			}
+		}
+	}
+
+	protected class ServerListListener implements ListSelectionListener {
+		private boolean isAutosave;
+
+		public boolean isAutosave() {
+			return isAutosave;
+		}
+
+		public void setAutosave(boolean isAutosave) {
+			this.isAutosave = isAutosave;
+		}
+
+		public void valueChanged(ListSelectionEvent e) {
+			if (e.getValueIsAdjusting() == false) {
+				if (serverDirty || moduleDirty || configDirty) {
+					if (isAutosave) {
+						if (configDirty) updateConfigEntry();
+						if (moduleDirty) updateModuleEntry();
+						updateServerEntry();								
+					} else {
+						int confirm = JOptionPane.showConfirmDialog(frmMain, "Changes to the current selection(s) have been made.  Do you wish to save these changes?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
+						if (confirm == JOptionPane.YES_OPTION) {
+							if (configDirty) updateConfigEntry();
+							if (moduleDirty) updateModuleEntry();
+							updateServerEntry();
+						}
+					}
+				}
+				if (lstServers.getSelectedIndex() > -1) {
+					ServerDefinition changeTo = lstServers.getSelectedValue();
+					txtServerName.setText(changeTo.getServer().getName());
+					txtServerID.setText(changeTo.getServer().getServerId());
+					txtServerAddress.setText(changeTo.getServer().getAddress());
+					txtServerNewsUrl.setText(changeTo.getServer().getNewsUrl());
+					txtServerIconUrl.setText(changeTo.getServer().getIconUrl());
+					txtServerRevision.setText(changeTo.getServer().getRevision());
+					txtServerMCVersion.setText(changeTo.getServer().getVersion());
+					chkServerGenerateList.setSelected(changeTo.getServer().isGenerateList());
+					modelModule.clear();
+					modelParentId.clear();
+					for (Module entry : changeTo.getModules()) {
+						modelModule.add(entry);
+						modelParentId.add(entry.getId());
+					}
+					modelParentId.sort();
+					modelConfig.clear();
+					for (ConfigFileWrapper entry : changeTo.getConfigs()) {
+						modelConfig.add(entry);
+					}
+					serverCurrentSelection = lstServers.getSelectedIndex();
+					btnModAdd.setEnabled(true);
+					btnModRemove.setEnabled(true);
+					btnModUpdate.setEnabled(true);
+					btnModImport.setEnabled(true);
+					btnModSort.setEnabled(true);
+					btnConfigAdd.setEnabled(true);
+					btnConfigRemove.setEnabled(true);
+					btnConfigUpdate.setEnabled(true);
+					btnConfigImport.setEnabled(true);
+				}
+				serverDirty=false;
+				moduleDirty=false;
+				configDirty=false;
+			}
+		}
+	}
+
 	private static ServerForm window;
 	private JFrame frmMain;
 	final MCUpdater mcu = MCUpdater.getInstance();
@@ -188,6 +342,9 @@ public class ServerForm extends MCUApp {
 	//private String[] sides = new String[]{"BOTH", "CLIENT", "SERVER"};
 	private DefaultTableModel tmModMeta;
 	private JTable tblModMeta;
+	private ServerListListener serverListListener;
+	private ModuleListListener moduleListListener;
+	private ConfigListListener configListListener;
 	
 	public ServerForm() {
 		initialize();
@@ -360,6 +517,16 @@ public class ServerForm extends MCUApp {
 		menuBar.add(mnOptions);
 		
 		final JCheckBoxMenuItem mnuAutosave = new JCheckBoxMenuItem("Auto-save updates");
+		mnuAutosave.addChangeListener(new ChangeListener(){
+
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				serverListListener.setAutosave(mnuAutosave.isSelected());
+				moduleListListener.setAutosave(mnuAutosave.isSelected());
+				configListListener.setAutosave(mnuAutosave.isSelected());
+			}
+			
+		});
 		mnOptions.add(mnuAutosave);
 		
 		frmMain.getContentPane().setLayout(new BorderLayout(0, 0));
@@ -377,61 +544,7 @@ public class ServerForm extends MCUApp {
 		serverListPanel.setLayout(new BorderLayout(0,0));
 		{
 			lstServers = new JList<ServerDefinition>();
-			lstServers.addListSelectionListener(new ListSelectionListener() {
-				public void valueChanged(ListSelectionEvent e) {
-					if (e.getValueIsAdjusting() == false) {
-						if (serverDirty || moduleDirty || configDirty) {
-							if (mnuAutosave.isSelected()) {
-								if (configDirty) updateConfigEntry();
-								if (moduleDirty) updateModuleEntry();
-								updateServerEntry();								
-							} else {
-								int confirm = JOptionPane.showConfirmDialog(frmMain, "Changes to the current selection(s) have been made.  Do you wish to save these changes?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
-								if (confirm == JOptionPane.YES_OPTION) {
-									if (configDirty) updateConfigEntry();
-									if (moduleDirty) updateModuleEntry();
-									updateServerEntry();
-								}
-							}
-						}
-						if (lstServers.getSelectedIndex() > -1) {
-							ServerDefinition changeTo = lstServers.getSelectedValue();
-							txtServerName.setText(changeTo.getServer().getName());
-							txtServerID.setText(changeTo.getServer().getServerId());
-							txtServerAddress.setText(changeTo.getServer().getAddress());
-							txtServerNewsUrl.setText(changeTo.getServer().getNewsUrl());
-							txtServerIconUrl.setText(changeTo.getServer().getIconUrl());
-							txtServerRevision.setText(changeTo.getServer().getRevision());
-							txtServerMCVersion.setText(changeTo.getServer().getVersion());
-							chkServerGenerateList.setSelected(changeTo.getServer().isGenerateList());
-							modelModule.clear();
-							modelParentId.clear();
-							for (Module entry : changeTo.getModules()) {
-								modelModule.add(entry);
-								modelParentId.add(entry.getId());
-							}
-							modelParentId.sort();
-							modelConfig.clear();
-							for (ConfigFileWrapper entry : changeTo.getConfigs()) {
-								modelConfig.add(entry);
-							}
-							serverCurrentSelection = lstServers.getSelectedIndex();
-							btnModAdd.setEnabled(true);
-							btnModRemove.setEnabled(true);
-							btnModUpdate.setEnabled(true);
-							btnModImport.setEnabled(true);
-							btnModSort.setEnabled(true);
-							btnConfigAdd.setEnabled(true);
-							btnConfigRemove.setEnabled(true);
-							btnConfigUpdate.setEnabled(true);
-							btnConfigImport.setEnabled(true);
-						}
-						serverDirty=false;
-						moduleDirty=false;
-						configDirty=false;
-					}
-				}
-			});
+			lstServers.addListSelectionListener(serverListListener);
 			modelServer = new ServerListModel();
 			lstServers.setModel(modelServer);
 			serverListPanel.add(lstServers, BorderLayout.CENTER);
@@ -740,55 +853,7 @@ public class ServerForm extends MCUApp {
 		modListPanel.add(modListScroll, BorderLayout.CENTER);
 
 		lstModules = new JList<Module>();
-		lstModules.addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent e) {
-				if (e.getValueIsAdjusting() == false) {
-					if (moduleDirty) {
-						if (mnuAutosave.isSelected()) {
-							updateModuleEntry();
-						} else {
-							int confirm = JOptionPane.showConfirmDialog(frmMain, "Changes to the currently selected module have been made.  Do you wish to save these changes?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
-							if (confirm == JOptionPane.YES_OPTION) {
-								updateModuleEntry();
-							}
-						}
-					}
-					if (lstModules.getSelectedIndex() > -1) {
-						Module selected = lstModules.getSelectedValue();
-						txtModName.setText(selected.getName());
-						txtModId.setText(selected.getId());
-						txtModMD5.setText(selected.getMD5());
-						txtModDepends.setText(selected.getDepends());
-						txtModUrl.setText(selected.getUrl());
-						tmModMeta.setRowCount(0);
-						tmModMeta.fireTableDataChanged();
-						tblModMeta.invalidate();
-						Iterator<Entry<String, String>> itMeta = selected.getMeta().entrySet().iterator();
-						while (itMeta.hasNext()) {
-							Entry<String,String> metaEntry = itMeta.next();
-							System.out.println(metaEntry.getKey() + "->" + metaEntry.getValue());
-							tmModMeta.insertRow(Math.max(0,tmModMeta.getRowCount()-1), new String[]{metaEntry.getKey(), metaEntry.getValue()});
-						}
-						if (tmModMeta.getRowCount() == 0) {
-							tmModMeta.addRow(new String[]{"",""});
-						}
-						tmModMeta.fireTableDataChanged();
-						chkModRequired.setSelected(selected.getRequired());
-						chkModInJar.setSelected(selected.getInJar());
-						spinModInJarPriority.setValue(selected.getJarOrder());
-						chkModCoreMod.setSelected(selected.getCoreMod());
-						chkModIsDefault.setSelected(selected.getIsDefault());
-						chkModExtract.setSelected(selected.getExtract());
-						chkModInRoot.setSelected(selected.getInRoot());
-						chkModKeepMeta.setSelected(selected.getKeepMeta());
-						btnModMoveUp.setEnabled(moduleCurrentSelection == 0 ? false : true);
-						btnModMoveDown.setEnabled(moduleCurrentSelection == modelModule.getSize()-1 ? false : true);
-						moduleDirty=false;
-						moduleCurrentSelection = lstModules.getSelectedIndex();
-					}
-				}
-			}
-		});
+		lstModules.addListSelectionListener(moduleListListener);
 		modelModule = new ModuleListModel(new ArrayList<Module>());
 		lstModules.setModel(modelModule);
 		lstModules.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -1366,23 +1431,7 @@ public class ServerForm extends MCUApp {
 		modelConfig = new ConfigFileListModel(new ArrayList<ConfigFileWrapper>());
 		lstConfigFiles.setModel(modelConfig);
 		lstConfigFiles.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		lstConfigFiles.addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent e) {
-				if (e.getValueIsAdjusting() == false) {
-					if (configDirty) {
-						if (mnuAutosave.isSelected()) {
-							updateConfigEntry();
-						} else {
-							int confirm = JOptionPane.showConfirmDialog(frmMain, "Changes to the currently selected configuration file have been made.  Do you wish to save these changes?", "MCU-ServerUtility", JOptionPane.YES_NO_OPTION);
-							if (confirm == JOptionPane.YES_OPTION) {
-								updateConfigEntry();
-							}
-						}
-					}
-					updateConfigSelectionDetails();
-				}
-			}
-		});
+		lstConfigFiles.addListSelectionListener(configListListener);
 		configListScroll.setViewportView(lstConfigFiles);
 		
 		JPanel configDetailPanel = new JPanel();
@@ -1680,6 +1729,7 @@ public class ServerForm extends MCUApp {
 			Boolean inRoot = false;
 			Boolean isDefault = true;
 			Boolean coreMod = false;
+			HashMap<String,String> mapMeta = new HashMap<String,String>();
 			try {
 				ZipFile zf = new ZipFile(tempFile.toFile());
 				System.out.println(zf.size() + " entries in file.");
@@ -1693,6 +1743,16 @@ public class ServerForm extends MCUApp {
 				}
 				id = subnode.getStringValue("modid");
 				name = subnode.getStringValue("name");
+				mapMeta.put("version", subnode.getStringValue("version"));
+				StringBuilder sb = new StringBuilder();
+				try {
+					for (int i = 0; i < subnode.getArrayNode("authors").size(); i++) {
+						sb.append(subnode.getStringValue("authors",i) + ", ");
+					}
+				} catch (Exception e) {}
+				mapMeta.put("authors", sb.toString());
+				try {mapMeta.put("URL", subnode.getStringValue("url"));} catch (Exception e) {}
+				try {mapMeta.put("description", subnode.getStringValue("description"));} catch (Exception e) {}
 				zf.close();
 			} catch (NullPointerException e) {
 			} catch (ZipException e) {
@@ -1702,7 +1762,7 @@ public class ServerForm extends MCUApp {
 			} catch (InvalidSyntaxException e) {
 				e.printStackTrace();
 			} finally {
-				AddModule(new Module(name, id, downloadUrl, depends, required, inJar, 0, keepMeta, extract, inRoot, isDefault, coreMod, md5, null, "both", null, null));
+				AddModule(new Module(name, id, downloadUrl, depends, required, inJar, 0, keepMeta, extract, inRoot, isDefault, coreMod, md5, null, "both", null, mapMeta));
 			}			
 
 			Files.delete(tempFile);
