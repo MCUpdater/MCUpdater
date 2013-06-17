@@ -129,16 +129,15 @@ public class ServerPackParser {
 		NodeList nlMeta = modEl.getElementsByTagName("Meta");
 		if (nlMeta.getLength() > 0){
 			Element elMeta = (Element) nlMeta.item(0);
-			for(int i = 0; i < elMeta.getChildNodes().getLength(); i++)
+			NodeList nlMetaChildren = elMeta.getElementsByTagName("*");
+			for(int i = 0; i < nlMetaChildren.getLength(); i++)
 			{
-				if (elMeta.getChildNodes().item(i) instanceof Element)	{
-					Element el = (Element)elMeta.getChildNodes().item(i);
-					mapMeta.put(el.getNodeName(), el.getNodeValue());
-				}
+				Node child = nlMetaChildren.item(i);
+				mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 			}
 		}
 		//TODO:Meta
-		Module m = new Module(name, id, url, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, null);	
+		Module m = new Module(name, id, url, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, mapMeta);	
 		return m;
 	}
 	
