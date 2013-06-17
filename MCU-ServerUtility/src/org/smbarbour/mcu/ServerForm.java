@@ -1835,7 +1835,7 @@ public class ServerForm extends MCUApp {
 			if (configDirty) updateConfigEntry();
 			if (moduleDirty) updateModuleEntry();
 			if (serverDirty) updateServerEntry();
-			BufferedWriter fileWriter = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE);
+			BufferedWriter fileWriter = Files.newBufferedWriter(outputFile, StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
 			fileWriter.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 			fileWriter.newLine();
 			fileWriter.write("<?xml-stylesheet href=\"ServerPack.xsl\" type=\"text/xsl\" ?>");
