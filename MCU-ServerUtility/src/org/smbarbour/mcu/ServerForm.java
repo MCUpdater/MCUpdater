@@ -95,7 +95,7 @@ import javax.swing.JCheckBoxMenuItem;
 public class ServerForm extends MCUApp {
 
 	protected class ConfigListListener implements ListSelectionListener {
-		private boolean isAutosave;
+		private boolean isAutosave = false;
 
 		public boolean isAutosave() {
 			return isAutosave;
@@ -123,7 +123,7 @@ public class ServerForm extends MCUApp {
 	}
 
 	protected class ModuleListListener implements ListSelectionListener {
-		private boolean isAutosave;
+		private boolean isAutosave = false;
 
 		public boolean isAutosave() {
 			return isAutosave;
@@ -183,7 +183,7 @@ public class ServerForm extends MCUApp {
 	}
 
 	protected class ServerListListener implements ListSelectionListener {
-		private boolean isAutosave;
+		private boolean isAutosave = false;
 
 		public boolean isAutosave() {
 			return isAutosave;
@@ -194,6 +194,7 @@ public class ServerForm extends MCUApp {
 		}
 
 		public void valueChanged(ListSelectionEvent e) {
+			System.out.println("ServerList valueChanged event");
 			if (e.getValueIsAdjusting() == false) {
 				if (serverDirty || moduleDirty || configDirty) {
 					if (isAutosave) {
@@ -342,9 +343,9 @@ public class ServerForm extends MCUApp {
 	//private String[] sides = new String[]{"BOTH", "CLIENT", "SERVER"};
 	private DefaultTableModel tmModMeta;
 	private JTable tblModMeta;
-	private ServerListListener serverListListener;
-	private ModuleListListener moduleListListener;
-	private ConfigListListener configListListener;
+	private ServerListListener serverListListener = new ServerListListener();
+	private ModuleListListener moduleListListener = new ModuleListListener();
+	private ConfigListListener configListListener = new ConfigListListener();
 	
 	public ServerForm() {
 		initialize();
@@ -1906,7 +1907,7 @@ public class ServerForm extends MCUApp {
 				fileWriter.write("\t<Server id=\"" + server.getServer().getServerId() + "\" name=\"" + server.getServer().getName() + "\" newsUrl=\"" + server.getServer().getNewsUrl() + "\" iconUrl=\"" + server.getServer().getIconUrl() + "\" version=\"" + server.getServer().getVersion() + "\" serverAddress=\"" + server.getServer().getAddress() + "\" revision=\"" + server.getServer().getRevision() + "\" generateList=\"" + server.getServer().isGenerateList() + "\">");
 				fileWriter.newLine();
 				for (Module entry : server.getModules()) {
-					fileWriter.write("\t\t<Module name=\"" + entry.getName() + "\" id=\"" + entry.getId() + "\" depends=\"" + entry.getDepends() + "\">");
+					fileWriter.write("\t\t<Module name=\"" + entry.getName() + "\" id=\"" + entry.getId() + "\" depends=\"" + entry.getDepends() + "\" side=\"" + entry.getSide() + "\">");
 					fileWriter.newLine();
 					fileWriter.write("\t\t\t<URL>" + xmlEscape(entry.getUrl()) + "</URL>");
 					fileWriter.newLine();
