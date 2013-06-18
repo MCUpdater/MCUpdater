@@ -21,7 +21,7 @@ public class Files {
 		try {
 			return new BufferedWriter(new FileWriter(path.toFile()));
 		} catch (IOException e) {
-			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "I/O Error", e);
+			MCUpdater.apiLogger.log(Level.SEVERE, "I/O Error", e);
 		}
 		return null;
 	}
@@ -30,7 +30,7 @@ public class Files {
 		try {
 			return new BufferedReader(new FileReader(path.toFile()));
 		} catch (FileNotFoundException e) {
-			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "File not found", e);
+			MCUpdater.apiLogger.log(Level.SEVERE, "File not found", e);
 		}
 		return null;
 	}

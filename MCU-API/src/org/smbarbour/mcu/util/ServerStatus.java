@@ -56,7 +56,7 @@ public class ServerStatus {
 				port = 25565;
 			}
 		} catch (URISyntaxException e1) {
-			MCUpdater.getInstance().apiLogger.log(Level.SEVERE, "URI Syntax error", e1);
+			MCUpdater.apiLogger.log(Level.SEVERE, "URI Syntax error", e1);
 		}
 		
 		try {

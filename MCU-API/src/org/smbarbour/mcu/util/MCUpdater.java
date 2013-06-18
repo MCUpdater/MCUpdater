@@ -148,7 +148,7 @@ public class MCUpdater {
 		}
 		// configure the download cache
 		try {
-			DownloadCache.init(archiveFolder.resolve("cache").toFile(), this);
+			DownloadCache.init(archiveFolder.resolve("cache").toFile());
 		} catch (IllegalArgumentException e) {
 			_debug( "Suppressed attempt to re-init download cache?!" );
 		}

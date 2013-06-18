@@ -135,7 +135,7 @@ public class MainForm extends MCUApp {
 			e.printStackTrace();
 		}
 		baseLogger.addHandler(consoleHandler);
-		mcu.apiLogger.addHandler(consoleHandler);
+		MCUpdater.apiLogger.addHandler(consoleHandler);
 		Version.setApp(this);
 		window = this;
 		mcu.setParent(window);
