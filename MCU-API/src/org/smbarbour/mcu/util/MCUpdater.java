@@ -598,16 +598,40 @@ public class MCUpdater {
 		return jar.exists();
 	}
 	
-	public boolean installMods(ServerList server, List<Module> toInstall, boolean clearExisting, Properties instData) throws FileNotFoundException {
+	public boolean installMods(ServerList server, List<Module> toInstall, boolean clearExisting, Properties instData, ModSide side) throws FileNotFoundException {
 		if (Version.requestedFeatureLevel(server.getMCUVersion(), "2.2")) {
 			// Sort mod list for InJar
 			Collections.sort(toInstall, new ModuleComparator());
 		}
 		Path instancePath = instanceRoot.resolve(server.getServerId());
-		Boolean updateJar = clearExisting;
-		if (!instancePath.resolve("bin").resolve("minecraft.jar").toFile().exists()) {
-			updateJar = true;
+		Path binPath = instancePath.resolve("bin");
+		Path productionJar;
+		File jar;
+		switch (side){
+		case CLIENT:
+			jar = archiveFolder.resolve("mc-" + server.getVersion() + ".jar").toFile();
+			if(!jar.exists()) {
+				parent.log("! Unable to find a backup copy of minecraft.jar for "+server.getVersion());
+				throw new FileNotFoundException("A backup copy of minecraft.jar for version " + server.getVersion() + " was not found.");
+			}
+			productionJar = binPath.resolve("minecraft.jar");
+			break;
+		case SERVER:
+			jar = archiveFolder.resolve("mc-server-" + server.getVersion() + ".jar").toFile();
+			productionJar = instancePath.resolve("minecraft_server.jar");
+			break;
+		default:
+			apiLogger.severe("Invalid API call to MCUpdater.installMods! (side cannot be " + side.toString() + ")");
+			return false;
 		}
+		Boolean updateJar = clearExisting;
+		if (side == ModSide.CLIENT) {
+			if (!productionJar.toFile().exists()) {
+				updateJar = true;
+			}
+		} else {
+			//TODO:Server jar detection
+		}			
 		Iterator<Module> iMods = toInstall.iterator();
 		int jarModCount = 0;
 		while (iMods.hasNext() && !updateJar) {
@@ -625,11 +649,6 @@ public class MCUpdater {
 		jarModCount = 0;
 		apiLogger.info("Instance path: " + instancePath.toString());
 		List<File> contents = recurseFolder(instancePath.toFile(), true);
-		File jar = archiveFolder.resolve("mc-" + server.getVersion() + ".jar").toFile();
-		if(!jar.exists()) {
-			parent.log("! Unable to find a backup copy of minecraft.jar for "+server.getVersion());
-			throw new FileNotFoundException("A backup copy of minecraft.jar for version " + server.getVersion() + " was not found.");
-		}
 		if (clearExisting){
 			parent.setStatus("Clearing existing configuration");
 			parent.log("Clearing existing configuration...");
@@ -833,7 +852,7 @@ public class MCUpdater {
 			parent.baseLogger.severe("Errors were detected with this update, please verify your files. There may be a problem with the serverpack configuration or one of your download sites.");
 			return false;
 		}
-		copyFile(jar, buildJar);
+		//copyFile(jar, buildJar);
 		boolean doManifest = true;
 		List<File> buildList = recurseFolder(tmpFolder,true);
 		Iterator<File> blIt = new ArrayList<File>(buildList).iterator();
@@ -843,10 +862,9 @@ public class MCUpdater {
 				doManifest = false;
 			}
 		}
-		Path binPath = instancePath.resolve("bin");
 		if (!updateJar) {
 			try {
-				Archive.updateArchive(binPath.resolve("minecraft.jar").toFile(), new File[]{ branding });
+				Archive.updateArchive(productionJar.toFile(), new File[]{ branding });
 			} catch (IOException e1) {
 				apiLogger.log(Level.SEVERE, "I/O Error", e1);
 			}
@@ -862,7 +880,7 @@ public class MCUpdater {
 			//Archive.patchJar(jar, buildJar, new ArrayList<File>(Arrays.asList(tmpFolder.listFiles())));
 			//copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
 			try {
-				Files.copy(new Path(buildJar), binPath.resolve("minecraft.jar"));
+				Files.copy(new Path(buildJar), productionJar);
 			} catch (IOException e) {
 				apiLogger.log(Level.SEVERE, "Failed to copy new jar to instance!", e);
 			}
@@ -931,32 +949,55 @@ public class MCUpdater {
 		apiLogger.fine(msg);
 	}
 
-	public boolean checkVersionCache(String version) {
-		File requestedJar = archiveFolder.resolve("mc-" + version + ".jar").toFile();
-		File newestJar = archiveFolder.resolve("mc-" + newestMC + ".jar").toFile();
-		if (requestedJar.exists()) return true;
-		if (newestJar.exists()) {
-			doPatch(requestedJar, newestJar, version);
-			return true;
-		} else {
-			if (this.getParent().requestLogin()) {
-				try {
-					parent.setStatus("Downloading Minecraft");
-					apiLogger.info("Downloading Minecraft (" + newestMC + ")");
-					FileUtils.copyURLToFile(new URL("http://assets.minecraft.net/" + newestMC.replace(".","_") + "/minecraft.jar"), newestJar);
-				} catch (MalformedURLException e) {
-					apiLogger.log(Level.SEVERE, "Bad URL", e);
-				} catch (IOException e) {
-					apiLogger.log(Level.SEVERE, "I/O Error", e);
-				}
-				if (!requestedJar.toString().equals(newestJar.toString())) {
-					doPatch(requestedJar, newestJar, version);
-				}
+	public boolean checkVersionCache(String version, ModSide side) {
+		File requestedJar;
+		switch (side) {
+		case CLIENT:
+			requestedJar = archiveFolder.resolve("mc-" + version + ".jar").toFile();
+			File newestJar = archiveFolder.resolve("mc-" + newestMC + ".jar").toFile();
+			if (requestedJar.exists()) return true;
+			if (newestJar.exists()) {
+				doPatch(requestedJar, newestJar, version);
 				return true;
 			} else {
+				if (this.getParent().requestLogin()) {
+					try {
+						parent.setStatus("Downloading Minecraft");
+						apiLogger.info("Downloading Minecraft (" + newestMC + ")");
+						FileUtils.copyURLToFile(new URL("http://assets.minecraft.net/" + newestMC.replace(".","_") + "/minecraft.jar"), newestJar);
+					} catch (MalformedURLException e) {
+						apiLogger.log(Level.SEVERE, "Bad URL", e);
+						return false;
+					} catch (IOException e) {
+						apiLogger.log(Level.SEVERE, "I/O Error", e);
+						return false;
+					}
+					if (!requestedJar.toString().equals(newestJar.toString())) {
+						doPatch(requestedJar, newestJar, version);
+					}
+					return true;
+				} else {
+					return false;
+				}
+			}
+		case SERVER:
+			requestedJar = archiveFolder.resolve("mc-server-" + version + ".jar").toFile();
+			if (requestedJar.exists()) return true;
+			try {
+				apiLogger.info("Downloading server jar (" + version + ")");
+				FileUtils.copyURLToFile(new URL("http://assets.minecraft.net/" + version.replace(".","_") + "/minecraft_server.jar"), requestedJar);
+			} catch (MalformedURLException e) {
+				apiLogger.log(Level.SEVERE, "Bad URL", e);
+				return false;
+			} catch (IOException e) {
+				apiLogger.log(Level.SEVERE, "I/O Error", e);
 				return false;
 			}
+			return true;
+		default:
+			break;
 		}
+		return false;
 	}
 	
 	private void doPatch(File requestedJar, File newestJar, String version) {

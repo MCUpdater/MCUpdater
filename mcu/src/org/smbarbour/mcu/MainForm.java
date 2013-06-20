@@ -51,6 +51,7 @@ import org.smbarbour.mcu.util.LoginData;
 import org.smbarbour.mcu.util.MCAuth;
 import org.smbarbour.mcu.util.MCLoginException;
 import org.smbarbour.mcu.util.MCUpdater;
+import org.smbarbour.mcu.util.ModSide;
 import org.smbarbour.mcu.util.Module;
 import org.smbarbour.mcu.util.ServerList;
 import org.smbarbour.mcu.util.ServerPackParser;
@@ -862,7 +863,7 @@ public class MainForm extends MCUApp {
 	private void updateInstance() {
 		new Thread() {
 			public void run() {
-				if (!mcu.checkVersionCache(selected.getVersion())) {
+				if (!mcu.checkVersionCache(selected.getVersion(), ModSide.CLIENT)) {
 					JOptionPane.showMessageDialog(null, "Unable to validate Minecraft version!", "MCUpdater", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
@@ -913,7 +914,7 @@ public class MainForm extends MCUApp {
 					setStatus("Installing mods");
 					log("Installing mods...");
 					setProgressBar(25);
-					result = mcu.installMods(selected, toInstall, chkHardUpdate.isSelected(), instData);
+					result = mcu.installMods(selected, toInstall, chkHardUpdate.isSelected(), instData, ModSide.CLIENT);
 					if (selected.isGenerateList()) {
 						setStatus("Writing servers.dat");
 						log("Writing servers.dat");
