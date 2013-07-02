@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema xmlns="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.mcupdater.com/Versions" xmlns:tns="http://www.mcupdater.com/Versions" elementFormDefault="qualified">
+	<complexType name="LibraryType">
+		<sequence>
+			<element name="URL" maxOccurs="unbounded" minOccurs="1">
+				<complexType>
+					<simpleContent>
+						<extension base="anyURI">
+							<attribute type="integer" name="priority" />
+						</extension>
+					</simpleContent>
+				</complexType>
+			</element>
+		</sequence>
+	</complexType>
+
+	<complexType name="VersionType">
+		<sequence>
+			<element type="anyURI" name="BaseJarFile" maxOccurs="1" minOccurs="1" />
+			<element type="anyURI" name="PatchFile" maxOccurs="1" minOccurs="0" />
+			<element type="tns:LibraryType" name="Library" maxOccurs="unbounded" minOccurs="0" />
+		</sequence>
+		<attribute type="string" name="identifier" use="required" />
+	</complexType>
+
+	<element name="Versions">
+		<complexType>
+			<sequence>
+				<element type="tns:VersionType" name="Version" maxOccurs="unbounded" />
+			</sequence>
+		</complexType>
+	</element>
+</schema>
