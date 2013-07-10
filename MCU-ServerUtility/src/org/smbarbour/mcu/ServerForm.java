@@ -1941,7 +1941,7 @@ public class ServerForm extends MCUApp {
 					while (itMeta.hasNext()) {
 						Entry<String,String> metaEntry = itMeta.next();
 						if(!metaEntry.getKey().isEmpty()){
-							fileWriter.write("\t\t\t\t<"+ metaEntry.getKey() + ">" + metaEntry.getValue() + "</" + metaEntry.getKey() + ">");
+							fileWriter.write("\t\t\t\t<"+ xmlEscape(metaEntry.getKey()) + ">" + xmlEscape(metaEntry.getValue()) + "</" + metaEntry.getKey() + ">");
 							fileWriter.newLine();
 						}
 					}
