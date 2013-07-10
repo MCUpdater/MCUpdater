@@ -1958,6 +1958,7 @@ public class ServerForm extends MCUApp {
 							fileWriter.write("\t\t\t\t<MD5>" + xmlEscape(cfw.getConfigFile().getMD5()) + "</MD5>");
 							fileWriter.newLine();
 							fileWriter.write("\t\t\t\t<NoOverwrite>" + cfw.getConfigFile().isNoOverwrite() + "</NoOverwrite>");
+							fileWriter.newLine();
 							fileWriter.write("\t\t\t</ConfigFile>");
 							fileWriter.newLine();
 						}
