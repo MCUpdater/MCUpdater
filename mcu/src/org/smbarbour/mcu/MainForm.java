@@ -838,7 +838,7 @@ public class MainForm extends MCUApp {
 			// don't autominimize unless configured to
 			return;
 		}
-		frmMain.setVisible(false);
+		//frmMain.setVisible(false);
 		frmMain.setExtendedState(Frame.ICONIFIED);
 		minimized = true;
 	}
@@ -846,7 +846,7 @@ public class MainForm extends MCUApp {
 		if( !minimized ) {
 			return;
 		}
-		frmMain.setVisible(true);
+		//frmMain.setVisible(true);
 		frmMain.setExtendedState(Frame.NORMAL);
 	}
 
