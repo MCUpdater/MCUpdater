@@ -13,6 +13,7 @@ public class Main {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
+					System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 					for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
 				        if ("Nimbus".equals(info.getName())) {
 				            UIManager.setLookAndFeel(info.getClassName());
