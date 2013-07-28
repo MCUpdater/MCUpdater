@@ -57,8 +57,8 @@ public class ServerPackParser {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		URLConnection serverConn = server.openConnection();
 		serverConn.setRequestProperty("User-Agent", "MCUpdater/" + Version.VERSION);
-		serverConn.setConnectTimeout(5000);
-		serverConn.setReadTimeout(5000);
+		serverConn.setConnectTimeout(10000);
+		serverConn.setReadTimeout(10000);
 		try {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			return db.parse(serverConn.getInputStream());
