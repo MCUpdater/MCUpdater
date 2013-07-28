@@ -50,7 +50,6 @@ import org.smbarbour.mcu.Version;
 import org.smbarbour.mcu.util.Archive;
 import org.w3c.dom.*;
 
-
 public class MCUpdater {
 	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization");
 	//private List<Module> modList = new ArrayList<Module>();
@@ -65,6 +64,7 @@ public class MCUpdater {
 	private Map<String,String> versionMap = new HashMap<String,String>();
 	public static Logger apiLogger;
 	private Path lwjglFolder;
+	private int timeoutLength = 5000;
 	
 	private static MCUpdater INSTANCE;
 
@@ -156,8 +156,8 @@ public class MCUpdater {
 			long start = System.currentTimeMillis();
 			URL md5s = new URL("http://files.mcupdater.com/md5.dat");
 			URLConnection md5Con = md5s.openConnection();
-			md5Con.setConnectTimeout(10000);
-			md5Con.setReadTimeout(10000);
+			md5Con.setConnectTimeout(this.timeoutLength);
+			md5Con.setReadTimeout(this.timeoutLength);
 			InputStreamReader input = new InputStreamReader(md5Con.getInputStream());
 			BufferedReader buffer = new BufferedReader(input);
 			String currentLine = null;
@@ -1059,6 +1059,14 @@ public class MCUpdater {
 			apiLogger.log(Level.SEVERE, "General error", e);
 		}
 		return null;
+	}
+
+	public void setTimeout(int timeout) {
+		this.timeoutLength = timeout;
+	}
+	
+	public int getTimeout() {
+		return this.timeoutLength;
 	}
 
 }
