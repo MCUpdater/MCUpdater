@@ -181,6 +181,7 @@ public class MainForm extends MCUApp {
 		newConfig.setProperty("width", String.valueOf(1280));
 		newConfig.setProperty("height", String.valueOf(720));
 		newConfig.setProperty("allowAutoConnect", "true");
+		newConfig.setProperty("timeoutLength",String.valueOf(5000));
 		if (System.getProperty("os.name").startsWith("Mac")) { newConfig.setProperty("jrePath", "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0"); }
 		newConfig.setProperty("storePassword", "false");
 		try {
@@ -211,6 +212,7 @@ public class MainForm extends MCUApp {
 		if (current.getProperty("allowAutoConnect") == null) { current.setProperty("allowAutoConnect", "true"); hasChanged = true; }
 		if (current.getProperty("storePassword") == null) { current.setProperty("storePassword", "false"); hasChanged = true; }
 		if (current.getProperty("jrePath") == null && System.getProperty("os.name").startsWith("Mac")) { current.setProperty("jrePath", "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0"); }
+		if (current.getProperty("timeoutLength") == null) { current.setProperty("timeoutLength",String.valueOf(5000)); hasChanged = true; }
 		return hasChanged;
 	}
 
@@ -219,6 +221,7 @@ public class MainForm extends MCUApp {
 	 */
 	void initialize() {
 		loadConfig();
+		MCUpdater.getInstance().setTimeout(Integer.parseInt(config.getProperty("timeoutLength")));
 		checkAccess();
 		baseLogger.fine("Start building GUI");
 		frmMain = new JFrame();
