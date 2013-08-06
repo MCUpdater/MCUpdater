@@ -8,6 +8,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.HashMap;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
@@ -52,6 +53,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		Boolean inRoot = false;
 		Boolean isDefault = true;
 		Boolean coreMod = false;
+		HashMap<String,String> mapMeta = new HashMap<String,String>();
 		System.out.println(relativePath.toString());
 		if (relativePath.toString().contains(".DS_Store")) { return FileVisitResult.CONTINUE; }
 		if (relativePath.toString().indexOf(sep) >= 0) {
@@ -102,6 +104,16 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 			}
 			id = subnode.getStringValue("modid");
 			name = subnode.getStringValue("name");
+			mapMeta.put("version", subnode.getStringValue("version"));
+			StringBuilder sb = new StringBuilder();
+			try {
+				for (int i = 0; i < subnode.getArrayNode("authors").size(); i++) {
+					sb.append(subnode.getStringValue("authors",i) + ", ");
+				}
+			} catch (Exception e) {}
+			mapMeta.put("authors", sb.toString());
+			try {mapMeta.put("URL", subnode.getStringValue("url"));} catch (Exception e) {}
+			try {mapMeta.put("description", subnode.getStringValue("description"));} catch (Exception e) {}
 			zf.close();
 		} catch (NullPointerException e) {
 		} catch (ZipException e) {
@@ -111,7 +123,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		} catch (InvalidSyntaxException e) {
 			e.printStackTrace();
 		} finally {
-			Module newMod = new Module(name, id, downloadURL, depends, required, inJar, 0, true, extract, inRoot, isDefault, coreMod, md5, null, "both", null);
+			Module newMod = new Module(name, id, downloadURL, depends, required, inJar, 0, false, extract, inRoot, isDefault, coreMod, md5, null, "both", null, mapMeta);
 			parent.AddModule(newMod);
 		}			
 		return FileVisitResult.CONTINUE;

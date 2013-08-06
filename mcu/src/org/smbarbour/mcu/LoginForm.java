@@ -20,6 +20,10 @@ import javax.swing.KeyStroke;
 import javax.swing.border.EmptyBorder;
 
 import org.smbarbour.mcu.util.Localization;
+import org.smbarbour.mcu.util.LoginData;
+import org.smbarbour.mcu.util.MCAuth;
+import org.smbarbour.mcu.util.MCLoginException;
+import org.smbarbour.mcu.util.MCUpdater;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -171,7 +175,17 @@ public class LoginForm extends JDialog {
 						public void actionPerformed(ActionEvent arg0) {
 							try {
 								getContentPane().setEnabled(false);
-								parent.login(txtUsername.getText(), String.valueOf(txtPassword.getPassword()), chkStorePassword.isSelected());
+								LoginData login = MCAuth.login(txtUsername.getText(), String.valueOf(txtPassword.getPassword()));
+								parent.setLoginData(login);
+								parent.getConfig().setProperty("userName", txtUsername.getText());
+								if (chkStorePassword.isSelected()) {
+									parent.getConfig().setProperty("password", MCUpdater.getInstance().encrypt(String.valueOf(txtPassword.getPassword())));
+									parent.getConfig().setProperty("storePassword", "true");
+								} else {
+									parent.getConfig().remove("password");
+									parent.getConfig().setProperty("storePassword", "false");
+								}
+								parent.writeConfig(parent.getConfig());
 								window.dispose();
 								
 							} catch (MCLoginException e) {

@@ -1,6 +1,7 @@
 package org.smbarbour.mcu.util;
 
 import java.net.*;
+
 import j7compat.Files;
 //import java.nio.charset.StandardCharsets;
 //import java.nio.file.Files;
@@ -20,15 +21,26 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
+import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.PBEParameterSpec;
 import javax.swing.ImageIcon;
+
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -38,9 +50,8 @@ import org.smbarbour.mcu.Version;
 import org.smbarbour.mcu.util.Archive;
 import org.w3c.dom.*;
 
-
 public class MCUpdater {
-	
+	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization");
 	//private List<Module> modList = new ArrayList<Module>();
 	private Path MCFolder;
 	private Path archiveFolder;
@@ -51,7 +62,9 @@ public class MCUpdater {
 	public ImageIcon defaultIcon;
 	private String newestMC = "";
 	private Map<String,String> versionMap = new HashMap<String,String>();
-	public Logger apiLogger;
+	public static Logger apiLogger;
+	private Path lwjglFolder;
+	private int timeoutLength = 5000;
 	
 	private static MCUpdater INSTANCE;
 
@@ -59,7 +72,7 @@ public class MCUpdater {
 		try {
 			return new File(MCUpdater.class.getProtectionDomain().getCodeSource().getLocation().toURI());
 		} catch (URISyntaxException e) {
-			INSTANCE.apiLogger.log(Level.SEVERE, "Error getting MCUpdater JAR URI", e);
+			apiLogger.log(Level.SEVERE, "Error getting MCUpdater JAR URI", e);
 		}
 		return null;
 	}
@@ -84,20 +97,33 @@ public class MCUpdater {
 	{
 		apiLogger = Logger.getLogger("MCU-API");
 		apiLogger.setLevel(Level.ALL);
+		String customPath = Customization.getString("customPath");
+		String[] nativeNames;
+		String nativePrefix;
 		if(System.getProperty("os.name").startsWith("Windows"))
 		{
 			MCFolder = new Path(System.getenv("APPDATA")).resolve(".minecraft");
 			archiveFolder = new Path(System.getenv("APPDATA")).resolve(".MCUpdater");
+			nativePrefix = "lwjgl-2.9.0/native/windows/";
+			nativeNames = new String[] {"jinput-dx8.dll","jinput-dx8_64.dll","jinput-raw.dll","jinput-raw_64.dll","lwjgl.dll","lwjgl64.dll","OpenAL32.dll","OpenAL64.dll"};
 		} else if(System.getProperty("os.name").startsWith("Mac"))
 		{
 			MCFolder = new Path(System.getProperty("user.home")).resolve("Library").resolve("Application Support").resolve("minecraft");
 			archiveFolder = new Path(System.getProperty("user.home")).resolve("Library").resolve("Application Support").resolve("MCUpdater");
+			nativePrefix = "lwjgl-2.9.0/native/macosx/";
+			nativeNames = new String[] {"libjinput-osx.jnilib","liblwjgl.jnilib","openal.dylib"};
 		}
 		else
 		{
 			MCFolder = new Path(System.getProperty("user.home")).resolve(".minecraft");
 			archiveFolder = new Path(System.getProperty("user.home")).resolve(".MCUpdater");
+			nativePrefix = "lwjgl-2.9.0/native/linux/";
+			nativeNames = new String[] {"libjinput-linux.so","libjinput-linux64.so","liblwjgl.so","liblwjgl64.so","libopenal.so","libopenal64.so"};
 		}
+		if (!customPath.isEmpty()) {
+			archiveFolder = new Path(customPath);
+		}
+		lwjglFolder = this.archiveFolder.resolve("LWJGL");
 		try {
 			FileHandler apiHandler = new FileHandler(archiveFolder.resolve("MCU-API.log").toString(), 0, 3);
 			apiHandler.setFormatter(new FMLStyleFormatter());
@@ -122,7 +148,7 @@ public class MCUpdater {
 		}
 		// configure the download cache
 		try {
-			DownloadCache.init(archiveFolder.resolve("cache").toFile(), this);
+			DownloadCache.init(archiveFolder.resolve("cache").toFile());
 		} catch (IllegalArgumentException e) {
 			_debug( "Suppressed attempt to re-init download cache?!" );
 		}
@@ -130,8 +156,8 @@ public class MCUpdater {
 			long start = System.currentTimeMillis();
 			URL md5s = new URL("http://files.mcupdater.com/md5.dat");
 			URLConnection md5Con = md5s.openConnection();
-			md5Con.setConnectTimeout(2000);
-			md5Con.setReadTimeout(500);
+			md5Con.setConnectTimeout(this.timeoutLength);
+			md5Con.setReadTimeout(this.timeoutLength);
 			InputStreamReader input = new InputStreamReader(md5Con.getInputStream());
 			BufferedReader buffer = new BufferedReader(input);
 			String currentLine = null;
@@ -154,6 +180,61 @@ public class MCUpdater {
 		} catch (IOException e) {
 			apiLogger.log(Level.SEVERE, "I/O Error", e);
 		}
+		// Download LWJGL
+		File tempFile = this.archiveFolder.resolve("lwjgl-2.9.0.zip").toFile();
+		if (!tempFile.exists()) {
+			try {
+				String jarPrefix = "lwjgl-2.9.0/jar/";
+				String[] jarNames = new String[] {"lwjgl.jar","lwjgl_util.jar","jinput.jar"};
+				
+				URL lwjglURL = new URL("http://sourceforge.net/projects/java-game-lib/files/Official%20Releases/LWJGL%202.9.0/lwjgl-2.9.0.zip/download");
+				apiLogger.info("Downloading " + lwjglURL.getPath());
+				FileUtils.copyURLToFile(lwjglURL, tempFile);
+				Path nativePath = lwjglFolder.resolve("natives");
+				Files.createDirectories(nativePath);
+				ZipFile zf = new ZipFile(tempFile);
+				ZipEntry entry;
+				for (int index=0; index < jarNames.length; index++) {
+					entry = zf.getEntry(jarPrefix + jarNames[index]);
+					File outFile = lwjglFolder.resolve(jarNames[index]).toFile();
+					apiLogger.finest("   Extract: " + outFile.getPath());
+					FileOutputStream fos = new FileOutputStream(outFile);
+					InputStream zis = zf.getInputStream(entry);
+
+					int len;
+					byte[] buf = new byte[1024];
+					while((len = zis.read(buf, 0, 1024)) > -1) {
+						fos.write(buf, 0, len);
+					}
+
+					fos.close();
+					zis.close();
+				}
+				for (int index=0; index < nativeNames.length; index++) {
+					entry = zf.getEntry(nativePrefix + nativeNames[index]);
+					File outFile = nativePath.resolve(nativeNames[index]).toFile();
+					apiLogger.finest("   Extract: " + outFile.getPath());
+					FileOutputStream fos = new FileOutputStream(outFile);
+					InputStream zis = zf.getInputStream(entry);
+
+					int len;
+					byte[] buf = new byte[1024];
+					while((len = zis.read(buf, 0, 1024)) > -1) {
+						fos.write(buf, 0, len);
+					}
+
+					fos.close();
+					zis.close();
+				}
+				zf.close();
+				
+			} catch (MalformedURLException e) {
+				apiLogger.log(Level.SEVERE, "Bad URL", e);
+			} catch (IOException e) {
+				apiLogger.log(Level.SEVERE, "I/O Error", e);
+			}
+		}
+		//
 	}
 	
 	public MCUApp getParent() {
@@ -303,6 +384,9 @@ public class MCUpdater {
 		return archiveFolder;
 	}
 
+	public Path getLWJGLFolder() {
+		return lwjglFolder;
+	}
 	public Path getInstanceRoot() {
 		return instanceRoot;
 	}
@@ -514,16 +598,40 @@ public class MCUpdater {
 		return jar.exists();
 	}
 	
-	public boolean installMods(ServerList server, List<Module> toInstall, boolean clearExisting, Properties instData) throws FileNotFoundException {
+	public boolean installMods(ServerList server, List<Module> toInstall, boolean clearExisting, Properties instData, ModSide side) throws FileNotFoundException {
 		if (Version.requestedFeatureLevel(server.getMCUVersion(), "2.2")) {
 			// Sort mod list for InJar
 			Collections.sort(toInstall, new ModuleComparator());
 		}
 		Path instancePath = instanceRoot.resolve(server.getServerId());
-		Boolean updateJar = clearExisting;
-		if (!instancePath.resolve("bin").resolve("minecraft.jar").toFile().exists()) {
-			updateJar = true;
+		Path binPath = instancePath.resolve("bin");
+		Path productionJar;
+		File jar;
+		switch (side){
+		case CLIENT:
+			jar = archiveFolder.resolve("mc-" + server.getVersion() + ".jar").toFile();
+			if(!jar.exists()) {
+				parent.log("! Unable to find a backup copy of minecraft.jar for "+server.getVersion());
+				throw new FileNotFoundException("A backup copy of minecraft.jar for version " + server.getVersion() + " was not found.");
+			}
+			productionJar = binPath.resolve("minecraft.jar");
+			break;
+		case SERVER:
+			jar = archiveFolder.resolve("mc-server-" + server.getVersion() + ".jar").toFile();
+			productionJar = instancePath.resolve("minecraft_server.jar");
+			break;
+		default:
+			apiLogger.severe("Invalid API call to MCUpdater.installMods! (side cannot be " + side.toString() + ")");
+			return false;
 		}
+		Boolean updateJar = clearExisting;
+		if (side == ModSide.CLIENT) {
+			if (!productionJar.toFile().exists()) {
+				updateJar = true;
+			}
+		} else {
+			//TODO:Server jar detection
+		}			
 		Iterator<Module> iMods = toInstall.iterator();
 		int jarModCount = 0;
 		while (iMods.hasNext() && !updateJar) {
@@ -541,11 +649,6 @@ public class MCUpdater {
 		jarModCount = 0;
 		apiLogger.info("Instance path: " + instancePath.toString());
 		List<File> contents = recurseFolder(instancePath.toFile(), true);
-		File jar = archiveFolder.resolve("mc-" + server.getVersion() + ".jar").toFile();
-		if(!jar.exists()) {
-			parent.log("! Unable to find a backup copy of minecraft.jar for "+server.getVersion());
-			throw new FileNotFoundException("A backup copy of minecraft.jar for version " + server.getVersion() + " was not found.");
-		}
 		if (clearExisting){
 			parent.setStatus("Clearing existing configuration");
 			parent.log("Clearing existing configuration...");
@@ -694,33 +797,43 @@ public class MCUpdater {
 					URL configURL = new URL(cfEntry.getUrl());
 					final File confFile = instancePath.resolve(cfEntry.getPath()).toFile();
 					confFile.getParentFile().mkdirs();
-					if( MD5 != null ) {
-						final File cacheFile = DownloadCache.getFile(MD5);
-						if( cacheFile.exists() ) {
-							parent.log("  Found config for "+cfEntry.getPath()+" (cached)");
-							FileUtils.copyFile(cacheFile, confFile);
-							continue;
-						}
-					}
-					parent.log("  Found config for "+cfEntry.getPath()+", downloading...");
-					_debug(confFile.getPath());
+//					if( MD5 != null ) {
+//						final File cacheFile = DownloadCache.getFile(MD5);
+//						if( cacheFile.exists() ) {
+//							parent.log("  Found config for "+cfEntry.getPath()+" (cached)");
+//							FileUtils.copyFile(cacheFile, confFile);
+//							continue;
+//						}
+//					}
+					//_debug(confFile.getPath());
 					if (cfEntry.isNoOverwrite() && confFile.exists()) {
-						parent.log("  Skipped - NoOverwrite is true");
+						parent.log("  Config for "+cfEntry.getPath()+" skipped - NoOverwrite is true");
 					} else {
-						FileUtils.copyURLToFile(configURL, confFile);
+						//parent.log("  Found config for "+cfEntry.getPath()+", downloading...");
+						try {
+							ModDownload configDL = new ModDownload(configURL, confFile, MD5);
+							if( configDL.cacheHit ) {
+								parent.log("  Found config for "+cfEntry.getPath()+" (cached).");
+							} else {
+								parent.log("  Found config for "+cfEntry.getPath()+" (downloaded).");
+							}
+							String strPath = configDL.getDestFile() == null ? "???" : configDL.getDestFile().getPath();
+							_debug(configDL.url + " -> " + strPath);
+						} catch (Exception e) {
+							++errorCount;
+							apiLogger.log(Level.SEVERE, "General Error", e);
+						}
+						//FileUtils.copyURLToFile(configURL, confFile);
 					}
 					// save in cache for future reference
-					if( MD5 != null ) {
-						final boolean cached = DownloadCache.cacheFile(confFile, MD5);
-						if( cached ) {
-							_debug(confFile.getName() + " saved in cache");							
-						}
-					}
+//					if( MD5 != null ) {
+//						final boolean cached = DownloadCache.cacheFile(confFile, MD5);
+//						if( cached ) {
+//							_debug(confFile.getName() + " saved in cache");							
+//						}
+//					}
 				}
 			} catch (MalformedURLException e) {
-				++errorCount;
-				apiLogger.log(Level.SEVERE, "General Error", e);
-			} catch (IOException e) {
 				++errorCount;
 				apiLogger.log(Level.SEVERE, "General Error", e);
 			}
@@ -739,7 +852,7 @@ public class MCUpdater {
 			parent.baseLogger.severe("Errors were detected with this update, please verify your files. There may be a problem with the serverpack configuration or one of your download sites.");
 			return false;
 		}
-		copyFile(jar, buildJar);
+		//copyFile(jar, buildJar);
 		boolean doManifest = true;
 		List<File> buildList = recurseFolder(tmpFolder,true);
 		Iterator<File> blIt = new ArrayList<File>(buildList).iterator();
@@ -749,10 +862,9 @@ public class MCUpdater {
 				doManifest = false;
 			}
 		}
-		Path binPath = instancePath.resolve("bin");
 		if (!updateJar) {
 			try {
-				Archive.updateArchive(binPath.resolve("minecraft.jar").toFile(), new File[]{ branding });
+				Archive.updateArchive(productionJar.toFile(), new File[]{ branding });
 			} catch (IOException e1) {
 				apiLogger.log(Level.SEVERE, "I/O Error", e1);
 			}
@@ -768,7 +880,7 @@ public class MCUpdater {
 			//Archive.patchJar(jar, buildJar, new ArrayList<File>(Arrays.asList(tmpFolder.listFiles())));
 			//copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
 			try {
-				Files.copy(new Path(buildJar), binPath.resolve("minecraft.jar"));
+				Files.copy(new Path(buildJar), productionJar);
 			} catch (IOException e) {
 				apiLogger.log(Level.SEVERE, "Failed to copy new jar to instance!", e);
 			}
@@ -831,38 +943,61 @@ public class MCUpdater {
 	}
 	
 	private static void _log(String msg) {
-		INSTANCE.apiLogger.info(msg);
+		apiLogger.info(msg);
 	}
 	private static void _debug(String msg) {
-		INSTANCE.apiLogger.fine(msg);
+		apiLogger.fine(msg);
 	}
 
-	public boolean checkVersionCache(String version) {
-		File requestedJar = archiveFolder.resolve("mc-" + version + ".jar").toFile();
-		File newestJar = archiveFolder.resolve("mc-" + newestMC + ".jar").toFile();
-		if (requestedJar.exists()) return true;
-		if (newestJar.exists()) {
-			doPatch(requestedJar, newestJar, version);
-			return true;
-		} else {
-			if (this.getParent().requestLogin()) {
-				try {
-					parent.setStatus("Downloading Minecraft");
-					apiLogger.info("Downloading Minecraft (" + newestMC + ")");
-					FileUtils.copyURLToFile(new URL("http://assets.minecraft.net/" + newestMC.replace(".","_") + "/minecraft.jar"), newestJar);
-				} catch (MalformedURLException e) {
-					apiLogger.log(Level.SEVERE, "Bad URL", e);
-				} catch (IOException e) {
-					apiLogger.log(Level.SEVERE, "I/O Error", e);
-				}
-				if (!requestedJar.toString().equals(newestJar.toString())) {
-					doPatch(requestedJar, newestJar, version);
-				}
+	public boolean checkVersionCache(String version, ModSide side) {
+		File requestedJar;
+		switch (side) {
+		case CLIENT:
+			requestedJar = archiveFolder.resolve("mc-" + version + ".jar").toFile();
+			File newestJar = archiveFolder.resolve("mc-" + newestMC + ".jar").toFile();
+			if (requestedJar.exists()) return true;
+			if (newestJar.exists()) {
+				doPatch(requestedJar, newestJar, version);
 				return true;
 			} else {
+				if (this.getParent().requestLogin()) {
+					try {
+						parent.setStatus("Downloading Minecraft");
+						apiLogger.info("Downloading Minecraft (" + newestMC + ")");
+						FileUtils.copyURLToFile(new URL("http://assets.minecraft.net/" + newestMC.replace(".","_") + "/minecraft.jar"), newestJar);
+					} catch (MalformedURLException e) {
+						apiLogger.log(Level.SEVERE, "Bad URL", e);
+						return false;
+					} catch (IOException e) {
+						apiLogger.log(Level.SEVERE, "I/O Error", e);
+						return false;
+					}
+					if (!requestedJar.toString().equals(newestJar.toString())) {
+						doPatch(requestedJar, newestJar, version);
+					}
+					return true;
+				} else {
+					return false;
+				}
+			}
+		case SERVER:
+			requestedJar = archiveFolder.resolve("mc-server-" + version + ".jar").toFile();
+			if (requestedJar.exists()) return true;
+			try {
+				apiLogger.info("Downloading server jar (" + version + ")");
+				FileUtils.copyURLToFile(new URL("http://assets.minecraft.net/" + version.replace(".","_") + "/minecraft_server.jar"), requestedJar);
+			} catch (MalformedURLException e) {
+				apiLogger.log(Level.SEVERE, "Bad URL", e);
+				return false;
+			} catch (IOException e) {
+				apiLogger.log(Level.SEVERE, "I/O Error", e);
 				return false;
 			}
+			return true;
+		default:
+			break;
 		}
+		return false;
 	}
 	
 	private void doPatch(File requestedJar, File newestJar, String version) {
@@ -886,6 +1021,52 @@ public class MCUpdater {
 		} catch (Exception e) {
 			apiLogger.log(Level.SEVERE, "General Error", e);
 		}
+	}
+
+	private Cipher getCipher(int mode, String password) throws Exception {
+		Random random = new Random(92845025L);
+		byte[] salt = new byte[8];
+		random.nextBytes(salt);
+		PBEParameterSpec pbeParamSpec = new PBEParameterSpec(salt, 5);
+
+		SecretKey pbeKey = SecretKeyFactory.getInstance("PBEWithMD5AndDES").generateSecret(new PBEKeySpec(password.toCharArray()));
+		Cipher cipher = Cipher.getInstance("PBEWithMD5AndDES");
+		cipher.init(mode, pbeKey, pbeParamSpec);
+		return cipher;
+	}
+
+	public String encrypt(String password) {
+		try {
+			Cipher cipher = getCipher(Cipher.ENCRYPT_MODE, "MCUpdater");
+			byte[] utf8 = password.getBytes("UTF8");
+			byte[] enc = cipher.doFinal(utf8);
+
+			return Base64.encodeBase64String(enc);
+		} catch (Exception e) {
+			apiLogger.log(Level.SEVERE, "General error", e);
+		}
+		return null;
+	}
+
+	public String decrypt(String property) {
+		try {
+			Cipher cipher = getCipher(Cipher.DECRYPT_MODE, "MCUpdater");
+			byte[] dec = Base64.decodeBase64(property);
+			byte[] utf8 = cipher.doFinal(dec);
+
+			return new String(utf8, "UTF8");
+		} catch (Exception e) {
+			apiLogger.log(Level.SEVERE, "General error", e);
+		}
+		return null;
+	}
+
+	public void setTimeout(int timeout) {
+		this.timeoutLength = timeout;
+	}
+	
+	public int getTimeout() {
+		return this.timeoutLength;
 	}
 
 }

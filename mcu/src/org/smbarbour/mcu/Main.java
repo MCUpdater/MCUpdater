@@ -3,6 +3,7 @@ package org.smbarbour.mcu;
 import java.awt.EventQueue;
 
 import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 
 public class Main {
 	/**
@@ -12,7 +13,16 @@ public class Main {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+					System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+					for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+				        if ("Nimbus".equals(info.getName())) {
+				            UIManager.setLookAndFeel(info.getClassName());
+				            break;
+				        }
+				    }
+					if (UIManager.getLookAndFeel().getName().equals("Metal")) {
+						UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+					}
 					new MainForm();
 				} catch (Exception e) {
 					e.printStackTrace();

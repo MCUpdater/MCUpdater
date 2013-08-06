@@ -120,7 +120,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		args.add(session.getSessionId());
 		args.add(server.getName());
 		args.add(MCUpdater.getInstance().getInstanceRoot().resolve(server.getServerId()).toString());
-		args.add(MCUpdater.getInstance().getInstanceRoot().resolve(server.getServerId()).resolve("bin").toString());
+		args.add(MCUpdater.getInstance().getLWJGLFolder().toString());
 		args.add((server.getIconUrl().equals("")) ? "https://minecraft.net/favicon.png" : server.getIconUrl());
 		args.add(parent.getConfig().getProperty("width"));
 		args.add(parent.getConfig().getProperty("height"));
@@ -141,6 +141,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		}
 
 		ProcessBuilder pb = new ProcessBuilder(args);
+		pb.directory(MCUpdater.getInstance().getInstanceRoot().resolve(server.getServerId()).toFile());
 		parent.baseLogger.fine("Running on: " + System.getProperty("os.name"));
 		if(System.getProperty("os.name").startsWith("Linux")) {
 			if (new Path(new File(jrePath)).resolve("lib").resolve("amd64").toFile().exists()) {

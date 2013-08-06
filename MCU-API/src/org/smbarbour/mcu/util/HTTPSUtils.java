@@ -1,4 +1,4 @@
-package org.smbarbour.mcu;
+package org.smbarbour.mcu.util;
 
 import java.io.BufferedReader;
 import java.io.DataInputStream;
@@ -63,6 +63,9 @@ public class HTTPSUtils {
 			localHttpsURLConnection.setUseCaches(false);
 			localHttpsURLConnection.setDoInput(true);
 			localHttpsURLConnection.setDoOutput(true);
+			
+			localHttpsURLConnection.setConnectTimeout(MCUpdater.getInstance().getTimeout());
+			localHttpsURLConnection.setReadTimeout(MCUpdater.getInstance().getTimeout());
 
 			localHttpsURLConnection.connect();
 			Certificate[] arrayOfCertificate = localHttpsURLConnection.getServerCertificates();

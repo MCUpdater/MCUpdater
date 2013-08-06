@@ -4,6 +4,7 @@ public class LoginData {
 	private String userName = "";
 	private String latestVersion = "";
 	private String sessionId = "";
+	private String UUID = "";
 
 	public LoginData() {
 	}
@@ -25,5 +26,13 @@ public class LoginData {
 	}
 	public void setSessionId(String sessionId) {
 		this.sessionId = sessionId;
+	}
+
+	public String getUUID() {
+		return UUID;
+	}
+
+	public void setUUID(String uUID) {
+		UUID = uUID;
 	}
 }

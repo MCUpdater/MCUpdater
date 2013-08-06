@@ -3,11 +3,6 @@ package org.smbarbour.mcu;
 import j7compat.Files;
 import j7compat.Path;
 
-import javax.crypto.Cipher;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.PBEParameterSpec;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
@@ -46,23 +41,19 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Random;
-
-import org.apache.commons.codec.binary.Base64;
-
 import org.smbarbour.mcu.MCUApp;
-import org.smbarbour.mcu.MCLoginException.ResponseType;
 import org.smbarbour.mcu.util.InstanceManager;
 import org.smbarbour.mcu.util.Localization;
 import org.smbarbour.mcu.util.LoginData;
+import org.smbarbour.mcu.util.MCAuth;
+import org.smbarbour.mcu.util.MCLoginException;
 import org.smbarbour.mcu.util.MCUpdater;
+import org.smbarbour.mcu.util.ModSide;
 import org.smbarbour.mcu.util.Module;
 import org.smbarbour.mcu.util.ServerList;
-import org.smbarbour.mcu.util.ServerListPacket;
 import org.smbarbour.mcu.util.ServerPackParser;
 import org.smbarbour.mcu.util.ServerStatus;
 import org.w3c.dom.Document;
@@ -99,7 +90,7 @@ public class MainForm extends MCUApp {
 	final MCUpdater mcu = MCUpdater.getInstance();
 
 	private JTabbedPane tabs;
-	private final JTextPane browser = new JTextPane();
+	private final JTextPane browser = new MCUBrowser();
 	private final ConsoleArea console = new ConsoleArea();
 
 	private ServerList selected;
@@ -145,7 +136,7 @@ public class MainForm extends MCUApp {
 			e.printStackTrace();
 		}
 		baseLogger.addHandler(consoleHandler);
-		mcu.apiLogger.addHandler(consoleHandler);
+		MCUpdater.apiLogger.addHandler(consoleHandler);
 		Version.setApp(this);
 		window = this;
 		mcu.setParent(window);
@@ -181,6 +172,7 @@ public class MainForm extends MCUApp {
 		newConfig.setProperty("maximumMemory", "1G");
 		newConfig.setProperty("permGen", "128M");
 		newConfig.setProperty("jvmOpts", "-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+AggressiveOpts");
+		newConfig.setProperty("lastInstance", "");
 		//newConfig.setProperty("currentConfig", "");
 		//newConfig.setProperty("packRevision","");
 		//newConfig.setProperty("suppressUpdates", "false");
@@ -189,6 +181,7 @@ public class MainForm extends MCUApp {
 		newConfig.setProperty("width", String.valueOf(1280));
 		newConfig.setProperty("height", String.valueOf(720));
 		newConfig.setProperty("allowAutoConnect", "true");
+		newConfig.setProperty("timeoutLength",String.valueOf(5000));
 		if (System.getProperty("os.name").startsWith("Mac")) { newConfig.setProperty("jrePath", "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0"); }
 		newConfig.setProperty("storePassword", "false");
 		try {
@@ -205,9 +198,10 @@ public class MainForm extends MCUApp {
 	{
 		boolean hasChanged = false;
 		if (current.getProperty("minimumMemory") == null) {	current.setProperty("minimumMemory", "512M"); hasChanged = true; }
-		if (current.getProperty("maximumMemory") == null) {	current.setProperty("maximumMemory", "1G"); hasChanged = true; }
-		if (current.getProperty("permGen") == null) {	current.setProperty("permGen", "128M"); hasChanged = true; }
-		if (current.getProperty("jvmOpts") == null) {	current.setProperty("jvmOpts", "-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+AggressiveOpts"); hasChanged = true; }
+		if (current.getProperty("maximumMemory") == null) { current.setProperty("maximumMemory", "1G"); hasChanged = true; }
+		if (current.getProperty("permGen") == null) { current.setProperty("permGen", "128M"); hasChanged = true; }
+		if (current.getProperty("jvmOpts") == null || current.getProperty("jvmOpts").isEmpty()) { current.setProperty("jvmOpts", "-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+AggressiveOpts"); hasChanged = true; }
+		if (current.getProperty("lastInstance") == null) { current.setProperty("lastInstance", ""); }
 		//if (current.getProperty("currentConfig") == null) {	current.setProperty("currentConfig", ""); hasChanged = true; } // Made obsolete by instancing
 		//if (current.getProperty("packRevision") == null) {	current.setProperty("packRevision",""); hasChanged = true; } // Made obsolete by instancing
 		if (current.getProperty("minimizeOnLaunch") == null) { current.setProperty("minimizeOnLaunch", (System.getProperty("os.name").startsWith("Mac")) ? "false" : "true"); hasChanged = true; }
@@ -218,6 +212,7 @@ public class MainForm extends MCUApp {
 		if (current.getProperty("allowAutoConnect") == null) { current.setProperty("allowAutoConnect", "true"); hasChanged = true; }
 		if (current.getProperty("storePassword") == null) { current.setProperty("storePassword", "false"); hasChanged = true; }
 		if (current.getProperty("jrePath") == null && System.getProperty("os.name").startsWith("Mac")) { current.setProperty("jrePath", "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0"); }
+		if (current.getProperty("timeoutLength") == null) { current.setProperty("timeoutLength",String.valueOf(5000)); hasChanged = true; }
 		return hasChanged;
 	}
 
@@ -226,6 +221,7 @@ public class MainForm extends MCUApp {
 	 */
 	void initialize() {
 		loadConfig();
+		MCUpdater.getInstance().setTimeout(Integer.parseInt(config.getProperty("timeoutLength")));
 		checkAccess();
 		baseLogger.fine("Start building GUI");
 		frmMain = new JFrame();
@@ -317,6 +313,9 @@ public class MainForm extends MCUApp {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				updateInstanceList();
+				if (serverList.getSelectedIndex() > -1) {
+					changeSelectedServer((ServerList) serverList.getSelectedValue());
+				}
 			}
 
 		});
@@ -458,10 +457,12 @@ public class MainForm extends MCUApp {
 		if (config.getProperty("storePassword").toLowerCase().equals("true")) {
 			if (config.containsKey("password")) {
 				String user = config.getProperty("userName");
-				String password = decrypt(config.getProperty("password"));
+				String password = mcu.decrypt(config.getProperty("password"));
 				try {
-					login(user, password, true);
+					LoginData login = MCAuth.login(user, password);
+					setLoginData(login);
 				} catch (MCLoginException e1) {
+					baseLogger.log(Level.SEVERE, "Login failure - " + e1.getMessage(), e1);
 				} catch (Exception e1) {
 					baseLogger.log(Level.SEVERE, "General error", e1);
 				}
@@ -489,16 +490,13 @@ public class MainForm extends MCUApp {
 	}
 
 	private void checkSelectedInstance() {
-//		Properties instData = new Properties();
-//		try {
-//			instData.load(Files.newInputStream(mcu.getMCFolder().resolve("instance.dat")));
-//		} catch (NoSuchFileException nsfe) {
-//			instData.setProperty("serverID", "unmanaged");
-//		} catch (IOException e1) {
-//			e1.printStackTrace();
-//		}
-//		int selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(instData.getProperty("serverID"));
-//		serverList.setSelectedIndex(selectIndex);
+		int selectIndex;
+		if (!config.getProperty("lastInstance").isEmpty()) {
+			selectIndex = ((SLListModel)serverList.getModel()).getEntryIdByTag(config.getProperty("lastInstance"));
+		} else {
+			selectIndex = 0;
+		}
+		serverList.setSelectedIndex(selectIndex);
 	}
 
 	private void initializeInstanceList() {
@@ -527,34 +525,7 @@ public class MainForm extends MCUApp {
 				packUrl = "";
 			}
 		}
-
 		updateInstanceList();
-	}
-
-	private String encrypt(String password) {
-		try {
-			Cipher cipher = getCipher(Cipher.ENCRYPT_MODE, "MCUpdater");
-			byte[] utf8 = password.getBytes("UTF8");
-			byte[] enc = cipher.doFinal(utf8);
-
-			return Base64.encodeBase64String(enc);
-		} catch (Exception e) {
-			baseLogger.log(Level.SEVERE, "General error", e);
-		}
-		return null;
-	}
-
-	private String decrypt(String property) {
-		try {
-			Cipher cipher = getCipher(Cipher.DECRYPT_MODE, "MCUpdater");
-			byte[] dec = Base64.decodeBase64(property);
-			byte[] utf8 = cipher.doFinal(dec);
-
-			return new String(utf8, "UTF8");
-		} catch (Exception e) {
-			baseLogger.log(Level.SEVERE, "General error", e);
-		}
-		return null;
 	}
 
 	@Override
@@ -623,7 +594,7 @@ public class MainForm extends MCUApp {
 		try {
 			btnUpdate.setEnabled(true);
 			selected = entry;
-			try { 
+			try {
 				browser.setPage(entry.getNewsUrl());
 			} catch (Exception ie) {
 				browser.setText("<HTML><BODY>Unable to read news.</BODY></HTML>");
@@ -653,7 +624,17 @@ public class MainForm extends MCUApp {
 						btnUpdate.setEnabled(false);
 					} else {
 						modIds.add(modEntry.getId());
-					}
+					}//			setLoginData(login);
+//					getConfig().setProperty("userName", username);
+//					if (storePassword == true ) {
+//						getConfig().setProperty("password", encrypt(password));
+//						getConfig().setProperty("storePassword", "true");
+//					} else {
+//						getConfig().remove("password");
+//						getConfig().setProperty("storePassword", "false");
+//					}
+//					writeConfig(getConfig());
+
 					JModuleCheckBox chkModule = new JModuleCheckBox(modEntry.getName());
 					if(modEntry.getInJar())
 					{
@@ -777,7 +758,7 @@ public class MainForm extends MCUApp {
 			while(it.hasNext())
 			{
 				ServerList entry = it.next();
-				slModel.add(new ServerListPacket(entry, mcu));
+				slModel.add(entry);
 			}
 			//slModel.add(new ServerListPacket(new ServerList("unmanaged","Unmanaged","http://www.example.org/ServerPack.xml","http://mcupdater.net46.net","","","",false,"0"), mcu));
 		}
@@ -860,7 +841,7 @@ public class MainForm extends MCUApp {
 			// don't autominimize unless configured to
 			return;
 		}
-		frmMain.setVisible(false);
+		//frmMain.setVisible(false);
 		frmMain.setExtendedState(Frame.ICONIFIED);
 		minimized = true;
 	}
@@ -868,59 +849,8 @@ public class MainForm extends MCUApp {
 		if( !minimized ) {
 			return;
 		}
-		frmMain.setVisible(true);
+		//frmMain.setVisible(true);
 		frmMain.setExtendedState(Frame.NORMAL);
-	}
-
-	public LoginData login(String username, String password, Boolean storePassword) throws Exception {
-		try {
-			HashMap<String, Object> localHashMap = new HashMap<String, Object>();
-			localHashMap.put("user", username);
-			localHashMap.put("password", password);
-			localHashMap.put("version", Integer.valueOf(13));
-			String str = HTTPSUtils.executePost("https://login.minecraft.net/", localHashMap);
-			if (str == null) {
-				//showError("Can't connect to minecraft.net");
-				throw new MCLoginException(ResponseType.NOCONNECTION);
-			}
-			if (!str.contains(":")) {
-				if (str.trim().equals("Bad login")) {
-					throw new MCLoginException(ResponseType.BADLOGIN);
-				} else if (str.trim().equals("Old version")) {
-					throw new MCLoginException(ResponseType.OLDVERSION);
-				} else if (str.trim().equals("User not premium")) {
-					throw new MCLoginException(ResponseType.OLDLAUNCHER);
-				} else {
-					throw new MCLoginException(str);
-				}
-			}
-			if (!Version.isMasterBranch()) {
-				this.baseLogger.info("Login response string: " + str);
-			}
-			String[] arrayOfString = str.split(":");
-
-			LoginData login = new LoginData();
-			login.setUserName(arrayOfString[2].trim());
-			login.setLatestVersion(arrayOfString[0].trim());
-			login.setSessionId(arrayOfString[3].trim());
-			setLoginData(login);
-			getConfig().setProperty("userName", username);
-			if (storePassword == true ) {
-				getConfig().setProperty("password", encrypt(password));
-				getConfig().setProperty("storePassword", "true");
-			} else {
-				getConfig().remove("password");
-				getConfig().setProperty("storePassword", "false");
-			}
-			writeConfig(getConfig());
-			return login;
-
-		} catch (MCLoginException mcle) {
-			throw mcle;
-		} catch (Exception localException) {
-			baseLogger.log(Level.SEVERE, "General error", localException);
-			throw localException;
-		}
 	}
 
 	public void setLoginData(LoginData response) {
@@ -933,21 +863,10 @@ public class MainForm extends MCUApp {
 		}
 	}
 
-	private Cipher getCipher(int mode, String password) throws Exception {
-		Random random = new Random(92845025L);
-		byte[] salt = new byte[8];
-		random.nextBytes(salt);
-		PBEParameterSpec pbeParamSpec = new PBEParameterSpec(salt, 5);
-
-		SecretKey pbeKey = SecretKeyFactory.getInstance("PBEWithMD5AndDES").generateSecret(new PBEKeySpec(password.toCharArray()));
-		Cipher cipher = Cipher.getInstance("PBEWithMD5AndDES");
-		cipher.init(mode, pbeKey, pbeParamSpec);
-		return cipher;
-	}
 	private void updateInstance() {
 		new Thread() {
 			public void run() {
-				if (!mcu.checkVersionCache(selected.getVersion())) {
+				if (!mcu.checkVersionCache(selected.getVersion(), ModSide.CLIENT)) {
 					JOptionPane.showMessageDialog(null, "Unable to validate Minecraft version!", "MCUpdater", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
@@ -998,7 +917,7 @@ public class MainForm extends MCUApp {
 					setStatus("Installing mods");
 					log("Installing mods...");
 					setProgressBar(25);
-					result = mcu.installMods(selected, toInstall, chkHardUpdate.isSelected(), instData);
+					result = mcu.installMods(selected, toInstall, chkHardUpdate.isSelected(), instData, ModSide.CLIENT);
 					if (selected.isGenerateList()) {
 						setStatus("Writing servers.dat");
 						log("Writing servers.dat");
@@ -1085,6 +1004,8 @@ public class MainForm extends MCUApp {
 			}
 		}
 
+		config.setProperty("lastInstance", selected.getServerId());
+		writeConfig(config);
 		GenericLauncherThread thread;
 //		if (System.getProperty("os.name").startsWith("Mac")) {
 //
@@ -1141,6 +1062,12 @@ public class MainForm extends MCUApp {
 		sm.setVisible(true);
 	}
 
+	@Override
+	public void addServer(ServerList entry) {
+		// TODO Auto-generated method stub
+		
+	}
+
 	private final class NewsPaneListener implements HyperlinkListener {
 		@Override
 		public void hyperlinkUpdate(HyperlinkEvent he) {
@@ -1159,7 +1086,7 @@ public class MainForm extends MCUApp {
 		public void valueChanged(ListSelectionEvent e) {
 			if (!e.getValueIsAdjusting())
 			{
-				changeSelectedServer(((ServerListPacket)serverList.getSelectedValue()).getEntry());
+				changeSelectedServer((ServerList) serverList.getSelectedValue());
 				// check for server version update
 				Properties instData = new Properties();
 				try {
@@ -1185,7 +1112,6 @@ public class MainForm extends MCUApp {
 			}
 		}
 	}
-
 }
 
 class JModuleCheckBox extends JCheckBox
@@ -1217,20 +1143,20 @@ class SLListModel extends AbstractListModel
 	 *
 	 */
 	private static final long serialVersionUID = -6829288390151952427L;
-	List<ServerListPacket> model;
+	List<ServerList> model;
 
 	public SLListModel()
 	{
-		model = new ArrayList<ServerListPacket>();
+		model = new ArrayList<ServerList>();
 	}
 
 	public int getEntryIdByTag(String tag) {
 		int foundId = 0;
-		Iterator<ServerListPacket> it = model.iterator();
+		Iterator<ServerList> it = model.iterator();
 		int searchId = 0;
 		while (it.hasNext()) {
-			ServerListPacket entry = it.next();
-			if (tag.equals(entry.getEntry().getServerId())) {
+			ServerList entry = it.next();
+			if (tag.equals(entry.getServerId())) {
 				foundId = searchId;
 				break;
 			}
@@ -1245,22 +1171,22 @@ class SLListModel extends AbstractListModel
 	}
 
 	@Override
-	public ServerListPacket getElementAt(int index) {
+	public ServerList getElementAt(int index) {
 		return model.get(index);
 	}
 
-	public void add(ServerListPacket element)
+	public void add(ServerList element)
 	{
 		model.add(element);
 		fireContentsChanged(this, 0, getSize());
 	}
 
-	public Iterator<ServerListPacket> iterator()
+	public Iterator<ServerList> iterator()
 	{
 		return model.iterator();
 	}
 
-	public boolean removeElement(ServerListPacket element)
+	public boolean removeElement(ServerList element)
 	{
 		boolean removed = model.remove(element);
 		if (removed) {
