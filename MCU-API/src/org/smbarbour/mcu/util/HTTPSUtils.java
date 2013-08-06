@@ -64,8 +64,8 @@ public class HTTPSUtils {
 			localHttpsURLConnection.setDoInput(true);
 			localHttpsURLConnection.setDoOutput(true);
 			
-			localHttpsURLConnection.setConnectTimeout(5000);
-			localHttpsURLConnection.setReadTimeout(5000);
+			localHttpsURLConnection.setConnectTimeout(MCUpdater.getInstance().getTimeout());
+			localHttpsURLConnection.setReadTimeout(MCUpdater.getInstance().getTimeout());
 
 			localHttpsURLConnection.connect();
 			Certificate[] arrayOfCertificate = localHttpsURLConnection.getServerCertificates();

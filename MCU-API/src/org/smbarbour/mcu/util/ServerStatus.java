@@ -72,28 +72,46 @@ public class ServerStatus {
 			dos = new DataOutputStream(socket.getOutputStream());
 			
 			dos.write(254);
+			dos.write(1);
 			
 			if (dis.read() != 255) throw new IOException("Bad message");
 			
 			short strLength = dis.readShort();
 			if (strLength < 0 || strLength > 64) throw new IOException("invalid string length");
-			
+
 			StringBuilder sb = new StringBuilder();
-			for(int i=0; i<strLength; i++) sb.append(dis.readChar());
-			
+			for(int i=0; i<strLength; ++i) sb.append(dis.readChar());
+
+			char[] test = sb.toString().toCharArray();
+			String foo = " !#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_'abcdefghijklmnopqrstuvwxyz{|}~⌂ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜø£Ø×ƒáíóúñÑªº¿®¬½¼¡«»";
+			for (int i = 0; i<test.length; ++i) {
+				if (test[i] != 167 && foo.indexOf(test[i]) < 0){
+					test[i] = 63;
+				}
+			}
 			String data = sb.toString();
-			String dataParts[] = data.split("\u00a7");
-			
-			String motd = dataParts[0];
-			
 			int players = -1;
 			int maxPlayers = -1;
-			
-			try {
-				players = Integer.parseInt(dataParts[1]);
-				maxPlayers = Integer.parseInt(dataParts[2]);
-			} catch(Exception e) {}
-			
+			String motd = ""; 
+			String[] dataParts; 
+			if (data.startsWith("\u00a7") && data.length() > 1) {
+				dataParts = data.substring(1).split("\u0000");
+				
+				if (parseIntWithDefault(dataParts[0],0) == 1) {
+					motd = dataParts[3];
+					players = Integer.parseInt(dataParts[4]);
+					maxPlayers = Integer.parseInt(dataParts[5]);
+				}
+			} else {
+				dataParts = data.split("\u00a7");
+
+				motd = dataParts[0];
+
+				try {
+					players = Integer.parseInt(dataParts[1]);
+					maxPlayers = Integer.parseInt(dataParts[2]);
+				} catch(Exception e) {}
+			}
 			result = new ServerStatus(motd, players, maxPlayers);
 			
 		} catch (SocketException e1) {
@@ -107,4 +125,21 @@ public class ServerStatus {
 		
 		return result;
 	}
+	
+	private static int parseIntWithDefault(String par0Str, int par1)
+	{
+		int j = par1;
+
+		try
+		{
+			j = Integer.parseInt(par0Str);
+		}
+		catch (Throwable throwable)
+		{
+			;
+		}
+
+		return j;
+	}
+
 }

@@ -141,6 +141,7 @@ public class AppletLauncherThread implements GenericLauncherThread, Runnable {
 		}
 
 		ProcessBuilder pb = new ProcessBuilder(args);
+		pb.directory(MCUpdater.getInstance().getInstanceRoot().resolve(server.getServerId()).toFile());
 		parent.baseLogger.fine("Running on: " + System.getProperty("os.name"));
 		if(System.getProperty("os.name").startsWith("Linux")) {
 			if (new Path(new File(jrePath)).resolve("lib").resolve("amd64").toFile().exists()) {

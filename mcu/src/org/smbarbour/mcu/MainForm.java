@@ -51,6 +51,7 @@ import org.smbarbour.mcu.util.LoginData;
 import org.smbarbour.mcu.util.MCAuth;
 import org.smbarbour.mcu.util.MCLoginException;
 import org.smbarbour.mcu.util.MCUpdater;
+import org.smbarbour.mcu.util.ModSide;
 import org.smbarbour.mcu.util.Module;
 import org.smbarbour.mcu.util.ServerList;
 import org.smbarbour.mcu.util.ServerPackParser;
@@ -180,6 +181,7 @@ public class MainForm extends MCUApp {
 		newConfig.setProperty("width", String.valueOf(1280));
 		newConfig.setProperty("height", String.valueOf(720));
 		newConfig.setProperty("allowAutoConnect", "true");
+		newConfig.setProperty("timeoutLength",String.valueOf(5000));
 		if (System.getProperty("os.name").startsWith("Mac")) { newConfig.setProperty("jrePath", "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0"); }
 		newConfig.setProperty("storePassword", "false");
 		try {
@@ -210,6 +212,7 @@ public class MainForm extends MCUApp {
 		if (current.getProperty("allowAutoConnect") == null) { current.setProperty("allowAutoConnect", "true"); hasChanged = true; }
 		if (current.getProperty("storePassword") == null) { current.setProperty("storePassword", "false"); hasChanged = true; }
 		if (current.getProperty("jrePath") == null && System.getProperty("os.name").startsWith("Mac")) { current.setProperty("jrePath", "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0"); }
+		if (current.getProperty("timeoutLength") == null) { current.setProperty("timeoutLength",String.valueOf(5000)); hasChanged = true; }
 		return hasChanged;
 	}
 
@@ -218,6 +221,7 @@ public class MainForm extends MCUApp {
 	 */
 	void initialize() {
 		loadConfig();
+		MCUpdater.getInstance().setTimeout(Integer.parseInt(config.getProperty("timeoutLength")));
 		checkAccess();
 		baseLogger.fine("Start building GUI");
 		frmMain = new JFrame();
@@ -837,7 +841,7 @@ public class MainForm extends MCUApp {
 			// don't autominimize unless configured to
 			return;
 		}
-		frmMain.setVisible(false);
+		//frmMain.setVisible(false);
 		frmMain.setExtendedState(Frame.ICONIFIED);
 		minimized = true;
 	}
@@ -845,7 +849,7 @@ public class MainForm extends MCUApp {
 		if( !minimized ) {
 			return;
 		}
-		frmMain.setVisible(true);
+		//frmMain.setVisible(true);
 		frmMain.setExtendedState(Frame.NORMAL);
 	}
 
@@ -862,7 +866,7 @@ public class MainForm extends MCUApp {
 	private void updateInstance() {
 		new Thread() {
 			public void run() {
-				if (!mcu.checkVersionCache(selected.getVersion())) {
+				if (!mcu.checkVersionCache(selected.getVersion(), ModSide.CLIENT)) {
 					JOptionPane.showMessageDialog(null, "Unable to validate Minecraft version!", "MCUpdater", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
@@ -913,7 +917,7 @@ public class MainForm extends MCUApp {
 					setStatus("Installing mods");
 					log("Installing mods...");
 					setProgressBar(25);
-					result = mcu.installMods(selected, toInstall, chkHardUpdate.isSelected(), instData);
+					result = mcu.installMods(selected, toInstall, chkHardUpdate.isSelected(), instData, ModSide.CLIENT);
 					if (selected.isGenerateList()) {
 						setStatus("Writing servers.dat");
 						log("Writing servers.dat");
