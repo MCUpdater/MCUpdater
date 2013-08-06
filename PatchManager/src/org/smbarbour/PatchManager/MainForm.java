@@ -16,7 +16,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.JButton;
 
-import org.smbarbour.mcu.util.Transmogrify;
+import org.mcupdater.util.Transmogrify;
 
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;

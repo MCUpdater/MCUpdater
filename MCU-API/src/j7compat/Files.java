@@ -13,7 +13,7 @@ import java.io.OutputStream;
 import java.util.logging.Level;
 
 import org.apache.commons.io.FileUtils;
-import org.smbarbour.mcu.util.MCUpdater;
+import org.mcupdater.util.MCUpdater;
 
 public class Files {
 
