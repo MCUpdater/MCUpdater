@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.mcupdater.com/ServerPackV2" xmlns:tns="http://www.mcupdater.com/ServerPackV2">
+	<xs:element name="ServerPackV2">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element type="tns:ServerType" name="Server" minOccurs="1" />
+			</xs:sequence>
+			<xs:attribute type="xs:string" name="version" use="required" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:complexType name="ServerType">
+		<xs:sequence>
+			<xs:element name="Import" minOccurs="0" maxOccurs="unbounded">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:attribute type="xs:anyURI" name="url" />
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element type="tns:ModuleType" name="Module" maxOccurs="unbounded"
+				minOccurs="1" />
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="id" use="required" />
+		<xs:attribute type="xs:boolean" name="abstract" use="optional" />
+		<xs:attribute type="xs:string" name="name" use="required" />
+		<xs:attribute type="xs:anyURI" name="newsUrl" use="required" />
+		<xs:attribute type="xs:anyURI" name="iconUrl" use="optional" />
+		<xs:attribute type="xs:string" name="version" use="required" />
+		<xs:attribute type="xs:string" name="serverAddress" use="required" />
+		<xs:attribute type="xs:boolean" name="generateList" use="optional" default="true" />
+		<xs:attribute type="xs:boolean" name="autoConnect" use="optional" default="true" />
+		<xs:attribute type="xs:string" name="revision" use="required" />
+	</xs:complexType>
+
+	<xs:complexType name="ModuleType">
+		<xs:sequence>
+			<xs:element name="URL">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:anyURI">
+							<xs:attribute type="xs:integer" name="priority" />
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element type="xs:string" name="ModPath" minOccurs="0" />
+			<xs:element name="Required">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:boolean">
+							<xs:attribute type="xs:boolean" name="IsDefault"/>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element type="xs:boolean" name="IsDefault" />
+			<xs:element name="ModType" minOccurs="1" maxOccurs="1" >
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="tns:ModEnum">
+							<xs:attribute type="xs:boolean" name="inRoot" />
+							<xs:attribute type="xs:integer" name="order" />
+							<xs:attribute type="xs:boolean" name="keepMeta" />
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element type="xs:string" name="MD5" minOccurs="0" maxOccurs="1" />
+			<xs:element type="tns:MetaType" name="Meta" minOccurs="0" maxOccurs="1" />
+			<xs:element type="tns:ModuleType" name="Submodule" maxOccurs="unbounded" minOccurs="0" />
+			<xs:element type="tns:ConfigType" name="ConfigFile" maxOccurs="unbounded" minOccurs="0" />
+		</xs:sequence>
+		<xs:attribute type="xs:string" name="name" use="required" />
+		<xs:attribute type="xs:string" name="id" use="required" />
+		<xs:attribute type="xs:string" name="depends" use="optional" />
+		<xs:attribute name="side" use="optional" default="BOTH">
+			<xs:simpleType>
+				<xs:restriction base="xs:string">
+					<xs:enumeration value="BOTH" />
+					<xs:enumeration value="CLIENT" />
+					<xs:enumeration value="SERVER" />
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:complexType>
+
+	<xs:complexType name="ConfigType">
+		<xs:sequence>
+			<xs:element type="xs:anyURI" name="URL" />
+			<xs:element type="xs:string" name="Path" />
+			<xs:element type="xs:boolean" name="NoOverwrite" />
+			<xs:element type="xs:string" name="MD5" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:complexType name="MetaType">
+		<xs:sequence>
+			<xs:element type="xs:string" name="version" minOccurs="0" />
+			<xs:element type="xs:string" name="authors" minOccurs="0" />
+			<xs:element type="xs:anyURI" name="URL" minOccurs="0" />
+			<xs:element type="xs:string" name="description" minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:simpleType name="ModEnum">
+		<xs:restriction base="xs:string">
+			<xs:enumeration value="Regular" />
+			<xs:enumeration value="Library" />
+			<xs:enumeration value="Coremod" />
+			<xs:enumeration value="Jar" />
+			<xs:enumeration value="Extract" />
+		</xs:restriction>
+	</xs:simpleType>
+	
+</xs:schema>
