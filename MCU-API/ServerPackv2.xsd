@@ -37,7 +37,7 @@
 
 	<xs:complexType name="ModuleType">
 		<xs:sequence>
-			<xs:element name="URL">
+			<xs:element name="URL" minOccurs="0" maxOccurs="unbounded">
 				<xs:complexType>
 					<xs:simpleContent>
 						<xs:extension base="xs:anyURI">
@@ -46,8 +46,8 @@
 					</xs:simpleContent>
 				</xs:complexType>
 			</xs:element>
-			<xs:element type="xs:string" name="ModPath" minOccurs="0" />
-			<xs:element name="Required">
+			<xs:element type="xs:string" name="ModPath" minOccurs="0" maxOccurs="1" />
+			<xs:element name="Required" minOccurs="1" maxOccurs="1">
 				<xs:complexType>
 					<xs:simpleContent>
 						<xs:extension base="xs:boolean">
@@ -112,6 +112,7 @@
 			<xs:enumeration value="Coremod" />
 			<xs:enumeration value="Jar" />
 			<xs:enumeration value="Extract" />
+			<xs:enumeration value="Option" />
 		</xs:restriction>
 	</xs:simpleType>
 	
