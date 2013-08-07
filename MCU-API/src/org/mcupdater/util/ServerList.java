@@ -10,10 +10,11 @@ public class ServerList {
 	private String address;
 	private boolean generateList = true;
 	private boolean autoConnect = true;
+	private boolean fakeServer = false;
 	private String revision;	// serverpack revision
 	private String serverId;
 	
-	public ServerList(String serverId, String name, String packUrl, String newsUrl, String iconUrl, String version, String address, boolean generateList, boolean autoConnect, String revision)
+	public ServerList(String serverId, String name, String packUrl, String newsUrl, String iconUrl, String version, String address, boolean generateList, boolean autoConnect, String revision, boolean fakeServer)
 	{
 		this.serverId = serverId;
 		this.name = name;
@@ -25,6 +26,7 @@ public class ServerList {
 		this.generateList = generateList;
 		this.setAutoConnect(autoConnect);
 		this.revision = revision;
+		this.setFakeServer(fakeServer);
 	}
 	
 	public String getName()
@@ -125,5 +127,13 @@ public class ServerList {
 
 	public void setAutoConnect(boolean autoConnect) {
 		this.autoConnect = autoConnect;
+	}
+
+	public boolean isFakeServer() {
+		return fakeServer;
+	}
+
+	public void setFakeServer(boolean fakeServer) {
+		this.fakeServer = fakeServer;
 	}
 }

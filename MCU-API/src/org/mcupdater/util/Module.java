@@ -8,7 +8,7 @@ import java.util.Locale;
 public class Module {
 	private String name;
 	private String id;
-	private String url;
+	private List<PrioritizedURL> urls;
 	private String path;
 	private String depends;
 	private Boolean required;
@@ -24,11 +24,11 @@ public class Module {
 	private List<ConfigFile> configs;
 	private HashMap<String,String> meta;
 	
-	public Module(String name, String id, String url, String depends, Boolean required, Boolean inJar, int jarOrder, Boolean keepMeta, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta)
+	public Module(String name, String id, List<PrioritizedURL> url, String depends, Boolean required, Boolean inJar, int jarOrder, Boolean keepMeta, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta)
 	{
 		this.setName(name);
 		this.setId(id);
-		this.setUrl(url);
+		this.setUrls(url);
 		this.setDepends(depends);
 		this.setRequired(required);
 		this.setInJar(inJar);
@@ -62,7 +62,13 @@ public class Module {
 	@Deprecated
 	public Module(String name, String id, String url, String depends, Boolean required, Boolean inJar, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs)
 	{
-		this(name, id, url, depends, required, inJar, 0, true, extract, inRoot, isDefault, coreMod, md5, configs, null, null, null);
+		this(name, id, makeList(url), depends, required, inJar, 0, true, extract, inRoot, isDefault, coreMod, md5, configs, null, null, null);
+	}
+	
+	private static List<PrioritizedURL> makeList(String url) {
+		List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
+		urls.add(new PrioritizedURL(url, 0));
+		return urls;
 	}
 
 	public String getName()
@@ -75,14 +81,19 @@ public class Module {
 		this.name=name;
 	}
 	
-	public String getUrl()
+	public List<PrioritizedURL> getUrls()
 	{
-		return url;
+		return urls;
 	}
 	
-	public void setUrl(String url)
+	public void setUrls(List<PrioritizedURL> urls)
 	{
-		this.url=url;
+		this.urls = urls;
+	}
+	
+	public void addUrl(PrioritizedURL url)
+	{
+		this.urls.add(url);
 	}
 	
 	public Boolean getRequired()

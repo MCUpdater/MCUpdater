@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -74,10 +75,16 @@ public class ServerPackParser {
 
 	private static List<Module> parseDocument(Document dom, String serverId)
 	{
+		int version;
 		List<Module> modList = new ArrayList<Module>();
 		Element parent = dom.getDocumentElement();
 		Element docEle = null;
 		if (parent.getNodeName().equals("ServerPack")){
+			if (Version.requestedFeatureLevel(parent.getAttribute("version"),"3.0")) {
+				version = 2;
+			} else {
+				version = 1;
+			}
 			NodeList servers = parent.getElementsByTagName("Server");
 			for (int i = 0; i < servers.getLength(); i++){
 				docEle = (Element)servers.item(i);
@@ -85,25 +92,67 @@ public class ServerPackParser {
 			}
 		} else {
 			docEle = parent;
+			version = 1;
 		}
-		NodeList nl = docEle.getElementsByTagName("Module");
-		if(nl != null && nl.getLength() > 0)
-		{
-			for(int i = 0; i < nl.getLength(); i++)
-			{
-				Element el = (Element)nl.item(i);
-				Module m = getModule(el);
-				modList.add(m);
+		NodeList nl;
+		switch (version) {
+		case 2:
+			// Handle ServerPacks designed for MCUpdater 3.0 and later
+			nl = docEle.getElementsByTagName("Import");
+			if(nl != null && nl.getLength() > 0) {
+				for(int i = 0; i < nl.getLength(); i++) {
+					Element el = (Element)nl.item(i);
+					modList.addAll(doImportV2(el));
+				}
 			}
+			nl = docEle.getElementsByTagName("Module");
+			if(nl != null && nl.getLength() > 0)
+			{
+				for(int i = 0; i < nl.getLength(); i++)
+				{
+					Element el = (Element)nl.item(i);
+					Module m = getModuleV2(el);
+					modList.add(m);
+				}
+			}
+			return modList;
+			
+		case 1:
+			// Handle ServerPacks designed for MCUpdater 2.7 and earlier
+			nl = docEle.getElementsByTagName("Module");
+			if(nl != null && nl.getLength() > 0)
+			{
+				for(int i = 0; i < nl.getLength(); i++)
+				{
+					Element el = (Element)nl.item(i);
+					Module m = getModuleV1(el);
+					modList.add(m);
+				}
+			}
+			return modList;
+
+		default:
+			return null;
 		}
-		return modList;
 	}
 	
-	private static Module getModule(Element modEl)
+	private static Collection<? extends Module> doImportV2(Element el) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private static Module getModuleV2(Element el) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private static Module getModuleV1(Element modEl)
 	{
 		String name = modEl.getAttribute("name");
 		String id = modEl.getAttribute("id");
-		String url = getTextValue(modEl,"URL");
+		PrioritizedURL url = new PrioritizedURL(getTextValue(modEl,"URL"),0);
+		List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
+		urls.add(url);
 		String path = getTextValue(modEl,"ModPath");
 		String depends = modEl.getAttribute("depends");
 		String side = modEl.getAttribute("side");
@@ -122,7 +171,7 @@ public class ServerPackParser {
 		for(int i = 0; i < nl.getLength(); i++) 
 		{
 			Element el = (Element)nl.item(i);
-			ConfigFile cf = getConfigFile(el);
+			ConfigFile cf = getConfigFileV1(el);
 			configs.add(cf);
 		}
 		HashMap<String,String> mapMeta = new HashMap<String,String>();
@@ -137,11 +186,11 @@ public class ServerPackParser {
 			}
 		}
 		//TODO:Meta
-		Module m = new Module(name, id, url, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, mapMeta);	
+		Module m = new Module(name, id, urls, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, mapMeta);	
 		return m;
 	}
 	
-	private static ConfigFile getConfigFile(Element cfEl)
+	private static ConfigFile getConfigFileV1(Element cfEl)
 	{
 		String url = getTextValue(cfEl,"URL");
 		String path = getTextValue(cfEl,"Path");
@@ -202,7 +251,10 @@ public class ServerPackParser {
 		//return modList;
 	}
 	
-	public static boolean parseBoolean(String attribute) {
+	public static boolean parseBoolean(String attribute, boolean defaultValue) {
+		if (attribute.isEmpty()) {
+			return defaultValue;
+		}
 		if (attribute.equalsIgnoreCase("false")) {
 			return false;
 		} else {

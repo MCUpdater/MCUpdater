@@ -12,6 +12,7 @@ import org.mcupdater.util.MCUpdater;
 import org.mcupdater.util.ModDownload;
 import org.mcupdater.util.Module;
 import org.mcupdater.util.ModuleComparator;
+import org.mcupdater.util.PrioritizedURL;
 import org.mcupdater.util.ServerList;
 import org.mcupdater.util.ServerPackParser;
 import org.w3c.dom.Document;
@@ -153,7 +154,7 @@ public class ServerForm extends MCUApp {
 					txtModId.setText(selected.getId());
 					txtModMD5.setText(selected.getMD5());
 					txtModDepends.setText(selected.getDepends());
-					txtModUrl.setText(selected.getUrl());
+					txtModUrl.setText(selected.getUrls().get(0).getUrl());
 					tmModMeta.setRowCount(0);
 					tmModMeta.fireTableDataChanged();
 					tblModMeta.invalidate();
@@ -409,7 +410,7 @@ public class ServerForm extends MCUApp {
 							NodeList servers = parent.getElementsByTagName("Server");
 							for (int i = 0; i < servers.getLength(); i++){
 								docEle = (Element)servers.item(i);
-								ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), "", docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList")), ServerPackParser.parseBoolean(docEle.getAttribute("autoConnect")), docEle.getAttribute("revision"));
+								ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), "", docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList"), true), ServerPackParser.parseBoolean(docEle.getAttribute("autoConnect"), true), docEle.getAttribute("revision"), ServerPackParser.parseBoolean(docEle.getAttribute("abstract"), false));
 								List<Module> modules = new ArrayList<Module>(ServerPackParser.loadFromFile(currentFile.toFile(), docEle.getAttribute("id")));
 								List<ConfigFileWrapper> configs = new ArrayList<ConfigFileWrapper>();
 								for (Module modEntry : modules) {
@@ -424,7 +425,7 @@ public class ServerForm extends MCUApp {
 							}					
 						} else {
 							docEle = parent;
-							ServerList sl = new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), "", parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), ServerPackParser.parseBoolean(parent.getAttribute("generateList")), ServerPackParser.parseBoolean(parent.getAttribute("autoConnect")), parent.getAttribute("revision"));
+							ServerList sl = new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), "", parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), ServerPackParser.parseBoolean(parent.getAttribute("generateList"), true), ServerPackParser.parseBoolean(parent.getAttribute("autoConnect"), true), parent.getAttribute("revision"), ServerPackParser.parseBoolean(parent.getAttribute("abstract"), false));
 							List<Module> modules = new ArrayList<Module>(ServerPackParser.loadFromFile(currentFile.toFile(), docEle.getAttribute("id")));
 							List<ConfigFileWrapper> configs = new ArrayList<ConfigFileWrapper>();
 							for (Module modEntry : modules) {
@@ -567,7 +568,7 @@ public class ServerForm extends MCUApp {
 				JButton btnServerNew = new JButton("New");
 				btnServerNew.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						modelServer.add(new ServerDefinition(new ServerList("newServer","New Server","","","","","",true,true,"1"), new ArrayList<Module>(), new ArrayList<ConfigFileWrapper>()));
+						modelServer.add(new ServerDefinition(new ServerList("newServer","New Server","","","","","",true,true,"1",false), new ArrayList<Module>(), new ArrayList<ConfigFileWrapper>()));
 						packDirty = true;
 					}
 				});
@@ -1285,7 +1286,10 @@ public class ServerForm extends MCUApp {
 				btnModAdd.setEnabled(false);
 				btnModAdd.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent e) {
-						Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), (int)spinModInJarPriority.getValue(), chkModKeepMeta.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, lstModSide.getSelectedItem().toString(), txtModPath.getText(), null);
+						PrioritizedURL url = new PrioritizedURL(txtModUrl.getText(),0);
+						List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
+						urls.add(url);
+						Module newMod = new Module(txtModName.getText(), txtModId.getText(), urls, txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), (int)spinModInJarPriority.getValue(), chkModKeepMeta.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, lstModSide.getSelectedItem().toString(), txtModPath.getText(), null);
 						modelModule.add(newMod);
 						modelParentId.add(newMod.getId());
 						modelParentId.sort();
@@ -1765,7 +1769,10 @@ public class ServerForm extends MCUApp {
 			} catch (InvalidSyntaxException e) {
 				e.printStackTrace();
 			} finally {
-				AddModule(new Module(name, id, downloadUrl, depends, required, inJar, 0, keepMeta, extract, inRoot, isDefault, coreMod, md5, null, "both", null, mapMeta));
+				PrioritizedURL pUrl = new PrioritizedURL(downloadUrl,0);
+				List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
+				urls.add(pUrl);
+				AddModule(new Module(name, id, urls, depends, required, inJar, 0, keepMeta, extract, inRoot, isDefault, coreMod, md5, null, "both", null, mapMeta));
 			}			
 
 			Files.delete(tempFile);
@@ -1911,7 +1918,7 @@ public class ServerForm extends MCUApp {
 				for (Module entry : server.getModules()) {
 					fileWriter.write("\t\t<Module name=\"" + entry.getName() + "\" id=\"" + entry.getId() + "\" depends=\"" + entry.getDepends() + "\" side=\"" + entry.getSide() + "\">");
 					fileWriter.newLine();
-					fileWriter.write("\t\t\t<URL>" + xmlEscape(entry.getUrl()) + "</URL>");
+					fileWriter.write("\t\t\t<URL>" + xmlEscape(entry.getUrls().get(0).getUrl()) + "</URL>");
 					fileWriter.newLine();
 					if (!entry.getPath().equals("")) {
 						fileWriter.write("\t\t\t<ModPath>" + xmlEscape(entry.getPath()) + "</ModPath>");
@@ -2010,7 +2017,7 @@ public class ServerForm extends MCUApp {
 	}
 
 	private void updateServerEntry() {
-		ServerList entry = new ServerList(txtServerID.getText(),txtServerName.getText(),"",txtServerNewsUrl.getText(),txtServerIconUrl.getText(),txtServerMCVersion.getText(),txtServerAddress.getText(),chkServerGenerateList.isSelected(),true,txtServerRevision.getText());
+		ServerList entry = new ServerList(txtServerID.getText(),txtServerName.getText(),"",txtServerNewsUrl.getText(),txtServerIconUrl.getText(),txtServerMCVersion.getText(),txtServerAddress.getText(),chkServerGenerateList.isSelected(),true,txtServerRevision.getText(), false);
 		List<Module> newModules = new ArrayList<Module>();
 		newModules.addAll(modelModule.getContents());
 		List<ConfigFileWrapper> newConfigs = new ArrayList<ConfigFileWrapper>();
@@ -2027,7 +2034,10 @@ public class ServerForm extends MCUApp {
 		for (int i=0; i < tmModMeta.getRowCount(); i++) {
 			mapMeta.put(tmModMeta.getValueAt(i, 0).toString(), tmModMeta.getValueAt(i, 1).toString());
 		}
-		Module newMod = new Module(txtModName.getText(), txtModId.getText(), txtModUrl.getText(), txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), (int)spinModInJarPriority.getValue(), chkModKeepMeta.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, lstModSide.getSelectedItem().toString(), txtModPath.getText(), mapMeta);
+		PrioritizedURL pUrl = new PrioritizedURL(txtModUrl.getText(),0);
+		List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
+		urls.add(pUrl);
+		Module newMod = new Module(txtModName.getText(), txtModId.getText(), urls, txtModDepends.getText(), chkModRequired.isSelected(), chkModInJar.isSelected(), (int)spinModInJarPriority.getValue(), chkModKeepMeta.isSelected(), chkModExtract.isSelected(), chkModInRoot.isSelected(), chkModIsDefault.isSelected(), chkModCoreMod.isSelected(), txtModMD5.getText(), null, lstModSide.getSelectedItem().toString(), txtModPath.getText(), mapMeta);
 		modelModule.replace(moduleCurrentSelection, newMod);
 		Iterator<ConfigFileWrapper> itConfig = modelConfig.getContents().iterator();
 		while (itConfig.hasNext()) {

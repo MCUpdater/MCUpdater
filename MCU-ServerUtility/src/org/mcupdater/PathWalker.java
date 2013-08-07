@@ -8,7 +8,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
@@ -16,6 +18,7 @@ import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.mcupdater.util.ConfigFile;
 import org.mcupdater.util.Module;
+import org.mcupdater.util.PrioritizedURL;
 
 import argo.jdom.JdomParser;
 import argo.jdom.JsonNode;
@@ -38,7 +41,9 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 	@Override
 	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 		Path relativePath = rootPath.relativize(file);
-		String downloadURL = urlBase + "/" + relativePath.toString().replace("\\","/").replace(" ", "%20");
+		PrioritizedURL downloadURL = new PrioritizedURL(urlBase + "/" + relativePath.toString().replace("\\","/").replace(" ", "%20"),0);
+		List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
+		urls.add(downloadURL);
 		InputStream is = Files.newInputStream(file);
 		byte[] hash = DigestUtils.md5(is);
 		String md5 = new String(Hex.encodeHex(hash));
@@ -84,7 +89,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 				if (sep.equals("\\")) {
 					newPath = newPath.replace("\\", "/");
 				}
-				ConfigFile newConfig = new ConfigFile(downloadURL, newPath, false, md5);
+				ConfigFile newConfig = new ConfigFile(downloadURL.getUrl(), newPath, false, md5);
 				parent.AddConfig(new ConfigFileWrapper("", newConfig));
 				return FileVisitResult.CONTINUE;
 			}
@@ -123,7 +128,7 @@ public class PathWalker extends SimpleFileVisitor<Path> {
 		} catch (InvalidSyntaxException e) {
 			e.printStackTrace();
 		} finally {
-			Module newMod = new Module(name, id, downloadURL, depends, required, inJar, 0, false, extract, inRoot, isDefault, coreMod, md5, null, "both", null, mapMeta);
+			Module newMod = new Module(name, id, urls, depends, required, inJar, 0, false, extract, inRoot, isDefault, coreMod, md5, null, "both", null, mapMeta);
 			parent.AddModule(newMod);
 		}			
 		return FileVisitResult.CONTINUE;

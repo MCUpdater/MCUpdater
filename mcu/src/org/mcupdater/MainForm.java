@@ -519,7 +519,7 @@ public class MainForm extends MCUApp {
 			try {
 				Document serverHeader = ServerPackParser.readXmlFromUrl(packUrl);
 				Element docEle = serverHeader.getDocumentElement();
-				ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList")), ServerPackParser.parseBoolean(docEle.getAttribute("autoConnect")), docEle.getAttribute("revision"));
+				ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList"),true), ServerPackParser.parseBoolean(docEle.getAttribute("autoConnect"),true), docEle.getAttribute("revision"), ServerPackParser.parseBoolean(docEle.getAttribute("abstract"), false));
 				List<ServerList> servers = new ArrayList<ServerList>();
 				servers.add(sl);
 				mcu.writeServerList(servers);
