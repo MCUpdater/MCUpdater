@@ -33,6 +33,7 @@
 		<xs:attribute type="xs:boolean" name="generateList" use="optional" default="true" />
 		<xs:attribute type="xs:boolean" name="autoConnect" use="optional" default="true" />
 		<xs:attribute type="xs:string" name="revision" use="required" />
+		<xs:attribute type="xs:string" name="mainClass" use="optional" />
 	</xs:complexType>
 
 	<xs:complexType name="ModuleType">
@@ -64,6 +65,7 @@
 							<xs:attribute type="xs:boolean" name="inRoot" />
 							<xs:attribute type="xs:integer" name="order" />
 							<xs:attribute type="xs:boolean" name="keepMeta" />
+							<xs:attribute type="xs:string" name="launchArgs" />
 						</xs:extension>
 					</xs:simpleContent>
 				</xs:complexType>
