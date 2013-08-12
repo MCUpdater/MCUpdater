@@ -86,7 +86,7 @@ public class ServerManager extends JFrame {
 				try {
 					Document serverHeader = ServerPackParser.readXmlFromUrl(packURL);
 					Element docEle = serverHeader.getDocumentElement();
-					ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packURL, docEle.getAttribute("newsUrl"), docEle.getAttribute("logoUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList"),true), ServerPackParser.parseBoolean(docEle.getAttribute("autoConnect"), true), docEle.getAttribute("revision"), ServerPackParser.parseBoolean(docEle.getAttribute("abstract"), false));
+					ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), packURL, docEle.getAttribute("newsUrl"), docEle.getAttribute("logoUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList"),true), ServerPackParser.parseBoolean(docEle.getAttribute("autoConnect"), true), docEle.getAttribute("revision"), ServerPackParser.parseBoolean(docEle.getAttribute("abstract"), false), docEle.getAttribute("mainClass"));
 					model.add(sl);
 				} catch (Exception x) {
 					parent.baseLogger.log(Level.SEVERE, "General error", x);

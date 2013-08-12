@@ -6,7 +6,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -16,6 +15,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.mcupdater.Version;
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -102,7 +102,7 @@ public class ServerPackParser {
 			if(nl != null && nl.getLength() > 0) {
 				for(int i = 0; i < nl.getLength(); i++) {
 					Element el = (Element)nl.item(i);
-					modList.addAll(doImportV2(el));
+					modList.addAll(doImportV2(el, dom));
 				}
 			}
 			nl = docEle.getElementsByTagName("Module");
@@ -136,14 +136,89 @@ public class ServerPackParser {
 		}
 	}
 	
-	private static Collection<? extends Module> doImportV2(Element el) {
-		// TODO Auto-generated method stub
-		return null;
+	private static List<Module> doImportV2(Element el, Document dom) {
+		String url = el.getAttribute("url");
+		if (!url.isEmpty()){
+			try {
+				dom = readXmlFromUrl(url);
+			} catch (DOMException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}			
+		}
+		return parseDocument(dom, el.getTextContent());
 	}
 
 	private static Module getModuleV2(Element el) {
-		// TODO Auto-generated method stub
-		return null;
+		String name = el.getAttribute("name");
+		String id = el.getAttribute("id");
+		String depends = el.getAttribute("depends");
+		String side = el.getAttribute("side");
+		List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
+		NodeList nl = el.getElementsByTagName("URL");
+		for (int i = 0; i < nl.getLength(); i++) {
+			Element elURL = (Element) nl.item(i);
+			String url = elURL.getTextContent();
+			int priority = Integer.parseInt(elURL.getAttribute("priority"));
+			urls.add(new PrioritizedURL(url, priority));
+		}
+		String path = getTextValue(el, "ModPath");
+		Element elReq = (Element) el.getElementsByTagName("Required").item(0);
+		boolean required = Boolean.parseBoolean(elReq.getTextContent());
+		boolean isDefault = Boolean.parseBoolean(elReq.getAttribute("IsDefault"));
+		Element elType = (Element) el.getElementsByTagName("ModType").item(0);
+		boolean inRoot = Boolean.parseBoolean(elType.getAttribute("inRoot"));
+		int order = Integer.parseInt(elType.getAttribute("order"));
+		boolean keepMeta = Boolean.parseBoolean(elType.getAttribute("keepMeta"));
+		String launchArgs = elType.getAttribute("launchArgs");
+		ModType modType = ModType.valueOf(elType.getTextContent());
+		boolean coremod = false;
+		boolean jar = false;
+		boolean library = false;
+		boolean extract = false;
+		switch (modType) {
+		case Coremod:
+			coremod = true;
+			break;
+		case Extract:
+			extract = true;
+			break;
+		case Jar:
+			jar = true;
+			break;
+		case Library:
+			library = true;
+			break;
+		case Option:
+			throw new RuntimeException("Module type 'Option' not implemented");
+		default:
+			break;
+		}
+		String md5 = getTextValue(el,"MD5");
+		List<ConfigFile> configs = new ArrayList<ConfigFile>();
+		nl = el.getElementsByTagName("ConfigFile");
+		for(int i = 0; i < nl.getLength(); i++) 
+		{
+			Element elConfig = (Element)nl.item(i);
+			ConfigFile cf = getConfigFileV1(elConfig);
+			configs.add(cf);
+		}
+		HashMap<String,String> mapMeta = new HashMap<String,String>();
+		NodeList nlMeta = el.getElementsByTagName("Meta");
+		if (nlMeta.getLength() > 0){
+			Element elMeta = (Element) nlMeta.item(0);
+			NodeList nlMetaChildren = elMeta.getElementsByTagName("*");
+			for(int i = 0; i < nlMetaChildren.getLength(); i++)
+			{
+				Node child = nlMetaChildren.item(i);
+				mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
+			}
+		}
+		Module m = new Module(name, id, urls, depends, required, jar, order, keepMeta, extract, inRoot, isDefault, coremod, md5, configs, side, path, mapMeta, library, launchArgs);	
+		return m;
 	}
 
 	private static Module getModuleV1(Element modEl)
@@ -167,7 +242,6 @@ public class ServerPackParser {
 		String md5 = getTextValue(modEl,"MD5");
 		List<ConfigFile> configs = new ArrayList<ConfigFile>();
 		NodeList nl = modEl.getElementsByTagName("ConfigFile");
-//		_log("NodeList[getLength]: " + nl.getLength());
 		for(int i = 0; i < nl.getLength(); i++) 
 		{
 			Element el = (Element)nl.item(i);
@@ -185,7 +259,6 @@ public class ServerPackParser {
 				mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 			}
 		}
-		//TODO:Meta
 		Module m = new Module(name, id, urls, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, mapMeta);	
 		return m;
 	}

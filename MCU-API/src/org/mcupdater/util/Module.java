@@ -6,25 +6,33 @@ import java.util.List;
 import java.util.Locale;
 
 public class Module {
-	private String name;
-	private String id;
-	private List<PrioritizedURL> urls;
-	private String path;
-	private String depends;
-	private Boolean required;
-	private Boolean inJar;
-	private int jarOrder;
-	private Boolean keepMeta;
-	private Boolean extract;
-	private Boolean inRoot;
-	private Boolean isDefault;
-	private Boolean coreMod;
-	private String md5;
-	private ModSide side;
-	private List<ConfigFile> configs;
-	private HashMap<String,String> meta;
+	private String name = "";
+	private String id = "";
+	private List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
+	private String path = "";
+	private String depends = "";
+	private boolean required = false;
+	private boolean inJar = false;
+	private int order = 0;
+	private boolean keepMeta = false;
+	private boolean extract = false;
+	private boolean inRoot = false;
+	private boolean isDefault = false;
+	private boolean coreMod = false;
+	private String md5 = "";
+	private ModSide side = ModSide.BOTH;
+	private List<ConfigFile> configs = new ArrayList<ConfigFile>();
+	private HashMap<String,String> meta = new HashMap<String,String>();
+	private boolean isLibrary = false;
+	private String launchArgs = "";
 	
-	public Module(String name, String id, List<PrioritizedURL> url, String depends, Boolean required, Boolean inJar, int jarOrder, Boolean keepMeta, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta)
+	public Module(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta, boolean isLibrary, String launchArgs){
+		this(name, id, url, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, meta);
+		this.setIsLibrary(isLibrary);
+		this.setLaunchArgs(launchArgs);
+	}
+	
+	public Module(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta)
 	{
 		this.setName(name);
 		this.setId(id);
@@ -56,11 +64,11 @@ public class Module {
 	}
 
 	private void setJarOrder(int jarOrder) {
-		this.jarOrder = jarOrder;
+		this.order = jarOrder;
 	}
 
 	@Deprecated
-	public Module(String name, String id, String url, String depends, Boolean required, Boolean inJar, Boolean extract, Boolean inRoot, Boolean isDefault, Boolean coreMod, String md5, List<ConfigFile> configs)
+	public Module(String name, String id, String url, String depends, boolean required, boolean inJar, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs)
 	{
 		this(name, id, makeList(url), depends, required, inJar, 0, true, extract, inRoot, isDefault, coreMod, md5, configs, null, null, null);
 	}
@@ -96,39 +104,39 @@ public class Module {
 		this.urls.add(url);
 	}
 	
-	public Boolean getRequired()
+	public boolean getRequired()
 	{
 		return required;
 	}
 	
-	public void setRequired(Boolean required)
+	public void setRequired(boolean required)
 	{
 		this.required=required;
 	}
 	
-	public Boolean getInJar()
+	public boolean getInJar()
 	{
 		return inJar;
 	}
 	
-	public void setInJar(Boolean inJar)
+	public void setInJar(boolean inJar)
 	{
 		this.inJar=inJar;
 	}
 
-	public Boolean getExtract() {
+	public boolean getExtract() {
 		return extract;
 	}
 
-	public void setExtract(Boolean extract) {
+	public void setExtract(boolean extract) {
 		this.extract = extract;
 	}
 
-	public Boolean getInRoot() {
+	public boolean getInRoot() {
 		return inRoot;
 	}
 
-	public void setInRoot(Boolean inRoot) {
+	public void setInRoot(boolean inRoot) {
 		this.inRoot = inRoot;
 	}
 	
@@ -141,11 +149,11 @@ public class Module {
 			this.md5 = md5.toLowerCase(Locale.ENGLISH);
 	}
 
-	public Boolean getIsDefault() {
+	public boolean getIsDefault() {
 		return isDefault;
 	}
 	
-	public void setIsDefault(Boolean isDefault) {
+	public void setIsDefault(boolean isDefault) {
 		this.isDefault = isDefault;
 	}
 
@@ -159,11 +167,11 @@ public class Module {
 		this.configs = configs;
 	}
 
-	public Boolean getCoreMod() {
+	public boolean getCoreMod() {
 		return coreMod;
 	}
 
-	public void setCoreMod(Boolean coreMod) {
+	public void setCoreMod(boolean coreMod) {
 		this.coreMod = coreMod;
 	}
 
@@ -227,14 +235,14 @@ public class Module {
 	}
 
 	public int getJarOrder() {
-		return jarOrder;
+		return order;
 	}
 
-	public Boolean getKeepMeta() {
+	public boolean getKeepMeta() {
 		return keepMeta;
 	}
 
-	public void setKeepMeta(Boolean keepMeta) {
+	public void setKeepMeta(boolean keepMeta) {
 		this.keepMeta = keepMeta;
 	}
 
@@ -244,6 +252,22 @@ public class Module {
 
 	public void setMeta(HashMap<String,String> meta) {
 		this.meta = meta;
+	}
+
+	public String getLaunchArgs() {
+		return launchArgs;
+	}
+
+	public void setLaunchArgs(String launchArgs) {
+		this.launchArgs = launchArgs;
+	}
+
+	public boolean getIsLibrary() {
+		return isLibrary;
+	}
+
+	public void setIsLibrary(boolean isLibrary) {
+		this.isLibrary = isLibrary;
 	}
 
 }
