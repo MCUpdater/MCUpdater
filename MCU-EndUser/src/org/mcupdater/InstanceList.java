@@ -81,7 +81,6 @@ public class InstanceList extends ScrolledComposite {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			System.out.println(entry.getName());
 			newCell.setServerName(entry.getName());
 			newCell.setVersion("Version: " + entry.getVersion());
 			newCell.setRevision("Revision: " + entry.getRevision());
@@ -94,7 +93,6 @@ public class InstanceList extends ScrolledComposite {
 	}
 	
 	public void changeSelection(String serverId) {
-		System.out.println("Selection: " + selected + "->" + serverId);
 		if (!selected.isEmpty()) {
 			for(Control c : listBase.getChildren()) {
 				if (c instanceof InstanceCell) {
@@ -109,7 +107,6 @@ public class InstanceList extends ScrolledComposite {
 		for(Control c : listBase.getChildren()) {
 			if (c instanceof InstanceCell) {
 				InstanceCell cell = (InstanceCell) c;
-				System.out.println(cell.getServerName() + ": " + cell.getServerId());
 				if (cell.getServerId() == selected) {
 					cell.setSelected(true);
 				}

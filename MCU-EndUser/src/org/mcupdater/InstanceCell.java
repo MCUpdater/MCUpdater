@@ -123,7 +123,6 @@ public class InstanceCell extends Composite {
 	}
 
 	public void setSelected(boolean isSelected) {
-		System.out.println(this.lblName.getText() + ": " + isSelected);
 		this.isSelected = isSelected;
 		Color newColor_fg;
 		Color newColor_bg;

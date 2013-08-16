@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.SWT;
@@ -22,7 +21,6 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.ProgressBar;
 import org.eclipse.swt.widgets.Sash;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
@@ -36,9 +34,11 @@ public class MainShell {
 	private static MainShell INSTANCE;
 	protected Shell shell;
 	private ServerList selected;
-	private Browser browser;
+	private MCUBrowser browser;
 	private List<Module> modList;
 	private Composite modContainer;
+	private MCUConsole console;
+	private MCUProgress progress;
 
 	/**
 	 * Launch the application.
@@ -151,20 +151,29 @@ public class MainShell {
 			tabFolder.setLayoutData(grpTabData);
 			{
 				TabItem tbtmNews = new TabItem(tabFolder, SWT.V_SCROLL);
-				tbtmNews.setText("News");
-
-				browser = new Browser(tabFolder, SWT.NONE);
-				browser.setUrl("http://files.mcupdater.com/example/SamplePack.xml");
-				tbtmNews.setControl(browser);
-
+				{
+					tbtmNews.setText("News");
+					browser = new MCUBrowser(tabFolder, SWT.NONE);
+					tbtmNews.setControl(browser);
+				}
 				TabItem tbtmConsole = new TabItem(tabFolder, SWT.NONE);
-				tbtmConsole.setText("Console");
-
+				{
+					tbtmConsole.setText("Console");
+					console = new MCUConsole(tabFolder, SWT.NONE);
+					tbtmConsole.setControl(console);
+				}
 				TabItem tbtmSettings = new TabItem(tabFolder, SWT.NONE);
-				tbtmSettings.setText("Settings");
-
-				SettingsPanel cmpSettings = new SettingsPanel(tabFolder, SWT.NONE);
-				tbtmSettings.setControl(cmpSettings);
+				{
+					tbtmSettings.setText("Settings");
+					SettingsPanel cmpSettings = new SettingsPanel(tabFolder, SWT.NONE);
+					tbtmSettings.setControl(cmpSettings);
+				}
+				TabItem tbtmProgress = new TabItem(tabFolder, SWT.NONE);
+				{
+					tbtmProgress.setText("Progress");
+					progress = new MCUProgress(tabFolder, SWT.NONE);
+					tbtmProgress.setControl(progress);
+				}
 			}
 			
 			Group grpModules = new Group(mainArea, SWT.NONE);
@@ -208,15 +217,11 @@ public class MainShell {
 		Composite cmpStatus = new Composite(shell, SWT.NONE);
 		cmpStatus.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
 		{
-			cmpStatus.setLayout(new GridLayout(4, false));
+			cmpStatus.setLayout(new GridLayout(3, false));
 			
 			Label lblStatus = new Label(cmpStatus, SWT.NONE);
 			lblStatus.setLayoutData(new GridData(SWT.FILL,SWT.CENTER,true,false,1,1));
 			lblStatus.setText("Ready");
-			
-			ProgressBar progStatus = new ProgressBar(cmpStatus, SWT.SMOOTH | SWT.HORIZONTAL);
-			progStatus.setLayoutData(new GridData(SWT.LEFT,SWT.CENTER,false,false,1,1));
-			progStatus.setSelection(50);
 			
 			Button btnUpdate = new Button(cmpStatus, SWT.PUSH);
 			btnUpdate.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,false,false,1,1));
@@ -240,11 +245,7 @@ public class MainShell {
 			c.dispose();
 		}
 		for (Module m : modList) {
-			Button btnMod = new Button(modContainer, SWT.CHECK);
-			btnMod.setText(m.getName());
-			if (m.getRequired() || m.getIsDefault()) { btnMod.setSelection(true); }
-			if (m.getRequired()) { btnMod.setEnabled(false); }
-			btnMod.setSize(btnMod.computeSize(500, SWT.DEFAULT));				
+			new ModuleCheckbox(modContainer, m);
 		}
 		modContainer.pack();
 	}
