@@ -1,6 +1,6 @@
 package org.mcupdater.util;
 
-public class ServerList {
+public class ServerList implements Comparable<ServerList>{
 	private String name;
 	private String packUrl;
 	private String newsUrl;
@@ -145,5 +145,10 @@ public class ServerList {
 
 	public void setMainClass(String mainClass) {
 		this.mainClass = mainClass;
+	}
+
+	@Override
+	public int compareTo(ServerList that) {
+		return this.getName().compareTo(that.getName());
 	}
 }
