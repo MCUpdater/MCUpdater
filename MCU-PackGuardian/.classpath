@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Users/Scott.Scott-PC/Downloads/minecraft_server2.jar"/>
-	<classpathentry kind="lib" path="C:/Users/Scott.Scott-PC/Downloads/minecraft_server.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.6.0_39"/>
+	<classpathentry kind="lib" path="/home/sbarbour/Downloads/minecraftforge-universal-1.5.1-7.7.2.682.zip"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
