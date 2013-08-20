@@ -43,7 +43,7 @@ public class MCUBrowser extends Composite {
 			public void widgetSelected(SelectionEvent arg0) { browser.back(); }			
 		});
 		toolbar.setLayoutData(toolbarData);
-		browser = new Browser(this, SWT.MOZILLA);
+		browser = new Browser(this, SWT.NONE);
 		FormData browserData = new FormData();
 		{
 			browserData.left = new FormAttachment(0,0);

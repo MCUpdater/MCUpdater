@@ -4,7 +4,8 @@ import java.util.List;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -14,9 +15,7 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -36,9 +35,9 @@ public class MainShell {
 	private ServerList selected;
 	private MCUBrowser browser;
 	private List<Module> modList;
-	private Composite modContainer;
 	private MCUConsole console;
 	private MCUProgress progress;
+	private MCUModules modules;
 
 	/**
 	 * Launch the application.
@@ -91,7 +90,6 @@ public class MainShell {
 		{
 			final int limit = 20;
 			final Sash sashLeft = new Sash(mainArea, SWT.VERTICAL);
-			final Sash sashRight = new Sash(mainArea, SWT.VERTICAL);
 
 			Group grpInstances = new Group(mainArea, SWT.NONE);
 			grpInstances.setText("Instances");
@@ -144,7 +142,7 @@ public class MainShell {
 			final FormData grpTabData = new FormData();
 			{
 				grpTabData.left = new FormAttachment(sashLeft,0);
-				grpTabData.right = new FormAttachment(sashRight,0);
+				grpTabData.right = new FormAttachment(100,0);
 				grpTabData.top = new FormAttachment(0,0);
 				grpTabData.bottom = new FormAttachment(100,0);
 			}
@@ -159,23 +157,30 @@ public class MainShell {
 				TabItem tbtmConsole = new TabItem(tabFolder, SWT.NONE);
 				{
 					tbtmConsole.setText("Console");
-					console = new MCUConsole(tabFolder, SWT.NONE);
+					console = new MCUConsole(tabFolder);
 					tbtmConsole.setControl(console);
 				}
 				TabItem tbtmSettings = new TabItem(tabFolder, SWT.NONE);
 				{
 					tbtmSettings.setText("Settings");
-					SettingsPanel cmpSettings = new SettingsPanel(tabFolder, SWT.NONE);
+					MCUSettings cmpSettings = new MCUSettings(tabFolder);
 					tbtmSettings.setControl(cmpSettings);
+				}
+				TabItem tbtmModules = new TabItem(tabFolder, SWT.NONE);
+				{
+					tbtmModules.setText("Modules");
+					modules = new MCUModules(tabFolder);
+					tbtmModules.setControl(modules);
 				}
 				TabItem tbtmProgress = new TabItem(tabFolder, SWT.NONE);
 				{
 					tbtmProgress.setText("Progress");
-					progress = new MCUProgress(tabFolder, SWT.NONE);
+					progress = new MCUProgress(tabFolder);
 					tbtmProgress.setControl(progress);
 				}
 			}
 			
+			/*
 			Group grpModules = new Group(mainArea, SWT.NONE);
 			grpModules.setText("Modules");
 			final FormData grpModulesData = new FormData();
@@ -191,45 +196,63 @@ public class MainShell {
 			modContainer = new Composite(modScroller, SWT.FILL);
 			modContainer.setLayout(new RowLayout(SWT.VERTICAL));
 			modScroller.setContent(modContainer);
+			*/
 			
-			final FormData sashRightData = new FormData();
-			{
-				sashRightData.right = new FormAttachment(80,0);
-				sashRightData.top = new FormAttachment(0, 0);
-				sashRightData.bottom = new FormAttachment(100, 0);
-			}
-			sashRight.setLayoutData(sashRightData);
-			sashRight.addListener(SWT.Selection, new Listener(){
-				@Override
-				public void handleEvent(Event e) {
-					Rectangle sashRect = sashRight.getBounds();
-					Rectangle viewRect = mainArea.getClientArea();
-					int right = viewRect.width - sashRect.width - limit;
-					e.x = Math.max(Math.min(e.x, right), limit);
-					if (e.x != sashRect.x) {
-						sashRightData.right = new FormAttachment(0, e.x);
-						mainArea.layout();
-					}
-				}
-			});
+//			final FormData sashRightData = new FormData();
+//			{
+//				sashRightData.right = new FormAttachment(80,0);
+//				sashRightData.top = new FormAttachment(0, 0);
+//				sashRightData.bottom = new FormAttachment(100, 0);
+//			}
+//			sashRight.setLayoutData(sashRightData);
+//			sashRight.addListener(SWT.Selection, new Listener(){
+//				@Override
+//				public void handleEvent(Event e) {
+//					Rectangle sashRect = sashRight.getBounds();
+//					Rectangle viewRect = mainArea.getClientArea();
+//					int right = viewRect.width - sashRect.width - limit;
+//					e.x = Math.max(Math.min(e.x, right), limit);
+//					if (e.x != sashRect.x) {
+//						sashRightData.right = new FormAttachment(0, e.x);
+//						mainArea.layout();
+//					}
+//				}
+//			});
 		}
 		
 		Composite cmpStatus = new Composite(shell, SWT.NONE);
 		cmpStatus.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
 		{
-			cmpStatus.setLayout(new GridLayout(3, false));
-			
+			cmpStatus.setLayout(new GridLayout(4, false));
+						
 			Label lblStatus = new Label(cmpStatus, SWT.NONE);
 			lblStatus.setLayoutData(new GridData(SWT.FILL,SWT.CENTER,true,false,1,1));
 			lblStatus.setText("Ready");
 			
+			Composite login = new MCULogin(cmpStatus);
+			login.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER,false,false,1,1));
+
 			Button btnUpdate = new Button(cmpStatus, SWT.PUSH);
-			btnUpdate.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,false,false,1,1));
+			btnUpdate.setLayoutData(new GridData(SWT.LEFT,SWT.CENTER,false,false,1,1));
 			btnUpdate.setText("Update");
 			
 			Button btnLaunch = new Button(cmpStatus, SWT.PUSH);
-			btnLaunch.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,false,false,1,1));
+			btnLaunch.setLayoutData(new GridData(SWT.LEFT,SWT.CENTER,false,false,1,1));
 			btnLaunch.setText("Launch Minecraft");
+			btnLaunch.addSelectionListener(new SelectionListener()
+			{
+
+				@Override
+				public void widgetDefaultSelected(SelectionEvent arg0) {
+					widgetSelected(arg0);
+				}
+
+				@Override
+				public void widgetSelected(SelectionEvent arg0) {
+					MCULogic.doLaunch();
+				}
+				
+			});
 		}
 	}
 	
@@ -241,13 +264,7 @@ public class MainShell {
 	}
 
 	private void refreshModList() {
-		for (Control c : modContainer.getChildren()) {
-			c.dispose();
-		}
-		for (Module m : modList) {
-			new ModuleCheckbox(modContainer, m);
-		}
-		modContainer.pack();
+		modules.reload(modList);
 	}
 
 	public static MainShell getInstance() {

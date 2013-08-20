@@ -11,7 +11,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Text;
 
-public class SettingsPanel extends Composite {
+public class MCUSettings extends Composite {
 	
 	private ScrolledComposite scroller;
 	private Composite content;
@@ -20,8 +20,8 @@ public class SettingsPanel extends Composite {
 //	final private GridData gdFillSpan = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 //	final private GridData gdFullSpan = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
 
-	public SettingsPanel(Composite parent, int style) {
-		super(parent, style);
+	public MCUSettings(Composite parent) {
+		super(parent, SWT.NONE);
 		this.setLayout(new FillLayout());
 		scroller = new ScrolledComposite(this, SWT.V_SCROLL);
 		scroller.setExpandHorizontal(true);
