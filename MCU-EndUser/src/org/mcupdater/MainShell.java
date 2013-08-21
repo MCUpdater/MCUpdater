@@ -23,10 +23,12 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Sash;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.mcupdater.translate.TranslateProxy;
 import org.mcupdater.util.MCUpdater;
 import org.mcupdater.util.Module;
 import org.mcupdater.util.ServerList;
 import org.mcupdater.util.ServerPackParser;
+import org.mcupdater.translate.Languages;
 
 public class MainShell {
 
@@ -38,6 +40,7 @@ public class MainShell {
 	private MCUConsole console;
 	private MCUProgress progress;
 	private MCUModules modules;
+	public TranslateProxy translate;
 
 	/**
 	 * Launch the application.
@@ -57,6 +60,12 @@ public class MainShell {
 	 */
 	public void open() {
 		Display display = Display.getDefault();
+		try {
+			translate = Languages.valueOf(Languages.getLocale()).getProxy();
+		} catch (Exception e) {
+			System.out.println("No translation for " + Languages.getLocale() + "!");
+			translate = Languages.en_US.getProxy();
+		}		
 		createContents();
 		shell.open();
 		shell.layout();
@@ -92,7 +101,7 @@ public class MainShell {
 			final Sash sashLeft = new Sash(mainArea, SWT.VERTICAL);
 
 			Group grpInstances = new Group(mainArea, SWT.NONE);
-			grpInstances.setText("Instances");
+			grpInstances.setText(translate.instances);
 			grpInstances.setLayout(new FillLayout());
 			FormData grpInstancesData = new FormData();
 			{
@@ -150,31 +159,31 @@ public class MainShell {
 			{
 				TabItem tbtmNews = new TabItem(tabFolder, SWT.V_SCROLL);
 				{
-					tbtmNews.setText("News");
+					tbtmNews.setText(translate.news);
 					browser = new MCUBrowser(tabFolder, SWT.NONE);
 					tbtmNews.setControl(browser);
 				}
 				TabItem tbtmConsole = new TabItem(tabFolder, SWT.NONE);
 				{
-					tbtmConsole.setText("Console");
+					tbtmConsole.setText(translate.console);
 					console = new MCUConsole(tabFolder);
 					tbtmConsole.setControl(console);
 				}
 				TabItem tbtmSettings = new TabItem(tabFolder, SWT.NONE);
 				{
-					tbtmSettings.setText("Settings");
+					tbtmSettings.setText(translate.settings);
 					MCUSettings cmpSettings = new MCUSettings(tabFolder);
 					tbtmSettings.setControl(cmpSettings);
 				}
 				TabItem tbtmModules = new TabItem(tabFolder, SWT.NONE);
 				{
-					tbtmModules.setText("Modules");
+					tbtmModules.setText(translate.modules);
 					modules = new MCUModules(tabFolder);
 					tbtmModules.setControl(modules);
 				}
 				TabItem tbtmProgress = new TabItem(tabFolder, SWT.NONE);
 				{
-					tbtmProgress.setText("Progress");
+					tbtmProgress.setText(translate.progress);
 					progress = new MCUProgress(tabFolder);
 					tbtmProgress.setControl(progress);
 				}
@@ -234,11 +243,11 @@ public class MainShell {
 
 			Button btnUpdate = new Button(cmpStatus, SWT.PUSH);
 			btnUpdate.setLayoutData(new GridData(SWT.LEFT,SWT.CENTER,false,false,1,1));
-			btnUpdate.setText("Update");
+			btnUpdate.setText(translate.update);
 			
 			Button btnLaunch = new Button(cmpStatus, SWT.PUSH);
 			btnLaunch.setLayoutData(new GridData(SWT.LEFT,SWT.CENTER,false,false,1,1));
-			btnLaunch.setText("Launch Minecraft");
+			btnLaunch.setText(translate.launchMinecraft);
 			btnLaunch.addSelectionListener(new SelectionListener()
 			{
 
