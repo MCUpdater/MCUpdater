@@ -1,7 +1,11 @@
 package org.mcupdater.translate;
 
 public enum Languages {
-	en_US(new USEnglish());
+	en_US(new USEnglish()),
+	en_GB(en_US.getProxy()),
+	en_CA(en_US.getProxy()),
+	en_AU(en_US.getProxy()),
+	;
 	
 	private TranslateProxy proxy;
 
