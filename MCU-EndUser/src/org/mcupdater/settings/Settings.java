@@ -1,5 +1,9 @@
 package org.mcupdater.settings;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 public class Settings {
 	private Profile[] profiles;
 	private String lastProfile;
@@ -8,14 +12,15 @@ public class Settings {
 	private String permGen;
 	private int resWidth;
 	private int resHeight;
+	private boolean fullScreen;
 	private String jrePath;
 	private String jvmOpts;
 	private String instanceRoot;
 	private String programWrapper;
-	private String timeoutLength;
+	private int timeoutLength;
 	private boolean autoConnect;
 	private boolean minimizeOnLaunch;
-	private String[] packURLs;
+	private List<String> packURLs = new ArrayList<String>();
 
 	public Profile[] getProfiles() {
 		return profiles;
@@ -73,6 +78,14 @@ public class Settings {
 		this.resHeight = resHeight;
 	}
 
+	public boolean isFullScreen() {
+		return fullScreen;
+	}
+
+	public void setFullScreen(boolean fullScreen) {
+		this.fullScreen = fullScreen;
+	}
+
 	public String getJrePath() {
 		return jrePath;
 	}
@@ -105,11 +118,11 @@ public class Settings {
 		this.programWrapper = programWrapper;
 	}
 	
-	public String getTimeoutLength() {
+	public int getTimeoutLength() {
 		return timeoutLength;
 	}
 	
-	public void setTimeoutLength(String timeoutLength) {
+	public void setTimeoutLength(int timeoutLength) {
 		this.timeoutLength = timeoutLength;
 	}
 	
@@ -129,11 +142,20 @@ public class Settings {
 		this.minimizeOnLaunch = minimizeOnLaunch;
 	}
 
-	public String[] getPackURLs() {
+	public List<String> getPackURLs() {
 		return packURLs;
 	}
 	
-	public void setPackURLs(String[] packURLs) {
-		this.packURLs = packURLs;
+	public void addPackURL(String newUrl) {
+/*		ArrayList<String> urls;
+		if (this.packURLs.length > 0) {
+			urls = new ArrayList<String>(Arrays.asList(this.packURLs));
+		} else {
+			urls = new ArrayList<String>();
+		}
+		urls.add(newUrl);
+		this.packURLs = urls.toArray(new String[0]);
+		*/
+		this.packURLs.add(newUrl);
 	}
 }

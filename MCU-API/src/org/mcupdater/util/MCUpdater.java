@@ -51,7 +51,7 @@ import org.mcupdater.util.Archive;
 import org.w3c.dom.*;
 
 public class MCUpdater {
-	private static final ResourceBundle Customization = ResourceBundle.getBundle("customization");
+	public static final ResourceBundle Customization = ResourceBundle.getBundle("customization");
 	//private List<Module> modList = new ArrayList<Module>();
 	private Path MCFolder;
 	private Path archiveFolder;

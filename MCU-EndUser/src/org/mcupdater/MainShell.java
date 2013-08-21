@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Sash;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.mcupdater.settings.SettingsManager;
 import org.mcupdater.translate.TranslateProxy;
 import org.mcupdater.util.MCUpdater;
 import org.mcupdater.util.Module;
@@ -40,6 +41,7 @@ public class MainShell {
 	private MCUConsole console;
 	private MCUProgress progress;
 	private MCUModules modules;
+	private SettingsManager sManager = new SettingsManager();
 	public TranslateProxy translate;
 
 	/**
