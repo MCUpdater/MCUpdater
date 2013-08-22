@@ -23,5 +23,10 @@ public class USEnglish extends TranslateProxy {
 		minimize = "Minimize On Launch:";
 		autoConnect = "Automatically Connect:";
 		definedPacks = "Defined Pack URLs:";
+		fullscreen = "Fullscreen:";
+		save = "Save";
+		reload = "Reload";
+		back = "Back";
+		profile = "Profile:";
 	}
 }

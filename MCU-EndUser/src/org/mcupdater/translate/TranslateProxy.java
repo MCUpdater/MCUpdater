@@ -22,4 +22,9 @@ public abstract class TranslateProxy {
 	public String minimize = "#MISSING#";
 	public String autoConnect = "#MISSING#";
 	public String definedPacks = "#MISSING#";
+	public String fullscreen = "#MISSING#";
+	public String save = "#MISSING#";
+	public String reload = "#MISSING#";
+	public String back = "#MISSING#";
+	public String profile = "#MISSING#";
 }

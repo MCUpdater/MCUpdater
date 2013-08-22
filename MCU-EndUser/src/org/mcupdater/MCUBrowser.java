@@ -13,14 +13,17 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.mcupdater.translate.TranslateProxy;
 
 public class MCUBrowser extends Composite {
 
+	private TranslateProxy translate;
 	private Browser browser;
 	private Composite toolbar;
 
 	public MCUBrowser(Composite parent, int style) {
 		super(parent, style);
+		translate = MainShell.getInstance().translate;
 		FormLayout browserLayout = new FormLayout();
 		toolbar = new Composite(this, SWT.BORDER);
 		toolbar.setLayout(new RowLayout(SWT.HORIZONTAL));
@@ -31,7 +34,7 @@ public class MCUBrowser extends Composite {
 			toolbarData.right = new FormAttachment(100,0);
 		}
 		Button btnBack = new Button(toolbar, SWT.PUSH);
-		btnBack.setText("Back");
+		btnBack.setText(translate.back);
 		FontData[] fd = btnBack.getFont().getFontData();
 		fd[0].setHeight(8);
 		Font font = new Font(Display.getCurrent(), fd[0]);

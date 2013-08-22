@@ -6,11 +6,15 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.FormAttachment;
+import org.eclipse.swt.layout.FormData;
+import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Text;
@@ -27,15 +31,35 @@ public class MCUSettings extends Composite {
 //	final private GridData gdLabel = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
 //	final private GridData gdFillSpan = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 //	final private GridData gdFullSpan = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
+	private Text txtNewUrl;
+	private Composite toolbar;
 
 	public MCUSettings(Composite parent) {
 		super(parent, SWT.NONE);
-		this.setLayout(new FillLayout());
+		FormLayout settingsLayout = new FormLayout();
+		toolbar = new Composite(this, SWT.BORDER);
+		toolbar.setLayout(new RowLayout(SWT.HORIZONTAL));
+		FormData toolbarData = new FormData();
+		{
+			toolbarData.left = new FormAttachment(0, 0);
+			toolbarData.top = new FormAttachment(0, 0);
+			toolbarData.right = new FormAttachment(100,0);
+		}
+		toolbar.setLayoutData(toolbarData);
+		this.setLayout(settingsLayout);
 		scroller = new ScrolledComposite(this, SWT.V_SCROLL);
 		scroller.setExpandHorizontal(true);
 		scroller.setExpandVertical(true);
 		content = new Composite(scroller, SWT.NONE);
+		FormData contentData = new FormData();
+		{
+			contentData.left = new FormAttachment(0,0);
+			contentData.right = new FormAttachment(100,0);
+			contentData.top = new FormAttachment(toolbar);
+			contentData.bottom = new FormAttachment(100,0);
+		}
 		scroller.setContent(content);
+		scroller.setLayoutData(contentData);
 		content.setLayout(glContent);
 		translate = MainShell.getInstance().translate;
 		buildPanel();
@@ -44,6 +68,16 @@ public class MCUSettings extends Composite {
 	}
 
 	private void buildPanel() {
+		toolbar.setLayout(new RowLayout(SWT.HORIZONTAL));
+		{
+			Button btnSave = new Button(toolbar,SWT.PUSH);
+			btnSave.setText(translate.save);
+			
+			
+			Button btnReload = new Button(toolbar,SWT.PUSH);
+			btnReload.setText(translate.reload);
+		}
+
 		{
 			Label lblMinMem = new Label(content, SWT.NONE);
 			lblMinMem.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
@@ -93,6 +127,26 @@ public class MCUSettings extends Composite {
 			lblMemNotice.setAlignment(SWT.CENTER);
 		}
 		{
+			Label lblFullscreen = new Label(content, SWT.NONE);
+			lblFullscreen.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+			lblFullscreen.setText(translate.fullscreen);
+			
+			final Button chkFullscreen = new Button(content, SWT.CHECK);
+			chkFullscreen.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+			chkFullscreen.setSelection(settingsManager.getSettings().isFullScreen());
+			chkFullscreen.addSelectionListener(new SelectionListener() {
+				@Override
+				public void widgetSelected(SelectionEvent arg0) {
+					settingsManager.getSettings().setFullScreen(chkFullscreen.getSelection());					
+				}
+				@Override
+				public void widgetDefaultSelected(SelectionEvent arg0) {
+					widgetSelected(arg0);
+				}
+			});
+
+		}
+		{
 			Label lblResolution = new Label(content, SWT.NONE);
 			lblResolution.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 			lblResolution.setText(translate.resolution);
@@ -138,6 +192,20 @@ public class MCUSettings extends Composite {
 
 			Button btnJavaHomeBrowse = new Button(content, SWT.PUSH);
 			btnJavaHomeBrowse.setText(translate.browse);
+			btnJavaHomeBrowse.addSelectionListener(new SelectionListener(){
+				@Override
+				public void widgetDefaultSelected(SelectionEvent arg0) {
+					widgetSelected(arg0);
+				}
+				@Override
+				public void widgetSelected(SelectionEvent arg0) {
+					DirectoryDialog directoryDialog = new DirectoryDialog(MainShell.getInstance().shell);
+					String newPath = directoryDialog.open();
+					if (newPath != null && !newPath.isEmpty()) {
+						txtJavaHome.setText(newPath);
+					}
+				}
+			});
 		}
 		{
 			Label lblJVMOpts = new Label(content, SWT.NONE);
@@ -171,13 +239,17 @@ public class MCUSettings extends Composite {
 			btnInstanceRootBrowse.addSelectionListener(new SelectionListener(){
 				@Override
 				public void widgetDefaultSelected(SelectionEvent arg0) {
-					// TODO Auto-generated method stub
-					
+					widgetSelected(arg0);
 				}
 				@Override
 				public void widgetSelected(SelectionEvent arg0) {
-					// TODO Auto-generated method stub
-					
+					DirectoryDialog directoryDialog = new DirectoryDialog(MainShell.getInstance().shell);
+					directoryDialog.setMessage("Select new instance path");
+					directoryDialog.setFilterPath(txtInstanceRoot.getText());
+					String newPath = directoryDialog.open();
+					if (newPath != null && !newPath.isEmpty()) {
+						txtInstanceRoot.setText(newPath);
+					}
 				}
 			});
 			
@@ -239,10 +311,26 @@ public class MCUSettings extends Composite {
 			lblPackList.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, false, false));
 			lblPackList.setText(translate.definedPacks);
 			
-			List lstPackList = new List(content, SWT.V_SCROLL);
-			lstPackList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 6));
-			for (String entry : settingsManager.getSettings().getPackURLs()) {
-				lstPackList.add(entry);
+			Composite cmpListControl = new Composite(content, SWT.NONE);
+			cmpListControl.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true, false,2,4));
+			cmpListControl.setLayout(new GridLayout(3, false));
+			{
+				List lstPackList = new List(cmpListControl, SWT.V_SCROLL);
+				lstPackList.setLayoutData(new GridData(SWT.FILL,SWT.FILL,true, true,3,4));
+				for (String entry : settingsManager.getSettings().getPackURLs()) {
+					lstPackList.add(entry);
+				}
+
+				txtNewUrl = new Text(cmpListControl, SWT.NONE);
+				txtNewUrl.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true, false,1,1));
+				
+				Button btnListAdd = new Button(cmpListControl, SWT.PUSH);
+				btnListAdd.setText("Add");
+				btnListAdd.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,false,false,1,1));
+
+				Button btnListRemove = new Button(cmpListControl, SWT.PUSH);
+				btnListRemove.setText("Remove");
+				btnListRemove.setLayoutData(new GridData(SWT.RIGHT,SWT.TOP,false,false,1,1));
 			}
 		}
 	}
