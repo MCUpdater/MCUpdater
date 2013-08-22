@@ -18,11 +18,12 @@ import com.google.gson.GsonBuilder;
 
 public class SettingsManager {
 
+	private static SettingsManager instance;
 	private Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	private Settings settings;
+	private Path configFile = MCUpdater.getInstance().getArchiveFolder().resolve("config.json");
 	
 	public SettingsManager() {
-		Path configFile = MCUpdater.getInstance().getArchiveFolder().resolve("config.json");
 		if (!configFile.toFile().exists()) {
 			System.out.println("New config file does not exist!");
 			File oldConfig = MCUpdater.getInstance().getArchiveFolder().resolve("config.properties").toFile();
@@ -33,14 +34,7 @@ public class SettingsManager {
 				System.out.println("Creating default config");
 				this.settings = getDefaultSettings();  
 			}
-			String jsonOut = gson.toJson(this.settings);
-			try {
-				BufferedWriter writer = Files.newBufferedWriter(configFile);
-				writer.append(jsonOut);
-				writer.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			saveSettings();
 			return;
 		}
 		System.out.println("Loading config");
@@ -119,6 +113,24 @@ public class SettingsManager {
 
 	public Settings getSettings() {
 		return settings;
+	}
+
+	public static SettingsManager getInstance() {
+		if (instance == null) {
+			instance = new SettingsManager();
+		}
+		return instance;
+	}
+
+	public void saveSettings() {
+		String jsonOut = gson.toJson(this.settings);
+		try {
+			BufferedWriter writer = Files.newBufferedWriter(configFile);
+			writer.append(jsonOut);
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}		
 	}
 
 }

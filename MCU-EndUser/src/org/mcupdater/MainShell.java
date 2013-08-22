@@ -41,7 +41,7 @@ public class MainShell {
 	private MCUConsole console;
 	private MCUProgress progress;
 	private MCUModules modules;
-	private SettingsManager sManager = new SettingsManager();
+	private SettingsManager sManager = SettingsManager.getInstance();
 	public TranslateProxy translate;
 
 	/**
@@ -280,5 +280,9 @@ public class MainShell {
 
 	public static MainShell getInstance() {
 		return INSTANCE;
+	}
+
+	public SettingsManager getSettingsManager() {
+		return sManager;
 	}
 }

@@ -2,6 +2,10 @@ package org.mcupdater;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -10,7 +14,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.graphics.Point;
+import org.mcupdater.settings.SettingsManager;
 import org.mcupdater.translate.TranslateProxy;
 
 public class MCUSettings extends Composite {
@@ -19,6 +23,7 @@ public class MCUSettings extends Composite {
 	private Composite content;
 	private GridLayout glContent = new GridLayout(3,false);
 	private TranslateProxy translate;
+	private SettingsManager settingsManager = SettingsManager.getInstance();
 //	final private GridData gdLabel = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
 //	final private GridData gdFillSpan = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
 //	final private GridData gdFullSpan = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
@@ -34,7 +39,7 @@ public class MCUSettings extends Composite {
 		content.setLayout(glContent);
 		translate = MainShell.getInstance().translate;
 		buildPanel();
-		scroller.setMinSize(new Point(0, 0));
+		scroller.setMinSize(content.computeSize(SWT.DEFAULT,SWT.DEFAULT));
 		
 	}
 
@@ -45,9 +50,13 @@ public class MCUSettings extends Composite {
 			lblMinMem.setText(translate.minMemory);
 			lblMinMem.setAlignment(SWT.RIGHT);
 
-			Text txtMinMem = new Text(content, SWT.FILL);
+			final Text txtMinMem = new Text(content, SWT.FILL);
 			txtMinMem.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-			txtMinMem.setText("");
+			txtMinMem.setText(settingsManager.getSettings().getMinMemory());
+			txtMinMem.addModifyListener(new ModifyListener(){
+				@Override
+				public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setMinMemory(txtMinMem.getText()); }
+			});
 		}
 		{
 			Label lblMaxMem = new Label(content, SWT.NONE);
@@ -55,9 +64,13 @@ public class MCUSettings extends Composite {
 			lblMaxMem.setText(translate.maxMemory);
 			lblMaxMem.setAlignment(SWT.RIGHT);
 
-			Text txtMaxMem = new Text(content, SWT.FILL);
+			final Text txtMaxMem = new Text(content, SWT.FILL);
 			txtMaxMem.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-			txtMaxMem.setText("");
+			txtMaxMem.setText(settingsManager.getSettings().getMaxMemory());
+			txtMaxMem.addModifyListener(new ModifyListener(){
+				@Override
+				public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setMaxMemory(txtMaxMem.getText()); }
+			});
 		}
 		{
 			Label lblPermGen = new Label(content, SWT.NONE);
@@ -65,9 +78,13 @@ public class MCUSettings extends Composite {
 			lblPermGen.setText(translate.permGen);
 			lblPermGen.setAlignment(SWT.RIGHT);
 
-			Text txtPermGen = new Text(content, SWT.FILL);
+			final Text txtPermGen = new Text(content, SWT.FILL);
 			txtPermGen.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-			txtPermGen.setText("");
+			txtPermGen.setText(settingsManager.getSettings().getPermGen());
+			txtPermGen.addModifyListener(new ModifyListener(){
+				@Override
+				public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setPermGen(txtPermGen.getText()); }
+			});
 		}
 		{
 			Label lblMemNotice = new Label(content, SWT.NONE);
@@ -85,17 +102,25 @@ public class MCUSettings extends Composite {
 			resPanel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
 			resPanel.setLayout(new GridLayout(3,false));
 			{
-				Text txtResWidth = new Text(resPanel, SWT.NONE);
+				final Text txtResWidth = new Text(resPanel, SWT.NONE);
 				txtResWidth.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-				txtResWidth.setText("");
+				txtResWidth.setText(String.valueOf(settingsManager.getSettings().getResWidth()));
+				txtResWidth.addModifyListener(new ModifyListener(){
+					@Override
+					public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setResWidth(Integer.parseInt(txtResWidth.getText())); }
+				});
 
 				Label lblResSeparator = new Label(resPanel, SWT.NONE);
 				lblResSeparator.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false));
 				lblResSeparator.setText("X");
 
-				Text txtResHeight = new Text(resPanel, SWT.NONE);
+				final Text txtResHeight = new Text(resPanel, SWT.NONE);
 				txtResHeight.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-				txtResHeight.setText("");
+				txtResHeight.setText(String.valueOf(settingsManager.getSettings().getResHeight()));
+				txtResHeight.addModifyListener(new ModifyListener(){
+					@Override
+					public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setResHeight(Integer.parseInt(txtResHeight.getText())); }
+				});
 			}
 		}
 		{
@@ -103,9 +128,13 @@ public class MCUSettings extends Composite {
 			lblJavaHome.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 			lblJavaHome.setText(translate.javaHome);
 
-			Text txtJavaHome = new Text(content, SWT.NONE);
+			final Text txtJavaHome = new Text(content, SWT.NONE);
 			txtJavaHome.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-			txtJavaHome.setText("");
+			txtJavaHome.setText(settingsManager.getSettings().getJrePath());
+			txtJavaHome.addModifyListener(new ModifyListener(){
+				@Override
+				public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setJrePath(txtJavaHome.getText()); }
+			});
 
 			Button btnJavaHomeBrowse = new Button(content, SWT.PUSH);
 			btnJavaHomeBrowse.setText(translate.browse);
@@ -115,46 +144,95 @@ public class MCUSettings extends Composite {
 			lblJVMOpts.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 			lblJVMOpts.setText(translate.jvmOpts);
 
-			Text txtJVMOpts = new Text(content, SWT.NONE);
+			final Text txtJVMOpts = new Text(content, SWT.NONE);
 			txtJVMOpts.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-			txtJVMOpts.setText("");
+			txtJVMOpts.setText(settingsManager.getSettings().getJvmOpts());
+			txtJVMOpts.addModifyListener(new ModifyListener(){
+				@Override
+				public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setJvmOpts(txtJVMOpts.getText()); }
+			});
+			
 		}
 		{
 			Label lblInstanceRoot = new Label(content, SWT.NONE);
 			lblInstanceRoot.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 			lblInstanceRoot.setText(translate.instancePath);
 			
-			Text txtInstanceRoot = new Text(content, SWT.NONE);
+			final Text txtInstanceRoot = new Text(content, SWT.NONE);
 			txtInstanceRoot.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-			txtInstanceRoot.setText("");
-			
+			txtInstanceRoot.setText(settingsManager.getSettings().getInstanceRoot());
+			txtInstanceRoot.addModifyListener(new ModifyListener(){
+				@Override
+				public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setInstanceRoot(txtInstanceRoot.getText()); }
+			});
+	
 			Button btnInstanceRootBrowse = new Button(content, SWT.PUSH);
 			btnInstanceRootBrowse.setText(translate.browse);
+			btnInstanceRootBrowse.addSelectionListener(new SelectionListener(){
+				@Override
+				public void widgetDefaultSelected(SelectionEvent arg0) {
+					// TODO Auto-generated method stub
+					
+				}
+				@Override
+				public void widgetSelected(SelectionEvent arg0) {
+					// TODO Auto-generated method stub
+					
+				}
+			});
+			
 		}
 		{
 			Label lblWrapper = new Label(content, SWT.NONE);
 			lblWrapper.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 			lblWrapper.setText(translate.programWrapper);
 			
-			Text txtWrapper = new Text(content, SWT.NONE);
+			final Text txtWrapper = new Text(content, SWT.NONE);
 			txtWrapper.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-			txtWrapper.setText("");
+			txtWrapper.setText(settingsManager.getSettings().getProgramWrapper());
+			txtWrapper.addModifyListener(new ModifyListener(){
+				@Override
+				public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setProgramWrapper(txtWrapper.getText()); }
+			});
+
 		}
 		{
 			Label lblAutoMinimize = new Label(content, SWT.NONE);
 			lblAutoMinimize.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 			lblAutoMinimize.setText(translate.minimize);
 			
-			Button chkAutoMinimize = new Button(content, SWT.CHECK);
+			final Button chkAutoMinimize = new Button(content, SWT.CHECK);
 			chkAutoMinimize.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+			chkAutoMinimize.setSelection(settingsManager.getSettings().isMinimizeOnLaunch());
+			chkAutoMinimize.addSelectionListener(new SelectionListener() {
+				@Override
+				public void widgetSelected(SelectionEvent arg0) {
+					settingsManager.getSettings().setMinimizeOnLaunch(chkAutoMinimize.getSelection());					
+				}
+				@Override
+				public void widgetDefaultSelected(SelectionEvent arg0) {
+					widgetSelected(arg0);
+				}
+			});
 		}
 		{
 			Label lblAutoConnect = new Label(content, SWT.NONE);
 			lblAutoConnect.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
 			lblAutoConnect.setText(translate.autoConnect);
 			
-			Button chkAutoConnect = new Button(content, SWT.CHECK);
+			final Button chkAutoConnect = new Button(content, SWT.CHECK);
 			chkAutoConnect.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+			chkAutoConnect.setSelection(settingsManager.getSettings().isAutoConnect());
+			chkAutoConnect.addSelectionListener(new SelectionListener() {
+				@Override
+				public void widgetSelected(SelectionEvent arg0) {
+					settingsManager.getSettings().setAutoConnect(chkAutoConnect.getSelection());					
+				}
+				@Override
+				public void widgetDefaultSelected(SelectionEvent arg0) {
+					widgetSelected(arg0);
+				}
+			});
 		}
 		{
 			Label lblPackList = new Label(content, SWT.NONE);
@@ -163,6 +241,9 @@ public class MCUSettings extends Composite {
 			
 			List lstPackList = new List(content, SWT.V_SCROLL);
 			lstPackList.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 6));
+			for (String entry : settingsManager.getSettings().getPackURLs()) {
+				lstPackList.add(entry);
+			}
 		}
 	}
 }

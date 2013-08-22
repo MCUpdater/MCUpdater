@@ -1,11 +1,10 @@
 package org.mcupdater.settings;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Settings {
-	private Profile[] profiles;
+	private List<Profile> profiles;
 	private String lastProfile;
 	private String minMemory;
 	private String maxMemory;
@@ -22,11 +21,11 @@ public class Settings {
 	private boolean minimizeOnLaunch;
 	private List<String> packURLs = new ArrayList<String>();
 
-	public Profile[] getProfiles() {
+	public List<Profile> getProfiles() {
 		return profiles;
 	}
 
-	public void setProfiles(Profile[] profiles) {
+	public void setProfiles(List<Profile> profiles) {
 		this.profiles = profiles;
 	}
 
