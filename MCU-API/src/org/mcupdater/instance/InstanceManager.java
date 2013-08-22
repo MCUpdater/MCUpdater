@@ -1,4 +1,4 @@
-package org.mcupdater.util;
+package org.mcupdater.instance;
 
 import j7compat.Files;
 import j7compat.Path;
@@ -8,6 +8,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
 import java.util.logging.Level;
+
+import org.mcupdater.util.MCUpdater;
 
 public class InstanceManager {
 	

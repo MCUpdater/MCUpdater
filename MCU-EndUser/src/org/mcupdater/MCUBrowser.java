@@ -4,15 +4,12 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.layout.FormAttachment;
 import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.mcupdater.translate.TranslateProxy;
 
 public class MCUBrowser extends Composite {
@@ -35,10 +32,6 @@ public class MCUBrowser extends Composite {
 		}
 		Button btnBack = new Button(toolbar, SWT.PUSH);
 		btnBack.setText(translate.back);
-		FontData[] fd = btnBack.getFont().getFontData();
-		fd[0].setHeight(8);
-		Font font = new Font(Display.getCurrent(), fd[0]);
-		btnBack.setFont(font);
 		btnBack.addSelectionListener(new SelectionListener(){
 			@Override
 			public void widgetDefaultSelected(SelectionEvent arg0) { widgetSelected(arg0); }

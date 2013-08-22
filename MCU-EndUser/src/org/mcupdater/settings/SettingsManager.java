@@ -38,6 +38,10 @@ public class SettingsManager {
 			return;
 		}
 		System.out.println("Loading config");
+		loadSettings();
+	}
+
+	public void loadSettings() {
 		try {
 			BufferedReader reader = Files.newBufferedReader(configFile);
 			this.settings = gson.fromJson(reader, Settings.class);
