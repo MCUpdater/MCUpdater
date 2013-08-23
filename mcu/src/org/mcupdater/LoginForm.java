@@ -21,7 +21,7 @@ import javax.swing.border.EmptyBorder;
 
 import org.mcupdater.util.Localization;
 import org.mcupdater.util.LoginData;
-import org.mcupdater.util.MCAuth;
+import org.mcupdater.util.MCLegacyAuth;
 import org.mcupdater.util.MCLoginException;
 import org.mcupdater.util.MCUpdater;
 
@@ -175,7 +175,7 @@ public class LoginForm extends JDialog {
 						public void actionPerformed(ActionEvent arg0) {
 							try {
 								getContentPane().setEnabled(false);
-								LoginData login = MCAuth.login(txtUsername.getText(), String.valueOf(txtPassword.getPassword()));
+								LoginData login = MCLegacyAuth.login(txtUsername.getText(), String.valueOf(txtPassword.getPassword()));
 								parent.setLoginData(login);
 								parent.getConfig().setProperty("userName", txtUsername.getText());
 								if (chkStorePassword.isSelected()) {

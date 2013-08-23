@@ -48,10 +48,10 @@ import java.util.Properties;
 import org.mcupdater.FMLStyleFormatter;
 import org.mcupdater.MCUApp;
 import org.mcupdater.Version;
-import org.mcupdater.util.InstanceManager;
+import org.mcupdater.instance.InstanceManager;
 import org.mcupdater.util.Localization;
 import org.mcupdater.util.LoginData;
-import org.mcupdater.util.MCAuth;
+import org.mcupdater.util.MCLegacyAuth;
 import org.mcupdater.util.MCLoginException;
 import org.mcupdater.util.MCUpdater;
 import org.mcupdater.util.ModSide;
@@ -462,7 +462,7 @@ public class MainForm extends MCUApp {
 				String user = config.getProperty("userName");
 				String password = mcu.decrypt(config.getProperty("password"));
 				try {
-					LoginData login = MCAuth.login(user, password);
+					LoginData login = MCLegacyAuth.login(user, password);
 					setLoginData(login);
 				} catch (MCLoginException e1) {
 					baseLogger.log(Level.SEVERE, "Login failure - " + e1.getMessage(), e1);
