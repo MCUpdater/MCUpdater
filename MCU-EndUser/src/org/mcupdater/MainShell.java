@@ -31,7 +31,7 @@ import org.mcupdater.util.ServerList;
 import org.mcupdater.util.ServerPackParser;
 import org.mcupdater.translate.Languages;
 
-public class MainShell {
+public class MainShell extends MCUApp {
 
 	private static MainShell INSTANCE;
 	protected Shell shell;
@@ -43,6 +43,7 @@ public class MainShell {
 	private MCUModules modules;
 	private SettingsManager sManager = SettingsManager.getInstance();
 	public TranslateProxy translate;
+	private Label lblStatus;
 
 	/**
 	 * Launch the application.
@@ -236,7 +237,7 @@ public class MainShell {
 		{
 			cmpStatus.setLayout(new GridLayout(4, false));
 						
-			Label lblStatus = new Label(cmpStatus, SWT.NONE);
+			lblStatus = new Label(cmpStatus, SWT.NONE);
 			lblStatus.setLayoutData(new GridData(SWT.FILL,SWT.CENTER,true,false,1,1));
 			lblStatus.setText("Ready");
 			
@@ -284,5 +285,35 @@ public class MainShell {
 
 	public SettingsManager getSettingsManager() {
 		return sManager;
+	}
+
+	@Override
+	public void setStatus(String string) {
+		// TODO Auto-generated method stub
+		lblStatus.setText(string);
+	}
+
+	@Override
+	public void setProgressBar(int i) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void log(String msg) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean requestLogin() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void addServer(ServerList entry) {
+		// TODO Auto-generated method stub
+		
 	}
 }

@@ -8,7 +8,7 @@ import org.mcupdater.util.HTTPSUtils;
 import org.mcupdater.util.MCLoginException;
 import org.mcupdater.util.MCLoginException.ResponseType;
 
-public class MCAuth {
+public class MCLegacyAuth {
 	public static LoginData login(String username, String password) throws Exception {
 		try {
 			HashMap<String, Object> localHashMap = new HashMap<String, Object>();

@@ -180,7 +180,7 @@ public class MCUpdater {
 		} catch (IOException e) {
 			apiLogger.log(Level.SEVERE, "I/O Error", e);
 		}
-		// Download LWJGL
+		/* Download LWJGL
 		File tempFile = this.archiveFolder.resolve("lwjgl-2.9.0.zip").toFile();
 		if (!tempFile.exists()) {
 			try {
@@ -234,7 +234,7 @@ public class MCUpdater {
 				apiLogger.log(Level.SEVERE, "I/O Error", e);
 			}
 		}
-		//
+		*/
 	}
 	
 	public MCUApp getParent() {
