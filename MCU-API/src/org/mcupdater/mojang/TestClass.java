@@ -21,7 +21,9 @@ public class TestClass {
 	 * @throws MalformedURLException 
 	 */
 	public static void main(String[] args) throws MalformedURLException {
-		MinecraftVersion version = MinecraftVersion.loadVersion("1.6.2");
+		String versionNum = "1.6.2";
+		MinecraftVersion version = MinecraftVersion.loadVersion(versionNum);
+		String cp = "";
 		
 		/*
 		System.out.println(version.getId());
@@ -46,13 +48,20 @@ public class TestClass {
 			if (lib.validForOS()) {
 				List<URL> urls = new ArrayList<URL>();
 				urls.add(new URL(lib.getDownloadUrl()));
-				libSet.add(new Downloadable(lib.getName(),lib.getFilename(),"",0,urls));
+				Downloadable entry = new Downloadable(lib.getName(),lib.getFilename(),"",0,urls);
+				libSet.add(entry);
 			}
 		}
 		DownloadQueue q2 = new DownloadQueue("Libraries", listener, libSet, new File(base, "lib"));
-		ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 1, 30000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+		HashSet<Downloadable> jar = new HashSet<Downloadable>();
+		List<URL> jarUrl = new ArrayList<URL>();
+		jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + versionNum + "/" + versionNum + ".jar"));
+		jar.add(new Downloadable("Minecraft Jar", "minecraft.jar", "", 0, jarUrl));
+		DownloadQueue q3 = new DownloadQueue("Main", listener, jar, base);
+		ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 8, 500, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		q1.processQueue(executor);
 		q2.processQueue(executor);
+		q3.processQueue(executor);
 		System.out.println(q2.getFailures().size());
 	}
 
