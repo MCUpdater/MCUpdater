@@ -19,12 +19,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 public class AssetManager {
-	public DownloadQueue downloadAssets(File baseDirectory, TrackerListener listener) {
+	public static DownloadQueue downloadAssets(File baseDirectory, TrackerListener listener) {
 		DownloadQueue queue = new DownloadQueue("Minecraft Assets", listener, getAssets(baseDirectory), baseDirectory);
 		return queue;
 	}
 	
-	private Set<Downloadable> getAssets(File baseDirectory){
+	private static Set<Downloadable> getAssets(File baseDirectory){
 		Set<Downloadable> assets = new HashSet<Downloadable>();
 		try {
 			URL resourceUrl = new URL("https://s3.amazonaws.com/Minecraft.Resources/");
@@ -35,11 +35,13 @@ public class AssetManager {
 		    
 		    for (int i = 0; i < nodes.getLength(); i++) {
 		    	Node node = nodes.item(i);
+		    	System.out.println("i=" + i + " - " + node.getNodeName() + " type=" + node.getNodeType());
 		    	if (node.getNodeType() == 1) {
 		    		Element element = (Element)node;
-		    		String key = getNodeValue(element, "key");
+		    		String key = getNodeValue(element, "Key");
 		    		String etag = element.getElementsByTagName("ETag") != null ? getNodeValue(element,"ETag") : "-";
 		    		long size = Long.parseLong(getNodeValue(element,"Size"));
+		    		System.out.println(key + " " + etag + " " + size);
 		    		
 		    		if (size > 0L) {
 		    			File file = new File(baseDirectory, key);
@@ -52,6 +54,7 @@ public class AssetManager {
 		    			}
 		    			List<URL> urls = new ArrayList<URL>();
 		    			urls.add(new URL(resourceUrl + key));
+		    			System.out.println(resourceUrl + key);
 		    			Downloadable download = new Downloadable(key, key, etag, size, urls);
 		    			assets.add(download);
 		    		}
@@ -61,7 +64,7 @@ public class AssetManager {
 		return assets;
 	}
 	
-	private String scrubEtag(String etag) {
+	private static String scrubEtag(String etag) {
 		if (etag == null) {
 			etag = "-";
 		} else if ((etag.startsWith("\"")) && (etag.endsWith("\""))) {
@@ -70,7 +73,7 @@ public class AssetManager {
 		return etag;
 	}
 
-	private String getNodeValue(Element element, String key) {
+	private static String getNodeValue(Element element, String key) {
 		return element.getElementsByTagName(key).item(0).getChildNodes().item(0).getNodeValue();
 	}
 }

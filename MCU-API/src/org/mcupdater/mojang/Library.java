@@ -48,4 +48,16 @@ public class Library {
 		}
 		return lastAction == Rule.Action.ALLOW;
 	}
+	
+	public String getFilename() {
+		if (this.natives != null) {
+			if (this.natives.containsKey(OperatingSystem.getCurrentPlatform())) {
+				return getLibraryPath(natives.get(OperatingSystem.getCurrentPlatform()));
+			} else {
+				return null;
+			}
+		} else {
+			return getLibraryPath(null);
+		}
+	}
 }
