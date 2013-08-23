@@ -98,27 +98,27 @@ public class MCUpdater {
 		apiLogger = Logger.getLogger("MCU-API");
 		apiLogger.setLevel(Level.ALL);
 		String customPath = Customization.getString("customPath");
-		String[] nativeNames;
-		String nativePrefix;
+		//String[] nativeNames;
+		//String nativePrefix;
 		if(System.getProperty("os.name").startsWith("Windows"))
 		{
 			MCFolder = new Path(System.getenv("APPDATA")).resolve(".minecraft");
 			archiveFolder = new Path(System.getenv("APPDATA")).resolve(".MCUpdater");
-			nativePrefix = "lwjgl-2.9.0/native/windows/";
-			nativeNames = new String[] {"jinput-dx8.dll","jinput-dx8_64.dll","jinput-raw.dll","jinput-raw_64.dll","lwjgl.dll","lwjgl64.dll","OpenAL32.dll","OpenAL64.dll"};
+			//nativePrefix = "lwjgl-2.9.0/native/windows/";
+			//nativeNames = new String[] {"jinput-dx8.dll","jinput-dx8_64.dll","jinput-raw.dll","jinput-raw_64.dll","lwjgl.dll","lwjgl64.dll","OpenAL32.dll","OpenAL64.dll"};
 		} else if(System.getProperty("os.name").startsWith("Mac"))
 		{
 			MCFolder = new Path(System.getProperty("user.home")).resolve("Library").resolve("Application Support").resolve("minecraft");
 			archiveFolder = new Path(System.getProperty("user.home")).resolve("Library").resolve("Application Support").resolve("MCUpdater");
-			nativePrefix = "lwjgl-2.9.0/native/macosx/";
-			nativeNames = new String[] {"libjinput-osx.jnilib","liblwjgl.jnilib","openal.dylib"};
+			//nativePrefix = "lwjgl-2.9.0/native/macosx/";
+			//nativeNames = new String[] {"libjinput-osx.jnilib","liblwjgl.jnilib","openal.dylib"};
 		}
 		else
 		{
 			MCFolder = new Path(System.getProperty("user.home")).resolve(".minecraft");
 			archiveFolder = new Path(System.getProperty("user.home")).resolve(".MCUpdater");
-			nativePrefix = "lwjgl-2.9.0/native/linux/";
-			nativeNames = new String[] {"libjinput-linux.so","libjinput-linux64.so","liblwjgl.so","liblwjgl64.so","libopenal.so","libopenal64.so"};
+			//nativePrefix = "lwjgl-2.9.0/native/linux/";
+			//nativeNames = new String[] {"libjinput-linux.so","libjinput-linux64.so","liblwjgl.so","liblwjgl64.so","libopenal.so","libopenal64.so"};
 		}
 		if (!customPath.isEmpty()) {
 			archiveFolder = new Path(customPath);
