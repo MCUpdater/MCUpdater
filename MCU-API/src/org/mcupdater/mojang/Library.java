@@ -50,14 +50,19 @@ public class Library {
 	}
 	
 	public String getFilename() {
+		String[] parts = this.name.split(":",3);
 		if (this.natives != null) {
 			if (this.natives.containsKey(OperatingSystem.getCurrentPlatform())) {
-				return getLibraryPath(natives.get(OperatingSystem.getCurrentPlatform()));
+				return String.format("%s-%s-%s.jar", parts[1], parts[2], natives.get(OperatingSystem.getCurrentPlatform()));
 			} else {
-				return null;
+				return String.format("%s-%s.jar", parts[1], parts[2]);
 			}
 		} else {
-			return getLibraryPath(null);
+			return String.format("%s-%s.jar", parts[1], parts[2]);
 		}
+	}
+	
+	public boolean hasNatives() {
+		return this.natives != null;
 	}
 }
