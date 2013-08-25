@@ -35,13 +35,11 @@ public class AssetManager {
 		    
 		    for (int i = 0; i < nodes.getLength(); i++) {
 		    	Node node = nodes.item(i);
-		    	System.out.println("i=" + i + " - " + node.getNodeName() + " type=" + node.getNodeType());
 		    	if (node.getNodeType() == 1) {
 		    		Element element = (Element)node;
 		    		String key = getNodeValue(element, "Key");
 		    		String etag = element.getElementsByTagName("ETag") != null ? getNodeValue(element,"ETag") : "-";
 		    		long size = Long.parseLong(getNodeValue(element,"Size"));
-		    		System.out.println(key + " " + etag + " " + size);
 		    		
 		    		if (size > 0L) {
 		    			File file = new File(baseDirectory, key);
@@ -54,7 +52,6 @@ public class AssetManager {
 		    			}
 		    			List<URL> urls = new ArrayList<URL>();
 		    			urls.add(new URL(resourceUrl + key));
-		    			System.out.println(resourceUrl + key);
 		    			Downloadable download = new Downloadable(key, key, etag, size, urls);
 		    			assets.add(download);
 		    		}

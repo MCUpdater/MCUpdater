@@ -64,7 +64,7 @@ public class TestClass {
 		HashSet<Downloadable> jar = new HashSet<Downloadable>();
 		List<URL> jarUrl = new ArrayList<URL>();
 		jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + versionNum + "/" + versionNum + ".jar"));
-		jar.add(new Downloadable("Minecraft Jar", "minecraft.jar", "", 0, jarUrl));
+		jar.add(new Downloadable("Minecraft Jar", "mc-" + versionNum +".jar", "", 0, jarUrl));
 		DownloadQueue q3 = new DownloadQueue("Main", listener, jar, base);
 		ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 8, 500, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		q1.processQueue(executor);
@@ -110,6 +110,7 @@ public class TestClass {
 		procArgs.add(base.getAbsolutePath());
 		procArgs.add("--assetsDir");
 		procArgs.add(new File(base,"assets").getAbsolutePath());
+		procArgs.add("--fullscreen");
 		
 		System.out.println(procArgs.toArray(new String[0]));
 		ProcessBuilder pb = new ProcessBuilder(procArgs);

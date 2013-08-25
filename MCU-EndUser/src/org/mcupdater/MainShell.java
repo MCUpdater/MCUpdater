@@ -1,6 +1,9 @@
 package org.mcupdater;
 
 import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -23,6 +26,7 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Sash;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.mcupdater.mojang.AssetManager;
 import org.mcupdater.settings.SettingsManager;
 import org.mcupdater.translate.TranslateProxy;
 import org.mcupdater.util.MCUpdater;
@@ -62,7 +66,7 @@ public class MainShell extends MCUApp {
 	 * Open the window.
 	 */
 	public void open() {
-		Display display = Display.getDefault();
+		final Display display = Display.getDefault();
 		try {
 			translate = Languages.valueOf(Languages.getLocale()).getProxy();
 		} catch (Exception e) {
@@ -72,9 +76,48 @@ public class MainShell extends MCUApp {
 		createContents();
 		shell.open();
 		shell.layout();
+		TrackerListener tracker = new TrackerListener(){
+
+			@Override
+			public void onQueueFinished(final DownloadQueue queue) {
+				System.out.println(queue.getName() + ": Finished!");
+				display.syncExec(new Runnable(){
+					@Override
+					public void run() {
+						if (progress == null || progress.isDisposed()) { return; }
+						progress.updateProgress(queue.getName(),1.0F,queue.getTotalFileCount(),queue.getSuccessFileCount());
+					}
+				});
+
+			}
+
+			@Override
+			public void onQueueProgress(final DownloadQueue queue) {
+				//System.out.println(queue.getName() + ": " + (100.0F * queue.getProgress()) + "%");
+				display.syncExec(new Runnable(){
+					@Override
+					public void run() {
+						if (progress == null || progress.isDisposed()) { return; }
+						progress.updateProgress(queue.getName(),queue.getProgress(),queue.getTotalFileCount(),queue.getSuccessFileCount());
+					}
+				});
+			}
+
+			@Override
+			public void printMessage(String msg) {
+				System.out.println(msg);				
+			}
+			
+		};
+		final DownloadQueue assetsQueue = AssetManager.downloadAssets(MCUpdater.getInstance().getArchiveFolder().resolve("assets").toFile(), tracker);
+		progress.addProgressBar(assetsQueue.getName());
+		ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 8, 30000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();
+			}
+			if (!assetsQueue.isActive()) {
+				assetsQueue.processQueue(executor);			
 			}
 		}
 	}

@@ -28,8 +28,6 @@ import java.util.UUID;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.awt.image.BufferedImage;
 import java.io.*;
 
