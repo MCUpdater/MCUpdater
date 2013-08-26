@@ -14,8 +14,6 @@ import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.events.SelectionEvent;
@@ -387,9 +385,9 @@ public class MainShell extends MCUApp {
 	}
 
 	@Override
-	public DownloadQueue submitNewQueue(String queueName, Collection<Downloadable> files, File basePath) {
+	public DownloadQueue submitNewQueue(String queueName, Collection<Downloadable> files, File basePath, File cachePath) {
 		progress.addProgressBar(queueName);
-		return new DownloadQueue(queueName, tracker, files, basePath);
+		return new DownloadQueue(queueName, tracker, files, basePath, cachePath);
 		
 	}
 }

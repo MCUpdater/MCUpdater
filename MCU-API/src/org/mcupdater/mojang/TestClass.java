@@ -60,12 +60,12 @@ public class TestClass {
 				}
 			}
 		}
-		DownloadQueue q2 = new DownloadQueue("Libraries", listener, libSet, new File(base, "lib"));
+		DownloadQueue q2 = new DownloadQueue("Libraries", listener, libSet, new File(base, "lib"), null);
 		HashSet<Downloadable> jar = new HashSet<Downloadable>();
 		List<URL> jarUrl = new ArrayList<URL>();
 		jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + versionNum + "/" + versionNum + ".jar"));
 		jar.add(new Downloadable("Minecraft Jar", "mc-" + versionNum +".jar", "", 0, jarUrl));
-		DownloadQueue q3 = new DownloadQueue("Main", listener, jar, base);
+		DownloadQueue q3 = new DownloadQueue("Main", listener, jar, base, null);
 		ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 8, 500, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		q1.processQueue(executor);
 		q2.processQueue(executor);

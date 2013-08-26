@@ -26,9 +26,6 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,7 +48,6 @@ import org.mcupdater.Downloadable;
 import org.mcupdater.FMLStyleFormatter;
 import org.mcupdater.MCUApp;
 import org.mcupdater.TaskableExecutor;
-import org.mcupdater.TrackerListener;
 import org.mcupdater.Version;
 import org.mcupdater.mojang.Library;
 import org.mcupdater.mojang.MinecraftVersion;
@@ -618,7 +614,7 @@ public class MCUpdater {
 		final Path instancePath = instanceRoot.resolve(server.getServerId());
 		Path binPath = instancePath.resolve("bin");
 		final Path productionJar;
-		File jar = null;
+		//File jar = null;
 		final File tmpFolder = archiveFolder.resolve("temp").toFile();
 		tmpFolder.mkdirs();
 		Set<Downloadable> jarMods = new HashSet<Downloadable>();
@@ -654,7 +650,7 @@ public class MCUpdater {
 					}
 				}
 			}
-			libraryQueue = parent.submitNewQueue("Libraries", libSet, instancePath.resolve("lib").toFile());
+			libraryQueue = parent.submitNewQueue("Libraries", libSet, instancePath.resolve("lib").toFile(), DownloadCache.getDir());
 
 			productionJar = binPath.resolve("minecraft.jar");
 			List<URL> jarUrl = new ArrayList<URL>();
@@ -668,7 +664,7 @@ public class MCUpdater {
 			keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
 			break;
 		case SERVER:
-			jar = archiveFolder.resolve("mc-server-" + server.getVersion() + ".jar").toFile();
+			//jar = archiveFolder.resolve("mc-server-" + server.getVersion() + ".jar").toFile();
 			productionJar = instancePath.resolve("minecraft_server.jar");
 			break;
 		default:
@@ -778,8 +774,8 @@ public class MCUpdater {
 			parent.log("  Done ("+modsLoaded+"/"+modCount+")");
 		}
 		instData.setProperty("jarModCount", Integer.toString(jarModCount));
-		generalQueue = parent.submitNewQueue("Instance files", generalFiles, instancePath.toFile());
-		jarQueue = parent.submitNewQueue("Jar build files", jarMods, tmpFolder);
+		generalQueue = parent.submitNewQueue("Instance files", generalFiles, instancePath.toFile(), DownloadCache.getDir());
+		jarQueue = parent.submitNewQueue("Jar build files", jarMods, tmpFolder, DownloadCache.getDir());
 		TaskableExecutor libExecutor = new TaskableExecutor(2, new Runnable(){
 
 			@Override
@@ -854,7 +850,7 @@ public class MCUpdater {
 			}
 		});
 		jarQueue.processQueue(jarExecutor);
-		TaskableExecutor genExecutor = new TaskableExecutor(6, new Runnable(){
+		TaskableExecutor genExecutor = new TaskableExecutor(12, new Runnable(){
 
 			@Override
 			public void run() {

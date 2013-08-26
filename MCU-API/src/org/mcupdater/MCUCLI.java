@@ -5,8 +5,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.concurrent.ThreadPoolExecutor;
-
 import org.mcupdater.util.ModSide;
 import org.mcupdater.util.ServerList;
 
@@ -133,7 +131,7 @@ public class MCUCLI extends MCUApp {
 	}
 	@Override
 	public DownloadQueue submitNewQueue(String queueName,
-			Collection<Downloadable> files, File basePath) {
+			Collection<Downloadable> files, File basePath, File cachePath) {
 		// TODO Auto-generated method stub
 		return null;
 	}

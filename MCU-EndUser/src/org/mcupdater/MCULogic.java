@@ -15,15 +15,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.mcupdater.mojang.Library;
 import org.mcupdater.mojang.MinecraftVersion;
 import org.mcupdater.settings.Profile;
 import org.mcupdater.settings.Settings;
 import org.mcupdater.util.MCUpdater;
-import org.mcupdater.util.Module;
 import org.mcupdater.util.ServerList;
 import org.mcupdater.util.ServerPackParser;
 import org.w3c.dom.Document;
@@ -64,7 +61,9 @@ public class MCULogic {
 		args.add("-Xmx" + settings.getMaxMemory());
 		args.add("-XX:PermSize=" + settings.getPermGen());
 		args.add("-Djava.library.path=" + mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("lib").resolve("natives"));
-		
+		if (!Version.requestedFeatureLevel(selected.getVersion(), "1.6")){
+			args.add("-Dminecraft.applet.TargetDirectory=" + mcu.getInstanceRoot().resolve(selected.getServerId()).toString());
+		}
 		if (!selected.getMainClass().isEmpty()) {
 			mainClass = selected.getMainClass();
 		} else {

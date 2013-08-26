@@ -16,5 +16,5 @@ public abstract class MCUApp {
 	public abstract void log(String msg);
 	public abstract boolean requestLogin();
 	public abstract void addServer(ServerList entry);
-	public abstract DownloadQueue submitNewQueue(String queueName, Collection<Downloadable> files, File basePath);
+	public abstract DownloadQueue submitNewQueue(String queueName, Collection<Downloadable> files, File basePath, File cachePath);
 }
