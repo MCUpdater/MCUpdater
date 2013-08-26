@@ -24,7 +24,11 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.UUID;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -42,9 +46,15 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.mcupdater.DownloadQueue;
+import org.mcupdater.Downloadable;
 import org.mcupdater.FMLStyleFormatter;
 import org.mcupdater.MCUApp;
+import org.mcupdater.TaskableExecutor;
+import org.mcupdater.TrackerListener;
 import org.mcupdater.Version;
+import org.mcupdater.mojang.Library;
+import org.mcupdater.mojang.MinecraftVersion;
 import org.mcupdater.util.Archive;
 import org.w3c.dom.*;
 
@@ -342,11 +352,13 @@ public class MCUpdater {
 							NodeList servers = parent.getElementsByTagName("Server");
 							for (int i = 0; i < servers.getLength(); i++){
 								docEle = (Element)servers.item(i);
+								System.out.println(serverUrl + ": " + docEle.getAttribute("id"));
 								ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), serverUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList"), true), ServerPackParser.parseBoolean(docEle.getAttribute("autoConnect"), true), docEle.getAttribute("revision"), ServerPackParser.parseBoolean(docEle.getAttribute("abstract"), false), docEle.getAttribute("mainClass"));
 								sl.setMCUVersion(mcuVersion);
 								slList.add(sl);
 							}					
 						} else {
+							System.out.println(serverUrl + ": *** " + parent.getAttribute("id"));
 							ServerList sl = new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), serverUrl, parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), ServerPackParser.parseBoolean(parent.getAttribute("generateList"), true), ServerPackParser.parseBoolean(parent.getAttribute("autoConnect"), true), parent.getAttribute("revision"), ServerPackParser.parseBoolean(parent.getAttribute("abstract"), false), parent.getAttribute("mainClass"));
 							sl.setMCUVersion("1.0");
 							slList.add(sl);
@@ -598,23 +610,62 @@ public class MCUpdater {
 		return jar.exists();
 	}
 	
-	public boolean installMods(ServerList server, List<Module> toInstall, boolean clearExisting, Properties instData, ModSide side) throws FileNotFoundException {
+	public boolean installMods(final ServerList server, List<Module> toInstall, boolean clearExisting, final Properties instData, ModSide side) throws FileNotFoundException {
 		if (Version.requestedFeatureLevel(server.getMCUVersion(), "2.2")) {
 			// Sort mod list for InJar
-			Collections.sort(toInstall, new ModuleComparator());
+			//Collections.sort(toInstall, new ModuleComparator());
 		}
-		Path instancePath = instanceRoot.resolve(server.getServerId());
+		final Path instancePath = instanceRoot.resolve(server.getServerId());
 		Path binPath = instancePath.resolve("bin");
-		Path productionJar;
-		File jar;
+		final Path productionJar;
+		File jar = null;
+		final File tmpFolder = archiveFolder.resolve("temp").toFile();
+		tmpFolder.mkdirs();
+		Set<Downloadable> jarMods = new HashSet<Downloadable>();
+		Set<Downloadable> generalFiles = new HashSet<Downloadable>();
+		DownloadQueue jarQueue = null;
+		DownloadQueue generalQueue = null;
+		DownloadQueue libraryQueue = null;
+		final List<String> libExtract = new ArrayList<String>();
+		final Map<String,Boolean> modExtract = new HashMap<String,Boolean>();
+		final Map<String,Boolean> keepMeta = new TreeMap<String,Boolean>(); 
 		switch (side){
 		case CLIENT:
-			jar = archiveFolder.resolve("mc-" + server.getVersion() + ".jar").toFile();
-			if(!jar.exists()) {
-				parent.log("! Unable to find a backup copy of minecraft.jar for "+server.getVersion());
-				throw new FileNotFoundException("A backup copy of minecraft.jar for version " + server.getVersion() + " was not found.");
+			MinecraftVersion version = MinecraftVersion.loadVersion(server.getVersion());
+//			jar = archiveFolder.resolve("mc-" + server.getVersion() + ".jar").toFile();
+//			if(!jar.exists()) {
+//				parent.log("! Unable to find a backup copy of minecraft.jar for "+server.getVersion());
+//				throw new FileNotFoundException("A backup copy of minecraft.jar for version " + server.getVersion() + " was not found.");
+//			}
+			Set<Downloadable> libSet = new HashSet<Downloadable>();
+			for (Library lib : version.getLibraries()) {
+				if (lib.validForOS()) {
+					List<URL> urls = new ArrayList<URL>();
+					try {
+						urls.add(new URL(lib.getDownloadUrl()));
+					} catch (MalformedURLException e) {
+						//TODO: Log error using logger
+						e.printStackTrace();
+					}
+					Downloadable entry = new Downloadable(lib.getName(),lib.getFilename(),"",0,urls);
+					libSet.add(entry);
+					if (lib.hasNatives()) {
+						libExtract.add(lib.getFilename());
+					}
+				}
 			}
+			libraryQueue = parent.submitNewQueue("Libraries", libSet, instancePath.resolve("lib").toFile());
+
 			productionJar = binPath.resolve("minecraft.jar");
+			List<URL> jarUrl = new ArrayList<URL>();
+			try {
+				jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + server.getVersion() + "/" + server.getVersion() + ".jar"));
+			} catch (MalformedURLException e2) {
+				//TODO: Log error using logger
+				e2.printStackTrace();
+			}
+			jarMods.add(new Downloadable("Minecraft jar","0.jar","",0,jarUrl));
+			keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
 			break;
 		case SERVER:
 			jar = archiveFolder.resolve("mc-server-" + server.getVersion() + ".jar").toFile();
@@ -666,28 +717,9 @@ public class MCUpdater {
 			}
 		}
 		Iterator<Module> itMods = toInstall.iterator();
-		File tmpFolder = archiveFolder.resolve("temp").toFile();
-		tmpFolder.mkdirs();
-		File buildJar = archiveFolder.resolve("build.jar").toFile();		
+		final File buildJar = archiveFolder.resolve("build.jar").toFile();		
 		if(buildJar.exists()) {
 			buildJar.delete();
-		}
-		if (updateJar) {
-			parent.setStatus("Preparing to build minecraft.jar");
-			parent.log("Preparing to build minecraft.jar...");
-			Archive.extractZip(jar, tmpFolder);
-		} else {
-			parent.log("No jar changes necessary.  Skipping jar rebuild.");
-		}
-
-		File branding = new File(tmpFolder, "fmlbranding.properties");
-		try {
-			branding.createNewFile();
-			Properties propBrand = new Properties();
-			propBrand.setProperty("fmlbranding", "MCUpdater: " + server.getName() + " (rev " + server.getRevision() + ")");
-			propBrand.store(new FileOutputStream(branding), "MCUpdater ServerPack branding");
-		} catch (IOException e1) {
-			apiLogger.log(Level.SEVERE, "I/O Error", e1);
 		}
 		
 		int modCount = toInstall.size();
@@ -701,133 +733,34 @@ public class MCUpdater {
 			parent.setStatus("Mod: " + entry.getName());
 			parent.log("Mod: "+entry.getName());
 			try {
-				Collections.sort(entry.getUrls());
-				for (PrioritizedURL pUrl : entry.getUrls()) {
-					_debug("Mod @ "+pUrl.getUrl());
-					URL modURL = new URL(pUrl.getUrl());
-					//String modFilename = modURL.getFile().substring(modURL.getFile().lastIndexOf('/'));
-					File modPath;
-					if(entry.getInJar()) {
-						if (updateJar) {
-							//modPath = new File(tmpFolder.getPath() + sep + loadOrder + ".zip");
-							//loadOrder++;
-							//_log(modPath.getPath());
-							ModDownload jarMod;
-							try {
-								jarMod = new ModDownload(modURL, File.createTempFile(entry.getId(), ".jar"), entry.getMD5());
-								if( jarMod.cacheHit ) {
-									parent.log("  Adding to jar (cached).");
-								} else {
-									parent.log("  Adding to jar (downloaded).");
-								}
-								_debug(jarMod.url + " -> " + jarMod.getDestFile().getPath());
-								//FileUtils.copyURLToFile(modURL, modPath);
-								Archive.extractZip(jarMod.getDestFile(), tmpFolder, entry.getKeepMeta());
-								jarMod.getDestFile().delete();
-								instData.setProperty("mod:" + entry.getId(), entry.getMD5());
-								jarModCount++;
-							} catch (Exception e) {
-								++errorCount;
-								apiLogger.log(Level.SEVERE, "General Error", e);						}
-						} else {
-							parent.log("Skipping jar mod: " + entry.getName());
-						}
-					} else if (entry.getExtract()) {
-						//modPath = new File(tmpFolder.getPath() + sep + modFilename);
-						//modPath.getParentFile().mkdirs();
-						//_log(modPath.getPath());
-						ModDownload extractMod;
-						try {
-							extractMod = new ModDownload(modURL, File.createTempFile(entry.getId(), ".jar") , entry.getMD5());
-							if( extractMod.cacheHit ) {
-								parent.log("  Extracting to filesystem (cached).");
-							} else {
-								parent.log("  Extracting to filesystem (downloaded).");
-							}
-							_debug(extractMod.url + " -> " + extractMod.getDestFile().getPath());
-							//FileUtils.copyURLToFile(modURL, modPath);
-							Path destPath = instancePath;
-							if(!entry.getInRoot()) destPath = instancePath.resolve("mods");
-							Archive.extractZip(extractMod.getDestFile(), destPath.toFile());
-							extractMod.getDestFile().delete();
-						} catch (Exception e) {
-							++errorCount;
-							apiLogger.log(Level.SEVERE, "General Error", e);
-						}
-					} else if (entry.getCoreMod()) {
-						modPath = instancePath.resolve("coremods").resolve(cleanForFile(entry.getId()) + ".jar").toFile();
-						modPath.getParentFile().mkdirs();
-						try {
-							ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
-							if( normalMod.cacheHit ) {
-								parent.log("  Installing in /coremods (cached).");
-							} else {
-								parent.log("  Installing in /coremods (downloaded).");
-							}
-							_debug(normalMod.url + " -> " + normalMod.getDestFile().getPath());
-						} catch (Exception e) {
-							++errorCount;
-							apiLogger.log(Level.SEVERE, "General Error", e);
-						}					
+				Collections.sort(entry.getPrioritizedUrls());
+				if (entry.getInJar() && updateJar) {
+					jarMods.add(new Downloadable(entry.getName(),String.valueOf(entry.getJarOrder()) + "-" + entry.getId() + ".jar",entry.getMD5(),0,entry.getUrls()));
+					keepMeta.put(String.valueOf(entry.getJarOrder()) + "-" + cleanForFile(entry.getId()) + ".jar", entry.getKeepMeta());
+				} else if (entry.getCoreMod()) {
+					generalFiles.add(new Downloadable(entry.getName(),"coremods/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),0,entry.getUrls()));
+				} else if (entry.getIsLibrary()) {
+					generalFiles.add(new Downloadable(entry.getName(),"lib/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),0,entry.getUrls()));
+				} else if (entry.getExtract()) {
+					generalFiles.add(new Downloadable(entry.getName(),cleanForFile(entry.getId()) + ".zip",entry.getMD5(),0,entry.getUrls()));
+					modExtract.put(cleanForFile(entry.getId()) + ".zip", entry.getInRoot());
+				} else {
+					if (entry.getPath().isEmpty()) {
+						generalFiles.add(new Downloadable(entry.getName(),"mods/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),0,entry.getUrls()));
 					} else {
-						if (entry.getPath().equals("")){
-							modPath = instancePath.resolve("mods").resolve(cleanForFile(entry.getId()) + ".jar").toFile();
-						} else {
-							modPath = instancePath.resolve(entry.getPath()).toFile();
-						}
-						modPath.getParentFile().mkdirs();
-						//_log("~~~ " + modPath.getPath());
-						try {
-							ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
-							if( normalMod.cacheHit ) {
-								parent.log("  Installing in /mods (cached).");
-							} else {
-								parent.log("  Installing in /mods (downloaded).");
-							}
-							_debug(normalMod.url + " -> " + normalMod.getDestFile().getPath());
-						} catch (Exception e) {
-							++errorCount;
-							apiLogger.log(Level.SEVERE, "General Error", e);
-						}
-						//FileUtils.copyURLToFile(modURL, modPath);
+						generalFiles.add(new Downloadable(entry.getName(),entry.getPath(),entry.getMD5(),0,entry.getUrls()));
 					}
 				}
+				// 0
 				Iterator<ConfigFile> itConfigs = entry.getConfigs().iterator();
 				while(itConfigs.hasNext()) {
 					final ConfigFile cfEntry = itConfigs.next();
-					final String MD5 = cfEntry.getMD5(); 
-					_debug(cfEntry.getUrl());
-					URL configURL = new URL(cfEntry.getUrl());
 					final File confFile = instancePath.resolve(cfEntry.getPath()).toFile();
-					confFile.getParentFile().mkdirs();
-					//					if( MD5 != null ) {
-					//						final File cacheFile = DownloadCache.getFile(MD5);
-					//						if( cacheFile.exists() ) {
-					//							parent.log("  Found config for "+cfEntry.getPath()+" (cached)");
-					//							FileUtils.copyFile(cacheFile, confFile);
-					//							continue;
-					//						}
-					//					}
-					//_debug(confFile.getPath());
-					if (cfEntry.isNoOverwrite() && confFile.exists()) {
-						parent.log("  Config for "+cfEntry.getPath()+" skipped - NoOverwrite is true");
-					} else {
-						//parent.log("  Found config for "+cfEntry.getPath()+", downloading...");
-						try {
-							ModDownload configDL = new ModDownload(configURL, confFile, MD5);
-							if( configDL.cacheHit ) {
-								parent.log("  Found config for "+cfEntry.getPath()+" (cached).");
-							} else {
-								parent.log("  Found config for "+cfEntry.getPath()+" (downloaded).");
-							}
-							String strPath = configDL.getDestFile() == null ? "???" : configDL.getDestFile().getPath();
-							_debug(configDL.url + " -> " + strPath);
-						} catch (Exception e) {
-							++errorCount;
-							apiLogger.log(Level.SEVERE, "General Error", e);
-						}
-						//FileUtils.copyURLToFile(configURL, confFile);
-					}
+					if (confFile.exists() && cfEntry.isNoOverwrite()) { continue; }
+					List<URL> configUrl = new ArrayList<URL>();
+					configUrl.add(new URL(cfEntry.getUrl()));
+					generalFiles.add(new Downloadable(cfEntry.getPath(),cfEntry.getPath(),cfEntry.getMD5(),0,configUrl));
+					//1
 					// save in cache for future reference
 					//					if( MD5 != null ) {
 					//						final boolean cached = DownloadCache.cacheFile(confFile, MD5);
@@ -841,59 +774,108 @@ public class MCUpdater {
 				apiLogger.log(Level.SEVERE, "General Error", e);
 			}
 			modsLoaded++;
-			parent.setProgressBar((int)( (65 / modCount) * modsLoaded + 25));
+//			parent.setProgressBar((int)( (65 / modCount) * modsLoaded + 25));
 			parent.log("  Done ("+modsLoaded+"/"+modCount+")");
 		}
 		instData.setProperty("jarModCount", Integer.toString(jarModCount));
+		generalQueue = parent.submitNewQueue("Instance files", generalFiles, instancePath.toFile());
+		jarQueue = parent.submitNewQueue("Jar build files", jarMods, tmpFolder);
+		TaskableExecutor libExecutor = new TaskableExecutor(2, new Runnable(){
+
+			@Override
+			public void run() {
+				for (String entry : libExtract){
+					Archive.extractZip(instancePath.resolve("lib").resolve(entry).toFile(), instancePath.resolve("lib").resolve("natives").toFile(), false);
+				}				
+			}});
+		libraryQueue.processQueue(libExecutor);
+		final File branding = new File(tmpFolder, "fmlbranding.properties");
 		try {
-			buildJar.createNewFile();
-		} catch (IOException e) {
-			apiLogger.log(Level.SEVERE, "I/O Error", e);
+			branding.createNewFile();
+			Properties propBrand = new Properties();
+			propBrand.setProperty("fmlbranding", "MCUpdater: " + server.getName() + " (rev " + server.getRevision() + ")");
+			propBrand.store(new FileOutputStream(branding), "MCUpdater ServerPack branding");
+		} catch (IOException e1) {
+			apiLogger.log(Level.SEVERE, "I/O Error", e1);
 		}
-		parent.log("All mods loaded.");
+		final boolean doJarUpdate = updateJar;
+		TaskableExecutor jarExecutor = new TaskableExecutor(2, new Runnable() {
+			
+			@Override
+			public void run() {
+				for (Map.Entry<String,Boolean> entry : keepMeta.entrySet()) {
+					File entryFile = new File(tmpFolder,entry.getKey());
+					Archive.extractZip(entryFile, tmpFolder, entry.getValue());
+					entryFile.delete();
+				}
+				try {
+					buildJar.createNewFile();
+				} catch (IOException e) {
+					apiLogger.log(Level.SEVERE, "I/O Error", e);
+				}
+				boolean doManifest = true;
+				List<File> buildList = recurseFolder(tmpFolder,true);
+				Iterator<File> blIt = new ArrayList<File>(buildList).iterator();
+				while(blIt.hasNext()) {
+					File entry = blIt.next();
+					if(entry.getPath().contains("META-INF")) {
+						doManifest = false;
+					}
+				}
+
+				if (!doJarUpdate) {
+					try {
+						Archive.updateArchive(productionJar.toFile(), new File[]{ branding });
+					} catch (IOException e1) {
+						apiLogger.log(Level.SEVERE, "I/O Error", e1);
+					}
+				} else {
+					parent.log("Packaging updated jar...");
+					try {
+						Archive.createJar(buildJar, buildList, tmpFolder.getPath() + sep, doManifest);
+					} catch (IOException e1) {
+						parent.log("Failed to create jar!");
+						apiLogger.log(Level.SEVERE, "I/O Error", e1);
+					}
+					//Archive.patchJar(jar, buildJar, new ArrayList<File>(Arrays.asList(tmpFolder.listFiles())));
+					//copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
+					try {
+						Files.copy(new Path(buildJar), productionJar);
+					} catch (IOException e) {
+						apiLogger.log(Level.SEVERE, "Failed to copy new jar to instance!", e);
+					}
+				}
+				List<File> tempFiles = recurseFolder(tmpFolder,true);
+				ListIterator<File> li = tempFiles.listIterator(tempFiles.size());
+				while(li.hasPrevious()) { 
+					File entry = li.previous();
+					entry.delete();
+				}				
+			}
+		});
+		jarQueue.processQueue(jarExecutor);
+		TaskableExecutor genExecutor = new TaskableExecutor(6, new Runnable(){
+
+			@Override
+			public void run() {
+				for (Map.Entry<String,Boolean> entry : modExtract.entrySet()) {
+					if (entry.getValue()) {
+						Archive.extractZip(instancePath.resolve(entry.getKey()).toFile(), instancePath.toFile());
+					} else {
+						Archive.extractZip(instancePath.resolve(entry.getKey()).toFile(), instancePath.resolve("mods").toFile());
+					}
+					instancePath.resolve(entry.getKey()).toFile().delete();
+				}
+			}
+			
+		});
+		generalQueue.processQueue(genExecutor);
+
 		if( errorCount > 0 ) {
 			parent.baseLogger.severe("Errors were detected with this update, please verify your files. There may be a problem with the serverpack configuration or one of your download sites.");
 			return false;
 		}
 		//copyFile(jar, buildJar);
-		boolean doManifest = true;
-		List<File> buildList = recurseFolder(tmpFolder,true);
-		Iterator<File> blIt = new ArrayList<File>(buildList).iterator();
-		while(blIt.hasNext()) {
-			File entry = blIt.next();
-			if(entry.getPath().contains("META-INF")) {
-				doManifest = false;
-			}
-		}
-		if (!updateJar) {
-			try {
-				Archive.updateArchive(productionJar.toFile(), new File[]{ branding });
-			} catch (IOException e1) {
-				apiLogger.log(Level.SEVERE, "I/O Error", e1);
-			}
-		} else {
-			parent.log("Packaging updated jar...");
-			try {
-				Archive.createJar(buildJar, buildList, tmpFolder.getPath() + sep, doManifest);
-			} catch (IOException e1) {
-				parent.log("Failed to create jar!");
-				apiLogger.log(Level.SEVERE, "I/O Error", e1);
-				return false;
-			}
-			//Archive.patchJar(jar, buildJar, new ArrayList<File>(Arrays.asList(tmpFolder.listFiles())));
-			//copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
-			try {
-				Files.copy(new Path(buildJar), productionJar);
-			} catch (IOException e) {
-				apiLogger.log(Level.SEVERE, "Failed to copy new jar to instance!", e);
-			}
-		}
-		List<File> tempFiles = recurseFolder(tmpFolder,true);
-		ListIterator<File> li = tempFiles.listIterator(tempFiles.size());
-		while(li.hasPrevious()) { 
-			File entry = li.previous();
-			entry.delete();
-		}
 		return true;
 	}
 	
@@ -1073,3 +1055,131 @@ public class MCUpdater {
 	}
 
 }
+
+/* 0
+//for (PrioritizedURL pUrl : entry.getUrls()) {
+//	_debug("Mod @ "+pUrl.getUrl());
+//	URL modURL = new URL(pUrl.getUrl());
+	//String modFilename = modURL.getFile().substring(modURL.getFile().lastIndexOf('/'));
+	File modPath;
+	if(entry.getInJar()) {
+		if (updateJar) {
+			//modPath = new File(tmpFolder.getPath() + sep + loadOrder + ".zip");
+			//loadOrder++;
+			//_log(modPath.getPath());
+			ModDownload jarMod;
+			try {
+				jarMod = new ModDownload(modURL, File.createTempFile(entry.getId(), ".jar"), entry.getMD5());
+				if( jarMod.cacheHit ) {
+					parent.log("  Adding to jar (cached).");
+				} else {
+					parent.log("  Adding to jar (downloaded).");
+				}
+				_debug(jarMod.url + " -> " + jarMod.getDestFile().getPath());
+				//FileUtils.copyURLToFile(modURL, modPath);
+				Archive.extractZip(jarMod.getDestFile(), tmpFolder, entry.getKeepMeta());
+				jarMod.getDestFile().delete();
+				instData.setProperty("mod:" + entry.getId(), entry.getMD5());
+				jarModCount++;
+			} catch (Exception e) {
+				++errorCount;
+				apiLogger.log(Level.SEVERE, "General Error", e);						}
+		} else {
+			parent.log("Skipping jar mod: " + entry.getName());
+		}
+	} else if (entry.getExtract()) {
+		//modPath = new File(tmpFolder.getPath() + sep + modFilename);
+		//modPath.getParentFile().mkdirs();
+		//_log(modPath.getPath());
+		ModDownload extractMod;
+		try {
+			extractMod = new ModDownload(modURL, File.createTempFile(entry.getId(), ".jar") , entry.getMD5());
+			if( extractMod.cacheHit ) {
+				parent.log("  Extracting to filesystem (cached).");
+			} else {
+				parent.log("  Extracting to filesystem (downloaded).");
+			}
+			_debug(extractMod.url + " -> " + extractMod.getDestFile().getPath());
+			//FileUtils.copyURLToFile(modURL, modPath);
+			Path destPath = instancePath;
+			if(!entry.getInRoot()) destPath = instancePath.resolve("mods");
+			Archive.extractZip(extractMod.getDestFile(), destPath.toFile());
+			extractMod.getDestFile().delete();
+		} catch (Exception e) {
+			++errorCount;
+			apiLogger.log(Level.SEVERE, "General Error", e);
+		}
+	} else if (entry.getCoreMod()) {
+		modPath = instancePath.resolve("coremods").resolve(cleanForFile(entry.getId()) + ".jar").toFile();
+		modPath.getParentFile().mkdirs();
+		try {
+			ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
+			if( normalMod.cacheHit ) {
+				parent.log("  Installing in /coremods (cached).");
+			} else {
+				parent.log("  Installing in /coremods (downloaded).");
+			}
+			_debug(normalMod.url + " -> " + normalMod.getDestFile().getPath());
+		} catch (Exception e) {
+			++errorCount;
+			apiLogger.log(Level.SEVERE, "General Error", e);
+		}					
+	} else {
+		if (entry.getPath().equals("")){
+			modPath = instancePath.resolve("mods").resolve(cleanForFile(entry.getId()) + ".jar").toFile();
+		} else {
+			modPath = instancePath.resolve(entry.getPath()).toFile();
+		}
+		modPath.getParentFile().mkdirs();
+		//_log("~~~ " + modPath.getPath());
+		try {
+			ModDownload normalMod = new ModDownload(modURL, modPath, entry.getMD5());
+			if( normalMod.cacheHit ) {
+				parent.log("  Installing in /mods (cached).");
+			} else {
+				parent.log("  Installing in /mods (downloaded).");
+			}
+			_debug(normalMod.url + " -> " + normalMod.getDestFile().getPath());
+		} catch (Exception e) {
+			++errorCount;
+			apiLogger.log(Level.SEVERE, "General Error", e);
+		}
+		//FileUtils.copyURLToFile(modURL, modPath);
+	}
+}*/
+
+/* 1
+					final String MD5 = cfEntry.getMD5(); 
+_debug(cfEntry.getUrl());
+URL configURL = new URL(cfEntry.getUrl());
+final File confFile = instancePath.resolve(cfEntry.getPath()).toFile();
+confFile.getParentFile().mkdirs();
+//					if( MD5 != null ) {
+//						final File cacheFile = DownloadCache.getFile(MD5);
+//						if( cacheFile.exists() ) {
+//							parent.log("  Found config for "+cfEntry.getPath()+" (cached)");
+//							FileUtils.copyFile(cacheFile, confFile);
+//							continue;
+//						}
+//					}
+//_debug(confFile.getPath());
+if (cfEntry.isNoOverwrite() && confFile.exists()) {
+	parent.log("  Config for "+cfEntry.getPath()+" skipped - NoOverwrite is true");
+} else {
+	//parent.log("  Found config for "+cfEntry.getPath()+", downloading...");
+	try {
+		ModDownload configDL = new ModDownload(configURL, confFile, MD5);
+		if( configDL.cacheHit ) {
+			parent.log("  Found config for "+cfEntry.getPath()+" (cached).");
+		} else {
+			parent.log("  Found config for "+cfEntry.getPath()+" (downloaded).");
+		}
+		String strPath = configDL.getDestFile() == null ? "???" : configDL.getDestFile().getPath();
+		_debug(configDL.url + " -> " + strPath);
+	} catch (Exception e) {
+		++errorCount;
+		apiLogger.log(Level.SEVERE, "General Error", e);
+	}
+	//FileUtils.copyURLToFile(configURL, confFile);
+}
+*/

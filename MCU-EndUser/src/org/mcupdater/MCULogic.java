@@ -1,14 +1,183 @@
 package org.mcupdater;
 
+import j7compat.Path;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+
+import org.apache.commons.lang3.text.StrSubstitutor;
+import org.mcupdater.mojang.Library;
+import org.mcupdater.mojang.MinecraftVersion;
+import org.mcupdater.settings.Profile;
+import org.mcupdater.settings.Settings;
+import org.mcupdater.util.MCUpdater;
+import org.mcupdater.util.Module;
+import org.mcupdater.util.ServerList;
+import org.mcupdater.util.ServerPackParser;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+
 public class MCULogic {
 	
-	public static void doUpdate() {
-		// TODO Method stub
-	}
-	
-	public static void doLaunch() {
-		// TODO Auto-generated method stub
+	public static void doLaunch(ServerList selected, List<ModuleCheckbox> list, Profile user) {
+		MinecraftVersion mcVersion = MinecraftVersion.loadVersion(selected.getVersion());
+		String mainClass;
+		List<String> args = new ArrayList<String>();
+		StringBuilder clArgs = new StringBuilder(mcVersion.getMinecraftArguments());
+		List<String> libs = new ArrayList<String>();
+		MCUpdater mcu = MCUpdater.getInstance();
+		Settings settings = MainShell.getInstance().getSettingsManager().getSettings();
+		if (settings.isFullScreen()) {
+			clArgs.append(" --fullscreen");
+		} else {
+			clArgs.append(" --width " + settings.getResWidth() + " --height " + settings.getResHeight());
+		}
+		if (settings.isAutoConnect() && selected.isAutoConnect()) {
+			URI address;
+			try {
+				address = new URI("my://" + selected.getAddress());
+				clArgs.append(" --server " + address.getHost());
+				if (address.getPort() != -1) {
+					clArgs.append(" --port " + address.getPort());
+				}
+			} catch (URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		clArgs.append(" --resourcePackDir " + mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("resourcepacks"));
+		args.add((new Path(settings.getJrePath()).resolve("bin").resolve("java").toString()));
+		args.add("-Xms" + settings.getMinMemory());
+		args.add("-Xmx" + settings.getMaxMemory());
+		args.add("-XX:PermSize=" + settings.getPermGen());
+		args.add("-Djava.library.path=" + mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("lib").resolve("natives"));
 		
+		if (!selected.getMainClass().isEmpty()) {
+			mainClass = selected.getMainClass();
+		} else {
+			mainClass = mcVersion.getMainClass();
+		}
+		for (ModuleCheckbox entry : list) {
+			if (entry.isSelected()) {
+				if (entry.getModule().getIsLibrary()) {
+					libs.add(entry.getModule().getId() + ".jar");
+				}
+				if (!entry.getModule().getLaunchArgs().isEmpty()) {
+					clArgs.append(" " + entry.getModule().getLaunchArgs());
+				}
+			}
+		}
+		for (Library lib : mcVersion.getLibraries()) {
+			if (lib.validForOS() && !lib.hasNatives()) {
+				libs.add(lib.getFilename());
+			}
+		}
+		args.add("-cp");
+		StringBuilder classpath = new StringBuilder();
+		for (String entry: libs) {
+			classpath.append(mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("lib").resolve(entry).toString()).append(MCUpdater.cpDelimiter());
+		}
+		classpath.append(mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("bin").resolve("minecraft.jar").toString());
+		args.add(classpath.toString());
+		args.add(mainClass);
+		String tmpclArgs = clArgs.toString();
+		System.out.println(tmpclArgs);
+		Map<String,String> fields = new HashMap<String,String>();
+		StrSubstitutor fieldReplacer = new StrSubstitutor(fields);
+		fields.put("auth_player_name", user.getUsername());
+		fields.put("auth_session", user.getSessionKey());
+		fields.put("version_name", selected.getVersion());
+		fields.put("game_directory", mcu.getInstanceRoot().resolve(selected.getServerId()).toString());
+		fields.put("game_assets", mcu.getArchiveFolder().resolve("assets").toString());
+		args.addAll(Arrays.asList(fieldReplacer.replace(tmpclArgs).split(" ")));
+		
+		for (String entry : args) {
+			System.out.println(entry);
+		}
+		ProcessBuilder pb = new ProcessBuilder(args);
+		pb.directory(mcu.getInstanceRoot().resolve(selected.getServerId()).toFile());
+		pb.redirectErrorStream(true);
+		try {
+			Process task = pb.start();
+			BufferedReader buffRead = new BufferedReader(new InputStreamReader(task.getInputStream()));
+			String line;
+			while ((line = buffRead.readLine()) != null)
+			{
+				if( line.length() > 0) {
+					System.out.println(line);
+					//parent.baseLogger.info(line);
+				}
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+	}
+
+	public static List<ServerList> loadServerList(String defaultUrl) {
+		{
+			Settings settings = MainShell.getInstance().getSettingsManager().getSettings();
+			List<ServerList> slList = new ArrayList<ServerList>();
+
+			Set<String> urls = new HashSet<String>();
+			urls.add(defaultUrl);
+			urls.addAll(settings.getPackURLs());
+
+			Iterator<String> it = urls.iterator();
+			while (it.hasNext()){
+				String serverUrl = it.next();
+				try {
+					Element docEle = null;
+					Document serverHeader = ServerPackParser.readXmlFromUrl(serverUrl);
+					if (!(serverHeader == null)) {
+						Element parent = serverHeader.getDocumentElement();
+						if (parent.getNodeName().equals("ServerPack")){
+							String mcuVersion = parent.getAttribute("version");
+							NodeList servers = parent.getElementsByTagName("Server");
+							for (int i = 0; i < servers.getLength(); i++){
+								docEle = (Element)servers.item(i);
+								System.out.println(serverUrl + ": " + docEle.getAttribute("id"));
+								ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), serverUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList"), true), ServerPackParser.parseBoolean(docEle.getAttribute("autoConnect"), true), docEle.getAttribute("revision"), ServerPackParser.parseBoolean(docEle.getAttribute("abstract"), false), docEle.getAttribute("mainClass"));
+								sl.setMCUVersion(mcuVersion);
+								slList.add(sl);
+							}					
+						} else {
+							System.out.println(serverUrl + ": *** " + parent.getAttribute("id"));
+							ServerList sl = new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), serverUrl, parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), ServerPackParser.parseBoolean(parent.getAttribute("generateList"), true), ServerPackParser.parseBoolean(parent.getAttribute("autoConnect"), true), parent.getAttribute("revision"), ServerPackParser.parseBoolean(parent.getAttribute("abstract"), false), parent.getAttribute("mainClass"));
+							sl.setMCUVersion("1.0");
+							slList.add(sl);
+						}
+					} else {
+						//TODO: Log
+						//apiLogger.warning("Unable to get server information from " + serverUrl);
+						System.out.println("Unable to get server information from " + serverUrl);
+					}
+				} catch (Exception e) {
+					//TODO: Log
+					//apiLogger.log(Level.SEVERE, "General Error", e);
+					e.printStackTrace();
+				}
+			}
+			//	String[] arrString = entry.split("\\|");
+			//	slList.add(new ServerList(arrString[0], arrString[1], arrString[2]));
+
+			return slList;
+
+		}
 	}
 
 }

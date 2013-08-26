@@ -94,6 +94,7 @@ public class ServerPackParser {
 			docEle = parent;
 			version = 1;
 		}
+		System.out.println(serverId + ": " + version);
 		NodeList nl;
 		switch (version) {
 		case 2:
@@ -162,7 +163,7 @@ public class ServerPackParser {
 		for (int i = 0; i < nl.getLength(); i++) {
 			Element elURL = (Element) nl.item(i);
 			String url = elURL.getTextContent();
-			int priority = Integer.parseInt(elURL.getAttribute("priority"));
+			int priority = parseInt(elURL.getAttribute("priority"));
 			urls.add(new PrioritizedURL(url, priority));
 		}
 		String path = getTextValue(el, "ModPath");
@@ -171,7 +172,7 @@ public class ServerPackParser {
 		boolean isDefault = Boolean.parseBoolean(elReq.getAttribute("IsDefault"));
 		Element elType = (Element) el.getElementsByTagName("ModType").item(0);
 		boolean inRoot = Boolean.parseBoolean(elType.getAttribute("inRoot"));
-		int order = Integer.parseInt(elType.getAttribute("order"));
+		int order = parseInt(elType.getAttribute("order"));
 		boolean keepMeta = Boolean.parseBoolean(elType.getAttribute("keepMeta"));
 		String launchArgs = elType.getAttribute("launchArgs");
 		ModType modType = ModType.valueOf(elType.getTextContent());
@@ -219,6 +220,14 @@ public class ServerPackParser {
 		}
 		Module m = new Module(name, id, urls, depends, required, jar, order, keepMeta, extract, inRoot, isDefault, coremod, md5, configs, side, path, mapMeta, library, launchArgs);	
 		return m;
+	}
+
+	private static int parseInt(String attribute) {
+		try {
+			return Integer.parseInt(attribute);
+		} catch (NumberFormatException e) {
+			return 0;
+		}
 	}
 
 	private static Module getModuleV1(Element modEl)
@@ -274,12 +283,7 @@ public class ServerPackParser {
 	}
 	
 	private static int getIntValue(Element ele, String tagName) {
-		int value = 0;
-		try {
-			value = Integer.parseInt(getTextValue(ele,tagName));
-		} catch (NumberFormatException e) {			
-		}
-		return value;
+		return parseInt(getTextValue(ele,tagName));
 	}
 	
 	private static String getTextValue(Element ele, String tagName) {

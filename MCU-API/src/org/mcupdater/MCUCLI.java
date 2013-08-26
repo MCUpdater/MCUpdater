@@ -1,8 +1,11 @@
 package org.mcupdater;
 
+import java.io.File;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.mcupdater.util.ModSide;
 import org.mcupdater.util.ServerList;
@@ -11,10 +14,6 @@ public class MCUCLI extends MCUApp {
 	@Override
 	public void setStatus(String string) {
 		log("Status: "+string);
-	}
-	@Override
-	public void setProgressBar(int i) {
-		log("Progress: "+i+"%");
 	}
 	@Override
 	public void log(String msg) {
@@ -126,5 +125,16 @@ public class MCUCLI extends MCUApp {
 	public void addServer(ServerList entry) {
 		// TODO Auto-generated method stub
 		
+	}
+	@Override
+	public void addProgressBar(String title) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public DownloadQueue submitNewQueue(String queueName,
+			Collection<Downloadable> files, File basePath) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerPack version="3.0" xmlns:noNamespaceSchemaLocation="http://www.mcupdater.com/ServerPack" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"	xsi:schemaLocation="http://www.mcupdater.com/ServerPack ServerPackv2.xsd ">
+	<Server id="base" name="ImportBase" newsUrl="http://mcupdater.com" revision="1" serverAddress="" version="1.5.2" abstract="true">
+		<Module id="forge" name="Minecraft Forge">
+			<URL priority="0">http://files.minecraftforge.net/minecraftforge/minecraftforge-universal-1.5.2-7.8.1.737.zip</URL>
+			<Required>true</Required>
+			<ModType order="1">Jar</ModType>
+		</Module>
+	</Server>
+	<Server id="subset" name="Derived Pack" newsUrl="http://mcupdater.com" revision="1" serverAddress="localhost" version="1.5.2">
+		<Import>base</Import>
+		<Module id="buildcraft" name="Buildcraft">
+			<URL>http://bit.ly/12rzVI3</URL>
+			<Required isDefault="false">false</Required>
+			<ModType>Regular</ModType>
+		</Module>
+	</Server>
+	<Server id="subset2" name="Derived From Sample" newsUrl="http://mcupdater.com" revision="1" serverAddress="localhost" version="1.5.2">
+		<Import url="http://files.mcupdater.com/example/SamplePack.xml">sampleServer</Import>
+		<Module id="buildcraft" name="Buildcraft">
+			<URL>http://bit.ly/12rzVI3</URL>
+			<Required isDefault="false">false</Required>
+			<ModType>Regular</ModType>
+		</Module>
+	</Server>
+	<Server id="162" name="MCU3 1.6.2" newsUrl="http://mcupdater.com" revision="1.6.2" serverAddress="localhost" version="1.6.2" mainClass="net.minecraft.launchwrapper.Launch">
+		<Module id="forge" name="Minecraft Forge">
+			<URL>http://files.minecraftforge.net/minecraftforge/minecraftforge-universal-1.6.2-9.10.0.842.jar</URL>
+			<Required>true</Required>
+			<ModType order="1" launchArgs="--tweakClass cpw.mods.fml.common.launcher.FMLTweaker">Library</ModType>
+		</Module>
+		<Module id="launchwrapper" name="Mojang (LaunchWrapper)">
+			<URL>https://s3.amazonaws.com/Minecraft.Download/libraries/net/minecraft/launchwrapper/1.3/launchwrapper-1.3.jar</URL>
+			<Required>true</Required>
+			<ModType order="3">Library</ModType>
+		</Module>
+		<Module id="asm" name="Mojang (ASM)">
+			<URL>https://s3.amazonaws.com/Minecraft.Download/libraries/org/ow2/asm/asm-all/4.1/asm-all-4.1.jar</URL>
+			<Required>true</Required>
+			<ModType order="3">Library</ModType>
+		</Module>
+		<Module id="scala-lib" name="Minecraft Forge (scala-library)">
+			<URL>http://files.minecraftforge.net/maven/org/scala-lang/scala-library/2.10.2/scala-library-2.10.2.jar</URL>
+			<Required>true</Required>
+			<ModType order="4">Library</ModType>
+		</Module>
+		<Module id="scala-compiler" name="Minecraft Forge (scala-compiler)">
+			<URL>http://files.minecraftforge.net/maven/org/scala-lang/scala-compiler/2.10.2/scala-compiler-2.10.2.jar</URL>
+			<Required>true</Required>
+			<ModType order="5">Library</ModType>
+		</Module>
+		<Module id="lzma" name="Mojang (LZMA)">
+			<URL>https://s3.amazonaws.com/Minecraft.Download/libraries/lzma/lzma/0.0.1/lzma-0.0.1.jar</URL>
+			<Required>true</Required>
+			<ModType order="6">Library</ModType>
+		</Module>
+	</Server>
+</ServerPack>

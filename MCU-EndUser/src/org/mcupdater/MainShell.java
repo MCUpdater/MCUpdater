@@ -1,9 +1,20 @@
 package org.mcupdater;
 
+import j7compat.Files;
+import j7compat.Path;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -27,9 +38,11 @@ import org.eclipse.swt.widgets.Sash;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.mcupdater.mojang.AssetManager;
+import org.mcupdater.settings.Profile;
 import org.mcupdater.settings.SettingsManager;
 import org.mcupdater.translate.TranslateProxy;
 import org.mcupdater.util.MCUpdater;
+import org.mcupdater.util.ModSide;
 import org.mcupdater.util.Module;
 import org.mcupdater.util.ServerList;
 import org.mcupdater.util.ServerPackParser;
@@ -48,6 +61,9 @@ public class MainShell extends MCUApp {
 	private SettingsManager sManager = SettingsManager.getInstance();
 	public TranslateProxy translate;
 	private Label lblStatus;
+	private ThreadPoolExecutor executor;
+	private InstanceList iList;
+	private MCUClientTracker tracker;
 
 	/**
 	 * Launch the application.
@@ -56,6 +72,9 @@ public class MainShell extends MCUApp {
 	public static void main(String[] args) {
 		try {
 			INSTANCE = new MainShell();
+			MCUpdater.getInstance().setInstanceRoot(MCUpdater.getInstance().getArchiveFolder().resolve("MCU3-instances"));
+			MCUpdater.getInstance().getInstanceRoot().toFile().mkdirs();
+			MCUpdater.getInstance().setParent(INSTANCE);
 			INSTANCE.open();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -76,42 +95,11 @@ public class MainShell extends MCUApp {
 		createContents();
 		shell.open();
 		shell.layout();
-		TrackerListener tracker = new TrackerListener(){
-
-			@Override
-			public void onQueueFinished(final DownloadQueue queue) {
-				System.out.println(queue.getName() + ": Finished!");
-				display.syncExec(new Runnable(){
-					@Override
-					public void run() {
-						if (progress == null || progress.isDisposed()) { return; }
-						progress.updateProgress(queue.getName(),1.0F,queue.getTotalFileCount(),queue.getSuccessFileCount());
-					}
-				});
-
-			}
-
-			@Override
-			public void onQueueProgress(final DownloadQueue queue) {
-				//System.out.println(queue.getName() + ": " + (100.0F * queue.getProgress()) + "%");
-				display.syncExec(new Runnable(){
-					@Override
-					public void run() {
-						if (progress == null || progress.isDisposed()) { return; }
-						progress.updateProgress(queue.getName(),queue.getProgress(),queue.getTotalFileCount(),queue.getSuccessFileCount());
-					}
-				});
-			}
-
-			@Override
-			public void printMessage(String msg) {
-				System.out.println(msg);				
-			}
-			
-		};
+		tracker = new MCUClientTracker(display, progress); 
+				
 		final DownloadQueue assetsQueue = AssetManager.downloadAssets(MCUpdater.getInstance().getArchiveFolder().resolve("assets").toFile(), tracker);
 		progress.addProgressBar(assetsQueue.getName());
-		ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 8, 30000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+		executor = new ThreadPoolExecutor(0, 8, 30000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();
@@ -168,8 +156,9 @@ public class MainShell extends MCUApp {
 					bar.setText("Entry: " + entry.getName());
 				}
 				*/
-				InstanceList iList = new InstanceList(grpInstances);
-				iList.setInstances(MCUpdater.getInstance().loadServerList("http://files.mcupdater.com/example/SamplePack.xml"));
+				iList = new InstanceList(grpInstances);
+				//iList.setInstances(MCUpdater.getInstance().loadServerList("http://files.mcupdater.com/example/SamplePack.xml"));
+				iList.setInstances(MCULogic.loadServerList(""));
 				grpInstances.pack();
 			}
 			final FormData sashLeftData = new FormData();
@@ -290,6 +279,41 @@ public class MainShell extends MCUApp {
 			Button btnUpdate = new Button(cmpStatus, SWT.PUSH);
 			btnUpdate.setLayoutData(new GridData(SWT.LEFT,SWT.CENTER,false,false,1,1));
 			btnUpdate.setText(translate.update);
+			btnUpdate.addSelectionListener(new SelectionListener() {
+				
+				@Override
+				public void widgetSelected(SelectionEvent arg0) {
+					MCUpdater.getInstance().getInstanceRoot().resolve(selected.getServerId()).toFile().mkdirs();
+					
+					final List<Module> selectedMods = new ArrayList<Module>();
+					Iterator<ModuleCheckbox> it = modules.getModules().iterator();
+					while (it.hasNext()){
+						ModuleCheckbox entry = it.next();
+						System.out.println("Module: " + entry.getModule().getName());
+						if (entry.isSelected()) {
+							selectedMods.add(entry.getModule());
+						}
+					}
+					final Properties instData = new Properties();
+					final Path instanceFile = MCUpdater.getInstance().getInstanceRoot().resolve(selected.getServerId()).resolve("instance.dat");
+					try {
+						if (!instanceFile.toFile().exists()) { instanceFile.toFile().createNewFile(); }
+						instData.load(Files.newInputStream(instanceFile));		
+					} catch (IOException e1) {
+						//baseLogger.log(Level.SEVERE, "I/O error", e1);
+						e1.printStackTrace();
+					}
+
+					try {
+						MCUpdater.getInstance().installMods(selected , selectedMods, false, instData, ModSide.CLIENT);
+					} catch (FileNotFoundException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				@Override
+				public void widgetDefaultSelected(SelectionEvent arg0) { widgetSelected(arg0); }
+			});
 			
 			Button btnLaunch = new Button(cmpStatus, SWT.PUSH);
 			btnLaunch.setLayoutData(new GridData(SWT.LEFT,SWT.CENTER,false,false,1,1));
@@ -304,7 +328,10 @@ public class MainShell extends MCUApp {
 
 				@Override
 				public void widgetSelected(SelectionEvent arg0) {
-					MCULogic.doLaunch();
+					Profile dummy = new Profile();
+					dummy.setUsername("Melonar");
+					dummy.setSessionKey("NoAuth");
+					MCULogic.doLaunch(selected, modules.getModules(), dummy);
 				}
 				
 			});
@@ -333,13 +360,7 @@ public class MainShell extends MCUApp {
 	@Override
 	public void setStatus(String string) {
 		// TODO Auto-generated method stub
-		lblStatus.setText(string);
-	}
-
-	@Override
-	public void setProgressBar(int i) {
-		// TODO Auto-generated method stub
-		
+		//lblStatus.setText(string);
 	}
 
 	@Override
@@ -357,6 +378,18 @@ public class MainShell extends MCUApp {
 	@Override
 	public void addServer(ServerList entry) {
 		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void addProgressBar(String title) {
+		progress.addProgressBar(title);
+	}
+
+	@Override
+	public DownloadQueue submitNewQueue(String queueName, Collection<Downloadable> files, File basePath) {
+		progress.addProgressBar(queueName);
+		return new DownloadQueue(queueName, tracker, files, basePath);
 		
 	}
 }

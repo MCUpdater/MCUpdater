@@ -1,5 +1,6 @@
 package org.mcupdater;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.swt.SWT;
@@ -15,6 +16,7 @@ public class MCUModules extends Composite {
 	private Composite container;
 	private RowLayout rlContainer = new RowLayout(SWT.VERTICAL);
 	private ScrolledComposite scroller;
+	private List<ModuleCheckbox> modules = new ArrayList<ModuleCheckbox>();
 
 	public MCUModules(Composite parent) {
 		super(parent, SWT.NONE);
@@ -29,14 +31,18 @@ public class MCUModules extends Composite {
 
 	public void reload(List<Module> modList) {
 		for (Control c : container.getChildren()) {
+			modules.remove(c);
 			c.dispose();
 		}
 		container.pack(true);
 		for (Module m : modList) {
-			new ModuleCheckbox(container, m);
+			modules.add(new ModuleCheckbox(container, m));
 		}
 		container.pack();
 		scroller.setMinSize(container.computeSize(SWT.DEFAULT, SWT.DEFAULT));
 	}
 
+	public List<ModuleCheckbox> getModules() {
+		return this.modules;
+	}
 }

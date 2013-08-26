@@ -49,6 +49,7 @@ public class InstanceList extends ScrolledComposite {
 		}
 		Collections.sort(instances);
 		for (ServerList entry : this.instances) {
+			if (entry.isFakeServer()) { continue; }
 			InstanceCell newCell = new InstanceCell(listBase,SWT.NONE,entry.getServerId(), this);
 			ImageData iData = null;
 			InputStream stream = null;

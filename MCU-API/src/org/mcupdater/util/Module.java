@@ -1,5 +1,7 @@
 package org.mcupdater.util;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -89,9 +91,18 @@ public class Module {
 		this.name=name;
 	}
 	
-	public List<PrioritizedURL> getUrls()
+	public List<URL> getUrls()
 	{
-		return urls;
+		List<URL> result = new ArrayList<URL>();
+		for (PrioritizedURL entry : urls) {
+			try {
+				result.add(new URL(entry.getUrl()));
+			} catch (MalformedURLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return result;
 	}
 	
 	public void setUrls(List<PrioritizedURL> urls)
@@ -268,6 +279,10 @@ public class Module {
 
 	public void setIsLibrary(boolean isLibrary) {
 		this.isLibrary = isLibrary;
+	}
+
+	public List<PrioritizedURL> getPrioritizedUrls() {
+		return this.urls;
 	}
 
 }

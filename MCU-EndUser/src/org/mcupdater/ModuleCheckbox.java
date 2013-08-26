@@ -15,7 +15,7 @@ public class ModuleCheckbox extends Composite {
 		super(parent, SWT.NONE);
 		this.setLayout(new FillLayout());
 		chk = new Button(this, SWT.CHECK);
-		this.setData(data);
+		this.data = data;
 		chk.setText(data.getName());
 		if (data.getRequired() || data.getIsDefault()) { chk.setSelection(true); }
 		if (data.getRequired()) { chk.setEnabled(false); }
@@ -24,11 +24,14 @@ public class ModuleCheckbox extends Composite {
 	}
 
 	public Module getModule() {
-		return data;
+		return this.data;
 	}
 
 	public void setModule(Module data) {
 		this.data = data;
 	}
 
+	public boolean isSelected() {
+		return this.chk.getSelection();
+	}
 }

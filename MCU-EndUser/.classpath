@@ -15,6 +15,7 @@
 	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/com.ibm.icu_4.4.2.v20110823.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/com.ibm.icu_4.4.2.v20110823.jar"/>
 	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.ui.forms_3.5.200.v20120705-114351.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.ui.forms_3.5.200.v20120705-114351.jar"/>
 	<classpathentry kind="lib" path="jopt-simple-4.5.jar"/>
+	<classpathentry kind="lib" path="commons-lang3-3.1.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MCU-API"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MCU-DownloadLib"/>
 	<classpathentry kind="lib" path="gson-2.2.4.jar"/>
