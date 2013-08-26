@@ -28,5 +28,13 @@ public class USEnglish extends TranslateProxy {
 		reload = "Reload";
 		back = "Back";
 		profile = "Profile:";
+		profiles = "Profiles:";
+		add = "Add";
+		remove = "Remove";
+		addProfile = "Add Profile";
+		username = "Username:";
+		password = "Password:";
+		login = "Login";
+		cancel = "Cancel";
 	}
 }

@@ -36,10 +36,12 @@ public class InstanceList extends ScrolledComposite {
 		this.setLayout(new FillLayout(SWT.HORIZONTAL));
 		listBase.setBackground(normal_bg);
 		this.setBackground(normal_bg);
+		this.setContent(listBase);
 	}
 	
 	public void setInstances(List<ServerList> newList){
 		this.instances = newList;
+		Thread.yield();
 		refresh();
 	}
 		
@@ -47,6 +49,9 @@ public class InstanceList extends ScrolledComposite {
 		for (Control c : listBase.getChildren()) {
 			c.dispose();
 		}
+		Thread.yield();
+		//listBase.pack(true);
+		//this.pack(true);
 		Collections.sort(instances);
 		for (ServerList entry : this.instances) {
 			if (entry.isFakeServer()) { continue; }
@@ -88,9 +93,9 @@ public class InstanceList extends ScrolledComposite {
 			newCell.pack();
 			//break;
 		}
+		Thread.yield();
 		listBase.pack(true);
-		this.setContent(listBase);
-		this.pack(true);
+		//this.pack(true);
 	}
 	
 	public void changeSelection(String serverId) {

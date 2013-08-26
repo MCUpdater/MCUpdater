@@ -62,6 +62,7 @@ public class MainShell extends MCUApp {
 	private ThreadPoolExecutor executor;
 	private InstanceList iList;
 	private MCUClientTracker tracker;
+	private String defaultUrl;
 
 	/**
 	 * Launch the application.
@@ -156,7 +157,7 @@ public class MainShell extends MCUApp {
 				*/
 				iList = new InstanceList(grpInstances);
 				//iList.setInstances(MCUpdater.getInstance().loadServerList("http://files.mcupdater.com/example/SamplePack.xml"));
-				iList.setInstances(MCULogic.loadServerList(""));
+				iList.setInstances(MCULogic.loadServerList(defaultUrl));
 				grpInstances.pack();
 			}
 			final FormData sashLeftData = new FormData();
@@ -355,6 +356,9 @@ public class MainShell extends MCUApp {
 		return sManager;
 	}
 
+	public void refreshInstances() {
+		iList.setInstances(MCULogic.loadServerList(defaultUrl));
+	}
 	@Override
 	public void setStatus(String string) {
 		// TODO Auto-generated method stub

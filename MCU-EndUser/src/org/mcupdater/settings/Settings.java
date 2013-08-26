@@ -146,15 +146,10 @@ public class Settings {
 	}
 	
 	public void addPackURL(String newUrl) {
-/*		ArrayList<String> urls;
-		if (this.packURLs.length > 0) {
-			urls = new ArrayList<String>(Arrays.asList(this.packURLs));
-		} else {
-			urls = new ArrayList<String>();
-		}
-		urls.add(newUrl);
-		this.packURLs = urls.toArray(new String[0]);
-		*/
 		this.packURLs.add(newUrl);
+	}
+	
+	public void removePackUrl(String oldUrl) {
+		this.packURLs.remove(oldUrl);
 	}
 }

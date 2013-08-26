@@ -27,4 +27,12 @@ public abstract class TranslateProxy {
 	public String reload = "#MISSING#";
 	public String back = "#MISSING#";
 	public String profile = "#MISSING#";
+	public String profiles = "#MISSING#";
+	public String add = "#MISSING#";
+	public String remove = "#MISSING#";
+	public String addProfile = "#MISSING#";
+	public String username = "#MISSING#";
+	public String password = "#MISSING#";
+	public String login = "#MISSING#";
+	public String cancel = "#MISSING#";
 }
