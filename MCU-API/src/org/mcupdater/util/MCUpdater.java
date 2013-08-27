@@ -846,7 +846,8 @@ public class MCUpdater {
 				while(li.hasPrevious()) { 
 					File entry = li.previous();
 					entry.delete();
-				}				
+				}
+				writeMCServerFile(server.getName(), server.getAddress(), server.getServerId());
 			}
 		});
 		jarQueue.processQueue(jarExecutor);

@@ -1,9 +1,23 @@
 package org.mcupdater.settings;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class Settings {
+	public enum TextField {
+		minMemory,
+		maxMemory,
+		permGen,
+		resWidth,
+		resHeight,
+		jrePath,
+		jvmOpts,
+		instanceRoot,
+		programWrapper,
+		timeoutLength
+	}
+
 	private List<Profile> profiles;
 	private String lastProfile;
 	private String minMemory;
@@ -151,5 +165,53 @@ public class Settings {
 	
 	public void removePackUrl(String oldUrl) {
 		this.packURLs.remove(oldUrl);
+	}
+
+	public synchronized void addOrReplaceProfile(Profile newProfile) {
+		Iterator<Profile> it = new ArrayList<Profile>(this.profiles).iterator();
+		while (it.hasNext()) {
+			Profile entry = it.next();
+			if (entry.getName().equals(newProfile.getName())) {
+				this.profiles.remove(entry);
+			}
+		}
+		this.profiles.add(newProfile);
+	}
+	
+	public void updateField(TextField field, String value) {
+		switch(field){
+		case instanceRoot:
+			setInstanceRoot(value);
+			break;
+		case jrePath:
+			setJrePath(value);
+			break;
+		case jvmOpts:
+			setJvmOpts(value);
+			break;
+		case maxMemory:
+			setMaxMemory(value);
+			break;
+		case minMemory:
+			setMinMemory(value);
+			break;
+		case permGen:
+			setPermGen(value);
+			break;
+		case programWrapper:
+			setProgramWrapper(value);
+			break;
+		case resHeight:
+			setResHeight(Integer.parseInt(value));
+			break;
+		case resWidth:
+			setResWidth(Integer.parseInt(value));
+			break;
+		case timeoutLength:
+			setTimeoutLength(Integer.parseInt(value));
+			break;
+		default:
+			break;
+		}
 	}
 }

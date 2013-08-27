@@ -1,5 +1,9 @@
 package org.mcupdater;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
@@ -20,7 +24,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.mcupdater.Yggdrasil.AuthManager;
+import org.mcupdater.Yggdrasil.SessionResponse;
+import org.mcupdater.settings.Profile;
+import org.mcupdater.settings.Settings;
 import org.mcupdater.settings.SettingsManager;
+import org.mcupdater.settings.Settings.TextField;
 import org.mcupdater.translate.TranslateProxy;
 
 public class MCUSettings extends Composite {
@@ -48,7 +57,32 @@ public class MCUSettings extends Composite {
 	private Button chkAutoMinimize;
 	private Button chkAutoConnect;
 	private List lstPackList;
+	private List lstProfiles;
+	private Map<Text,Settings.TextField> fieldMap = new HashMap<Text,Settings.TextField>();
+	
+	private ModifyListener genericListener = new ModifyListener(){
+		@Override
+		public void modifyText(ModifyEvent e) {
+			settingsManager.getSettings().updateField(fieldMap.get(e.getSource()), ((Text)e.getSource()).getText());
+			settingsManager.setDirty();
+			}
+	};
+	
+	private SelectionListener checkListener = new SelectionAdapter(){
 
+		@Override
+		public void widgetSelected(SelectionEvent e) {
+			if (e.getSource().equals(chkAutoConnect)) {
+				SettingsManager.getInstance().getSettings().setAutoConnect(chkAutoConnect.getSelection());
+			} else if (e.getSource().equals(chkAutoMinimize)) {
+				SettingsManager.getInstance().getSettings().setMinimizeOnLaunch(chkAutoMinimize.getSelection());
+			} else if (e.getSource().equals(chkFullscreen)) {
+				SettingsManager.getInstance().getSettings().setFullScreen(chkFullscreen.getSelection());
+			}
+			SettingsManager.getInstance().setDirty();
+		}
+	};
+	
 	public MCUSettings(Composite parent) {
 		super(parent, SWT.NONE);
 		FormLayout settingsLayout = new FormLayout();
@@ -78,6 +112,17 @@ public class MCUSettings extends Composite {
 		content.setLayout(glContent);
 		translate = MainShell.getInstance().translate;
 		buildPanel();
+		{
+			fieldMap.put(txtMinMem, TextField.minMemory);
+			fieldMap.put(txtMaxMem, TextField.maxMemory);
+			fieldMap.put(txtPermGen, TextField.permGen);
+			fieldMap.put(txtInstanceRoot, TextField.instanceRoot);
+			fieldMap.put(txtJVMOpts, TextField.jvmOpts);
+			fieldMap.put(txtJavaHome, TextField.jrePath);
+			fieldMap.put(txtResHeight, TextField.resHeight);
+			fieldMap.put(txtResWidth, TextField.resWidth);
+			fieldMap.put(txtWrapper, TextField.programWrapper);
+		}
 		loadFields();
 		scroller.setMinSize(content.computeSize(SWT.DEFAULT,SWT.DEFAULT));
 		
@@ -108,6 +153,7 @@ public class MCUSettings extends Composite {
 					settingsManager.loadSettings();
 					loadFields();
 					MainShell.getInstance().refreshInstances();
+					MainShell.getInstance().refreshProfiles();
 				}
 			});
 		}
@@ -122,7 +168,7 @@ public class MCUSettings extends Composite {
 			cmpProfiles.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true,false,2,1));
 			cmpProfiles.setLayout(new GridLayout(2,false));
 			{
-				List lstProfiles = new List(cmpProfiles,SWT.BORDER);
+				lstProfiles = new List(cmpProfiles,SWT.BORDER);
 				lstProfiles.setLayoutData(new GridData(SWT.FILL,SWT.FILL,true,true,1,5));
 				
 				Composite cmpProfButtonPanel = new Composite(cmpProfiles,SWT.NONE);
@@ -138,69 +184,53 @@ public class MCUSettings extends Composite {
 						final Shell dialog = new Shell(MainShell.getInstance().shell, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 						{
 							dialog.setText(translate.addProfile);
-							FormLayout dialogLayout = new FormLayout();
-							dialogLayout.marginWidth = 10;
-							dialogLayout.marginHeight = 10;
-							dialogLayout.spacing = 10;
+							GridLayout dialogLayout = new GridLayout(4,false);
+							dialogLayout.marginLeft = 5;
+							dialogLayout.marginRight = 5;
 							dialog.setLayout(dialogLayout);
 							
 							Label username = new Label(dialog, SWT.NONE);
 							username.setText(translate.username);
+							username.setLayoutData(new GridData(SWT.RIGHT,SWT.CENTER,false,false));
+							final Text txtUsername = new Text(dialog, SWT.FILL | SWT.BORDER);
+							txtUsername.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false,3,1));
+
 							Label password = new Label(dialog, SWT.NONE);
 							password.setText(translate.password);
+							password.setLayoutData(new GridData(SWT.RIGHT,SWT.CENTER,false,false));
+							final Text txtPassword = new Text(dialog, SWT.FILL | SWT.BORDER | SWT.PASSWORD);
+							txtPassword.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false,3,1));
 							
-							final Text txtUsername = new Text(dialog, SWT.FILL | SWT.BORDER);
-							final Text txtPassword = new Text(dialog, SWT.FILL | SWT.BORDER);
+							final Label response = new Label(dialog, SWT.NONE);
+							response.setAlignment(SWT.LEFT);
+							response.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
 							
 							Button login = new Button(dialog, SWT.PUSH);
 							login.setText(translate.login);
+							login.setLayoutData(new GridData(SWT.RIGHT,SWT.TOP,true,false,3,1));
 							
 							Button cancel = new Button(dialog, SWT.PUSH);
 							cancel.setText(translate.cancel);
-							
-							FormData formData = new FormData();
-							formData.left = new FormAttachment(0, 0);
-							formData.top = new FormAttachment(0, 0);
-							username.setLayoutData(formData);
-							
-							formData = new FormData();
-							formData.width = 60;
-							formData.right = new FormAttachment(100, 0);
-							formData.bottom = new FormAttachment(100, 0);
-							cancel.setLayoutData(formData);
-							
-							formData = new FormData();
-							formData.left = new FormAttachment(username, 0);
-							formData.right = new FormAttachment(100, 0);
-							formData.top = new FormAttachment(0, 0);
-							txtUsername.setLayoutData(formData);
-							
-							formData = new FormData();
-							formData.left = new FormAttachment(0, 0);
-							formData.top = new FormAttachment(username, 0);
-							password.setLayoutData(formData);
-							
-							formData = new FormData();
-							formData.left = new FormAttachment(password, 0);
-							formData.right = new FormAttachment(100, 0);
-							formData.top = new FormAttachment(txtUsername, 0);
-							txtPassword.setLayoutData(formData);
-							
-							formData = new FormData();
-							formData.right = new FormAttachment(100, 0);
-							formData.top = new FormAttachment(txtPassword, 0);
-							formData.bottom = new FormAttachment(100, 0);
-							cancel.setLayoutData(formData);
-							
-							formData = new FormData();
-							formData.right = new FormAttachment(cancel, 0);
-							formData.top = new FormAttachment(txtPassword, 0);
-							formData.bottom = new FormAttachment(100, 0);
-							login.setLayoutData(formData);
+							cancel.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,false,false));
 							
 							login.addSelectionListener(new SelectionAdapter() {
 								public void widgetSelected(SelectionEvent e) {
-									dialog.close();
+									AuthManager auth = new AuthManager();
+									SessionResponse authResponse = auth.authenticate(txtUsername.getText(), txtPassword.getText(), UUID.randomUUID().toString());
+									if (authResponse.getError().isEmpty()){
+										Profile newProfile = new Profile();
+										newProfile.setStyle("Yggdrasil");
+										newProfile.setUsername(txtUsername.getText());
+										newProfile.setAccessToken(authResponse.getAccessToken());
+										newProfile.setClientToken(authResponse.getClientToken());
+										newProfile.setName(authResponse.getSelectedProfile().getName());
+										settingsManager.getSettings().addOrReplaceProfile(newProfile);
+										settingsManager.setDirty();
+										dialog.close();
+									} else {
+										response.setText(authResponse.getErrorMessage());
+									}
+									//dialog.close();
 								}
 							});
 
@@ -213,6 +243,7 @@ public class MCUSettings extends Composite {
 							dialog.setDefaultButton(login);
 							dialog.pack();
 							dialog.open();
+							dialog.setSize(dialog.computeSize(360, SWT.DEFAULT));
 						}
 					}
 				});
@@ -239,10 +270,7 @@ public class MCUSettings extends Composite {
 
 			txtMinMem = new Text(content, SWT.FILL | SWT.BORDER);
 			txtMinMem.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-			txtMinMem.addModifyListener(new ModifyListener(){
-				@Override
-				public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setMinMemory(txtMinMem.getText()); }
-			});
+			txtMinMem.addModifyListener(genericListener);
 		}
 		{
 			Label lblMaxMem = new Label(content, SWT.NONE);
@@ -252,10 +280,7 @@ public class MCUSettings extends Composite {
 
 			txtMaxMem = new Text(content, SWT.FILL | SWT.BORDER);
 			txtMaxMem.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-			txtMaxMem.addModifyListener(new ModifyListener(){
-				@Override
-				public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setMaxMemory(txtMaxMem.getText()); }
-			});
+			txtMaxMem.addModifyListener(genericListener); 
 		}
 		{
 			Label lblPermGen = new Label(content, SWT.NONE);
@@ -265,10 +290,7 @@ public class MCUSettings extends Composite {
 
 			txtPermGen = new Text(content, SWT.FILL | SWT.BORDER);
 			txtPermGen.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-			txtPermGen.addModifyListener(new ModifyListener(){
-				@Override
-				public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setPermGen(txtPermGen.getText()); }
-			});
+			txtPermGen.addModifyListener(genericListener);
 		}
 		{
 			Label lblMemNotice = new Label(content, SWT.NONE);
@@ -283,17 +305,7 @@ public class MCUSettings extends Composite {
 			
 			chkFullscreen = new Button(content, SWT.CHECK);
 			chkFullscreen.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
-			chkFullscreen.addSelectionListener(new SelectionListener() {
-				@Override
-				public void widgetSelected(SelectionEvent arg0) {
-					settingsManager.getSettings().setFullScreen(chkFullscreen.getSelection());					
-				}
-				@Override
-				public void widgetDefaultSelected(SelectionEvent arg0) {
-					widgetSelected(arg0);
-				}
-			});
-
+			chkFullscreen.addSelectionListener(checkListener);
 		}
 		{
 			Label lblResolution = new Label(content, SWT.NONE);
@@ -307,10 +319,7 @@ public class MCUSettings extends Composite {
 			{
 				txtResWidth = new Text(resPanel, SWT.BORDER);
 				txtResWidth.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-				txtResWidth.addModifyListener(new ModifyListener(){
-					@Override
-					public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setResWidth(Integer.parseInt(txtResWidth.getText())); }
-				});
+				txtResWidth.addModifyListener(genericListener);
 
 				Label lblResSeparator = new Label(resPanel, SWT.NONE);
 				lblResSeparator.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false));
@@ -318,10 +327,7 @@ public class MCUSettings extends Composite {
 
 				txtResHeight = new Text(resPanel, SWT.BORDER);
 				txtResHeight.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-				txtResHeight.addModifyListener(new ModifyListener(){
-					@Override
-					public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setResHeight(Integer.parseInt(txtResHeight.getText())); }
-				});
+				txtResHeight.addModifyListener(genericListener);
 			}
 		}
 		{
@@ -331,10 +337,7 @@ public class MCUSettings extends Composite {
 
 			txtJavaHome = new Text(content, SWT.BORDER);
 			txtJavaHome.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-			txtJavaHome.addModifyListener(new ModifyListener(){
-				@Override
-				public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setJrePath(txtJavaHome.getText()); }
-			});
+			txtJavaHome.addModifyListener(genericListener);
 
 			Button btnJavaHomeBrowse = new Button(content, SWT.PUSH);
 			btnJavaHomeBrowse.setText(translate.browse);
@@ -349,6 +352,7 @@ public class MCUSettings extends Composite {
 					String newPath = directoryDialog.open();
 					if (newPath != null && !newPath.isEmpty()) {
 						txtJavaHome.setText(newPath);
+						settingsManager.setDirty();
 					}
 				}
 			});
@@ -360,10 +364,7 @@ public class MCUSettings extends Composite {
 
 			txtJVMOpts = new Text(content, SWT.BORDER);
 			txtJVMOpts.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-			txtJVMOpts.addModifyListener(new ModifyListener(){
-				@Override
-				public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setJvmOpts(txtJVMOpts.getText()); }
-			});
+			txtJVMOpts.addModifyListener(genericListener);
 			
 		}
 		{
@@ -373,10 +374,7 @@ public class MCUSettings extends Composite {
 			
 			txtInstanceRoot = new Text(content, SWT.BORDER);
 			txtInstanceRoot.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-			txtInstanceRoot.addModifyListener(new ModifyListener(){
-				@Override
-				public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setInstanceRoot(txtInstanceRoot.getText()); }
-			});
+			txtInstanceRoot.addModifyListener(genericListener);
 	
 			Button btnInstanceRootBrowse = new Button(content, SWT.PUSH);
 			btnInstanceRootBrowse.setText(translate.browse);
@@ -393,6 +391,7 @@ public class MCUSettings extends Composite {
 					String newPath = directoryDialog.open();
 					if (newPath != null && !newPath.isEmpty()) {
 						txtInstanceRoot.setText(newPath);
+						settingsManager.setDirty();
 					}
 				}
 			});
@@ -405,10 +404,7 @@ public class MCUSettings extends Composite {
 			
 			txtWrapper = new Text(content, SWT.BORDER);
 			txtWrapper.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
-			txtWrapper.addModifyListener(new ModifyListener(){
-				@Override
-				public void modifyText(ModifyEvent arg0) { settingsManager.getSettings().setProgramWrapper(txtWrapper.getText()); }
-			});
+			txtWrapper.addModifyListener(genericListener);
 
 		}
 		{
@@ -418,16 +414,7 @@ public class MCUSettings extends Composite {
 			
 			chkAutoMinimize = new Button(content, SWT.CHECK);
 			chkAutoMinimize.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
-			chkAutoMinimize.addSelectionListener(new SelectionListener() {
-				@Override
-				public void widgetSelected(SelectionEvent arg0) {
-					settingsManager.getSettings().setMinimizeOnLaunch(chkAutoMinimize.getSelection());					
-				}
-				@Override
-				public void widgetDefaultSelected(SelectionEvent arg0) {
-					widgetSelected(arg0);
-				}
-			});
+			chkAutoMinimize.addSelectionListener(checkListener);
 		}
 		{
 			Label lblAutoConnect = new Label(content, SWT.NONE);
@@ -436,16 +423,7 @@ public class MCUSettings extends Composite {
 			
 			chkAutoConnect = new Button(content, SWT.CHECK);
 			chkAutoConnect.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
-			chkAutoConnect.addSelectionListener(new SelectionListener() {
-				@Override
-				public void widgetSelected(SelectionEvent arg0) {
-					settingsManager.getSettings().setAutoConnect(chkAutoConnect.getSelection());					
-				}
-				@Override
-				public void widgetDefaultSelected(SelectionEvent arg0) {
-					widgetSelected(arg0);
-				}
-			});
+			chkAutoConnect.addSelectionListener(checkListener);
 		}
 		{
 			Label lblPackList = new Label(content, SWT.NONE);
@@ -469,6 +447,7 @@ public class MCUSettings extends Composite {
 					@Override
 					public void widgetSelected(SelectionEvent arg0) {
 						settingsManager.getSettings().addPackURL(txtNewUrl.getText());
+						settingsManager.setDirty();
 						txtNewUrl.setText("");
 						reloadURLs();
 						MainShell.getInstance().refreshInstances();
@@ -485,6 +464,7 @@ public class MCUSettings extends Composite {
 					public void widgetSelected(SelectionEvent arg0) {
 						if (lstPackList.getSelectionCount() > 0) {
 							settingsManager.getSettings().removePackUrl(lstPackList.getSelection()[0]);
+							settingsManager.setDirty();
 							reloadURLs();
 							MainShell.getInstance().refreshInstances();
 						}
@@ -497,19 +477,55 @@ public class MCUSettings extends Composite {
 	}
 
 	protected void loadFields() {
-		txtMinMem.setText(settingsManager.getSettings().getMinMemory());
-		txtMaxMem.setText(settingsManager.getSettings().getMaxMemory());
-		txtPermGen.setText(settingsManager.getSettings().getPermGen());
-		chkFullscreen.setSelection(settingsManager.getSettings().isFullScreen());
-		txtResWidth.setText(String.valueOf(settingsManager.getSettings().getResWidth()));
-		txtResHeight.setText(String.valueOf(settingsManager.getSettings().getResHeight()));
-		txtJavaHome.setText(settingsManager.getSettings().getJrePath());
-		txtJVMOpts.setText(settingsManager.getSettings().getJvmOpts());
-		txtInstanceRoot.setText(settingsManager.getSettings().getInstanceRoot());
-		txtWrapper.setText(settingsManager.getSettings().getProgramWrapper());
-		chkAutoMinimize.setSelection(settingsManager.getSettings().isMinimizeOnLaunch());
-		chkAutoConnect.setSelection(settingsManager.getSettings().isAutoConnect());
-		reloadURLs();
+		synchronized(settingsManager.getSettings()) {
+			txtMinMem.removeModifyListener(genericListener);
+			txtMaxMem.removeModifyListener(genericListener);
+			txtPermGen.removeModifyListener(genericListener);
+			txtResWidth.removeModifyListener(genericListener);
+			txtResHeight.removeModifyListener(genericListener);
+			txtJavaHome.removeModifyListener(genericListener);
+			txtJVMOpts.removeModifyListener(genericListener);
+			txtInstanceRoot.removeModifyListener(genericListener);
+			txtWrapper.removeModifyListener(genericListener);
+			chkFullscreen.removeSelectionListener(checkListener);
+			chkAutoMinimize.removeSelectionListener(checkListener);
+			chkAutoConnect.removeSelectionListener(checkListener);
+	
+			txtMinMem.setText(settingsManager.getSettings().getMinMemory());
+			txtMaxMem.setText(settingsManager.getSettings().getMaxMemory());
+			txtPermGen.setText(settingsManager.getSettings().getPermGen());
+			chkFullscreen.setSelection(settingsManager.getSettings().isFullScreen());
+			txtResWidth.setText(String.valueOf(settingsManager.getSettings().getResWidth()));
+			txtResHeight.setText(String.valueOf(settingsManager.getSettings().getResHeight()));
+			txtJavaHome.setText(settingsManager.getSettings().getJrePath());
+			txtJVMOpts.setText(settingsManager.getSettings().getJvmOpts());
+			txtInstanceRoot.setText(settingsManager.getSettings().getInstanceRoot());
+			txtWrapper.setText(settingsManager.getSettings().getProgramWrapper());
+			chkAutoMinimize.setSelection(settingsManager.getSettings().isMinimizeOnLaunch());
+			chkAutoConnect.setSelection(settingsManager.getSettings().isAutoConnect());
+			reloadURLs();
+			reloadProfiles();
+	
+			txtMinMem.addModifyListener(genericListener);
+			txtMaxMem.addModifyListener(genericListener);
+			txtPermGen.addModifyListener(genericListener);
+			txtResWidth.addModifyListener(genericListener);
+			txtResHeight.addModifyListener(genericListener);
+			txtJavaHome.addModifyListener(genericListener);
+			txtJVMOpts.addModifyListener(genericListener);
+			txtInstanceRoot.addModifyListener(genericListener);
+			txtWrapper.addModifyListener(genericListener);
+			chkFullscreen.addSelectionListener(checkListener);
+			chkAutoMinimize.addSelectionListener(checkListener);
+			chkAutoConnect.addSelectionListener(checkListener);
+		}
+	}
+
+	private void reloadProfiles() {
+		lstProfiles.removeAll();
+		for (Profile entry : settingsManager.getSettings().getProfiles()) {
+			lstProfiles.add(entry.getName());
+		}
 	}
 
 	private void reloadURLs() {

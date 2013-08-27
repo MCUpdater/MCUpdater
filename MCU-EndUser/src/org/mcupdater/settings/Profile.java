@@ -1,5 +1,8 @@
 package org.mcupdater.settings;
 
+import org.mcupdater.Yggdrasil.AuthManager;
+import org.mcupdater.Yggdrasil.SessionResponse;
+
 public class Profile {
 	private String style;
 	private String name;
@@ -33,7 +36,28 @@ public class Profile {
 		this.username = username;
 	}
 
-	public String getSessionKey() {
+	public String getSessionKey() throws Exception {
+		if (this.sessionKey == null || this.sessionKey.isEmpty()) {
+			if (this.style.equals("Yggdrasil")) {
+				AuthManager auth = new AuthManager();
+				System.out.println("old-> " + accessToken + ": " + clientToken);
+				SessionResponse response = auth.refresh(accessToken, clientToken);
+				if (!response.getError().isEmpty()) {
+					throw new Exception(response.getErrorMessage());
+				} else {
+					this.accessToken = response.getAccessToken();
+					this.clientToken = response.getClientToken();
+					System.out.println("new-> " + accessToken + ": " + clientToken);
+
+					SettingsManager.getInstance().getSettings().addOrReplaceProfile(this);
+					if (!SettingsManager.getInstance().isDirty()) {
+						System.out.println("Saving settings");
+						SettingsManager.getInstance().saveSettings();
+					}
+				}
+				return response.getSessionId();
+			}
+		}
 		return sessionKey;
 	}
 

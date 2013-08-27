@@ -63,6 +63,7 @@ public class MainShell extends MCUApp {
 	private InstanceList iList;
 	private MCUClientTracker tracker;
 	private String defaultUrl;
+	private MCULogin login;
 
 	/**
 	 * Launch the application.
@@ -272,7 +273,7 @@ public class MainShell extends MCUApp {
 			lblStatus.setLayoutData(new GridData(SWT.FILL,SWT.CENTER,true,false,1,1));
 			lblStatus.setText("Ready");
 			
-			Composite login = new MCULogin(cmpStatus);
+			login = new MCULogin(cmpStatus);
 			login.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER,false,false,1,1));
 
 			Button btnUpdate = new Button(cmpStatus, SWT.PUSH);
@@ -327,12 +328,15 @@ public class MainShell extends MCUApp {
 
 				@Override
 				public void widgetSelected(SelectionEvent arg0) {
-					Profile dummy = new Profile();
-					dummy.setUsername("Melonar");
-					dummy.setSessionKey("NoAuth");
-					MCULogic.doLaunch(selected, modules.getModules(), dummy);
+					Profile launchProfile = login.getSelectedProfile();
+					if (!(launchProfile == null)) {
+						try {
+							MCULogic.doLaunch(selected, modules.getModules(), launchProfile);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
 				}
-				
 			});
 		}
 	}
@@ -393,5 +397,9 @@ public class MainShell extends MCUApp {
 		progress.addProgressBar(queueName);
 		return new DownloadQueue(queueName, tracker, files, basePath, cachePath);
 		
+	}
+
+	public void refreshProfiles() {
+		login.refreshProfiles(SettingsManager.getInstance().getSettings());
 	}
 }

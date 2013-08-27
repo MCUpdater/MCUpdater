@@ -15,7 +15,7 @@ public class Module {
 	private String depends = "";
 	private boolean required = false;
 	private boolean inJar = false;
-	private int order = 0;
+	private int order = 1;
 	private boolean keepMeta = false;
 	private boolean extract = false;
 	private boolean inRoot = false;
@@ -42,7 +42,7 @@ public class Module {
 		this.setDepends(depends);
 		this.setRequired(required);
 		this.setInJar(inJar);
-		this.setJarOrder(jarOrder);
+		this.setJarOrder(jarOrder+1);
 		this.setKeepMeta(keepMeta);
 		this.setIsDefault(isDefault);
 		this.setExtract(extract);

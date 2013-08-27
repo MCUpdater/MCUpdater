@@ -22,6 +22,7 @@ public class SettingsManager {
 	private Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	private Settings settings;
 	private Path configFile = MCUpdater.getInstance().getArchiveFolder().resolve("config.json");
+	private boolean dirty = false;
 	
 	public SettingsManager() {
 		if (!configFile.toFile().exists()) {
@@ -46,6 +47,7 @@ public class SettingsManager {
 			BufferedReader reader = Files.newBufferedReader(configFile);
 			this.settings = gson.fromJson(reader, Settings.class);
 			reader.close();
+			this.dirty=false;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -132,9 +134,17 @@ public class SettingsManager {
 			BufferedWriter writer = Files.newBufferedWriter(configFile);
 			writer.append(jsonOut);
 			writer.close();
+			this.dirty = false;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
 	}
 
+	public boolean isDirty() {
+		return this.dirty;
+	}
+	
+	public void setDirty() {
+		this.dirty = true;
+	}
 }

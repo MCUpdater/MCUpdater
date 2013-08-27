@@ -29,7 +29,7 @@ import org.w3c.dom.NodeList;
 
 public class MCULogic {
 	
-	public static void doLaunch(ServerList selected, List<ModuleCheckbox> list, Profile user) {
+	public static void doLaunch(ServerList selected, List<ModuleCheckbox> list, Profile user) throws Exception {
 		MinecraftVersion mcVersion = MinecraftVersion.loadVersion(selected.getVersion());
 		String mainClass;
 		List<String> args = new ArrayList<String>();
@@ -96,7 +96,7 @@ public class MCULogic {
 		System.out.println(tmpclArgs);
 		Map<String,String> fields = new HashMap<String,String>();
 		StrSubstitutor fieldReplacer = new StrSubstitutor(fields);
-		fields.put("auth_player_name", user.getUsername());
+		fields.put("auth_player_name", user.getName());
 		fields.put("auth_session", user.getSessionKey());
 		fields.put("version_name", selected.getVersion());
 		fields.put("game_directory", mcu.getInstanceRoot().resolve(selected.getServerId()).toString());

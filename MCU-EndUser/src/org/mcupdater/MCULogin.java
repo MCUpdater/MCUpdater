@@ -7,6 +7,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.mcupdater.settings.Profile;
 import org.mcupdater.settings.Settings;
+import org.mcupdater.settings.SettingsManager;
 import org.mcupdater.translate.TranslateProxy;
 
 public class MCULogin extends Composite {
@@ -29,8 +30,20 @@ public class MCULogin extends Composite {
 		profileName.removeAll();
 		if (settings.getProfiles() == null) { return; }
 		for (Profile entry : settings.getProfiles()){
-			profileName.add(entry.getUsername());
+			profileName.add(entry.getName());
 		}
+	}
+
+	public Profile getSelectedProfile() {
+		if (profileName.getSelectionIndex() == -1) {
+			return null;
+		}
+		for (Profile entry : SettingsManager.getInstance().getSettings().getProfiles()){
+			if (entry.getName().equals(profileName.getText())) {
+				return entry;
+			}
+		}
+		return null;
 	}
 
 }
