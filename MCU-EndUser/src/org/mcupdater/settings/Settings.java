@@ -214,4 +214,13 @@ public class Settings {
 			break;
 		}
 	}
+
+	public Profile findProfile(String name) {
+		for (Profile entry : this.profiles) {
+			if (entry.getName().equals(name)) {
+				return entry;
+			}
+		}
+		return null;
+	}
 }

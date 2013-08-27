@@ -20,6 +20,7 @@ import org.mcupdater.mojang.Library;
 import org.mcupdater.mojang.MinecraftVersion;
 import org.mcupdater.settings.Profile;
 import org.mcupdater.settings.Settings;
+import org.mcupdater.settings.SettingsManager;
 import org.mcupdater.util.MCUpdater;
 import org.mcupdater.util.ServerList;
 import org.mcupdater.util.ServerPackParser;
@@ -36,7 +37,7 @@ public class MCULogic {
 		StringBuilder clArgs = new StringBuilder(mcVersion.getMinecraftArguments());
 		List<String> libs = new ArrayList<String>();
 		MCUpdater mcu = MCUpdater.getInstance();
-		Settings settings = MainShell.getInstance().getSettingsManager().getSettings();
+		Settings settings = SettingsManager.getInstance().getSettings();
 		if (settings.isFullScreen()) {
 			clArgs.append(" --fullscreen");
 		} else {
@@ -129,7 +130,7 @@ public class MCULogic {
 
 	public static List<ServerList> loadServerList(String defaultUrl) {
 		{
-			Settings settings = MainShell.getInstance().getSettingsManager().getSettings();
+			Settings settings = SettingsManager.getInstance().getSettings();
 			List<ServerList> slList = new ArrayList<ServerList>();
 
 			Set<String> urls = new HashSet<String>();
@@ -149,13 +150,11 @@ public class MCULogic {
 							NodeList servers = parent.getElementsByTagName("Server");
 							for (int i = 0; i < servers.getLength(); i++){
 								docEle = (Element)servers.item(i);
-								System.out.println(serverUrl + ": " + docEle.getAttribute("id"));
 								ServerList sl = new ServerList(docEle.getAttribute("id"), docEle.getAttribute("name"), serverUrl, docEle.getAttribute("newsUrl"), docEle.getAttribute("iconUrl"), docEle.getAttribute("version"), docEle.getAttribute("serverAddress"), ServerPackParser.parseBoolean(docEle.getAttribute("generateList"), true), ServerPackParser.parseBoolean(docEle.getAttribute("autoConnect"), true), docEle.getAttribute("revision"), ServerPackParser.parseBoolean(docEle.getAttribute("abstract"), false), docEle.getAttribute("mainClass"));
 								sl.setMCUVersion(mcuVersion);
 								slList.add(sl);
 							}					
 						} else {
-							System.out.println(serverUrl + ": *** " + parent.getAttribute("id"));
 							ServerList sl = new ServerList(parent.getAttribute("id"), parent.getAttribute("name"), serverUrl, parent.getAttribute("newsUrl"), parent.getAttribute("iconUrl"), parent.getAttribute("version"), parent.getAttribute("serverAddress"), ServerPackParser.parseBoolean(parent.getAttribute("generateList"), true), ServerPackParser.parseBoolean(parent.getAttribute("autoConnect"), true), parent.getAttribute("revision"), ServerPackParser.parseBoolean(parent.getAttribute("abstract"), false), parent.getAttribute("mainClass"));
 							sl.setMCUVersion("1.0");
 							slList.add(sl);

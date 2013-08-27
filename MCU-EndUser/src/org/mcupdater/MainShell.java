@@ -37,6 +37,7 @@ import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.mcupdater.mojang.AssetManager;
 import org.mcupdater.settings.Profile;
+import org.mcupdater.settings.Settings;
 import org.mcupdater.settings.SettingsManager;
 import org.mcupdater.translate.TranslateProxy;
 import org.mcupdater.util.MCUpdater;
@@ -56,13 +57,12 @@ public class MainShell extends MCUApp {
 	private MCUConsole console;
 	private MCUProgress progress;
 	private MCUModules modules;
-	private SettingsManager sManager = SettingsManager.getInstance();
 	public TranslateProxy translate;
 	private Label lblStatus;
 	private ThreadPoolExecutor executor;
 	private InstanceList iList;
 	private MCUClientTracker tracker;
-	private String defaultUrl;
+	private String defaultUrl = "";
 	private MCULogin login;
 
 	/**
@@ -72,8 +72,7 @@ public class MainShell extends MCUApp {
 	public static void main(String[] args) {
 		try {
 			INSTANCE = new MainShell();
-			MCUpdater.getInstance().setInstanceRoot(MCUpdater.getInstance().getArchiveFolder().resolve("MCU3-instances"));
-			MCUpdater.getInstance().getInstanceRoot().toFile().mkdirs();
+			SettingsManager.getInstance();
 			MCUpdater.getInstance().setParent(INSTANCE);
 			INSTANCE.open();
 		} catch (Exception e) {
@@ -93,6 +92,7 @@ public class MainShell extends MCUApp {
 			translate = Languages.en_US.getProxy();
 		}		
 		createContents();
+		processSettings();
 		shell.open();
 		shell.layout();
 		tracker = new MCUClientTracker(display, progress); 
@@ -158,7 +158,7 @@ public class MainShell extends MCUApp {
 				*/
 				iList = new InstanceList(grpInstances);
 				//iList.setInstances(MCUpdater.getInstance().loadServerList("http://files.mcupdater.com/example/SamplePack.xml"));
-				iList.setInstances(MCULogic.loadServerList(defaultUrl));
+				//iList.setInstances(MCULogic.loadServerList(defaultUrl));
 				grpInstances.pack();
 			}
 			final FormData sashLeftData = new FormData();
@@ -330,6 +330,11 @@ public class MainShell extends MCUApp {
 				public void widgetSelected(SelectionEvent arg0) {
 					Profile launchProfile = login.getSelectedProfile();
 					if (!(launchProfile == null)) {
+						SettingsManager.getInstance().getSettings().setLastProfile(launchProfile.getName());
+						SettingsManager.getInstance().getSettings().findProfile(launchProfile.getName()).setLastInstance(selected.getServerId());
+						if (!SettingsManager.getInstance().isDirty()) {
+							SettingsManager.getInstance().saveSettings();
+						}
 						try {
 							MCULogic.doLaunch(selected, modules.getModules(), launchProfile);
 						} catch (Exception e) {
@@ -354,10 +359,6 @@ public class MainShell extends MCUApp {
 
 	public static MainShell getInstance() {
 		return INSTANCE;
-	}
-
-	public SettingsManager getSettingsManager() {
-		return sManager;
 	}
 
 	public void refreshInstances() {
@@ -401,5 +402,18 @@ public class MainShell extends MCUApp {
 
 	public void refreshProfiles() {
 		login.refreshProfiles(SettingsManager.getInstance().getSettings());
+	}
+
+	public void processSettings() {
+		Settings settings = SettingsManager.getInstance().getSettings();
+		refreshProfiles();
+		refreshInstances();
+		login.setSelectedProfile(settings.getLastProfile());
+		MCUpdater.getInstance().setInstanceRoot(new Path(settings.getInstanceRoot()));
+		MCUpdater.getInstance().getInstanceRoot().toFile().mkdirs();
+	}
+
+	public void setSelectedInstance(String lastInstance) {
+		iList.changeSelection(lastInstance);
 	}
 }

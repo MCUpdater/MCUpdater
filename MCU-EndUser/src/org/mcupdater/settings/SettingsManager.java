@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.mcupdater.MainShell;
 import org.mcupdater.util.MCUpdater;
 
 import com.google.gson.Gson;
@@ -51,6 +52,11 @@ public class SettingsManager {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void reload() {
+		loadSettings();
+		MainShell.getInstance().processSettings();
 	}
 	
 	private Settings convertOldSettings(File oldConfigFile) {

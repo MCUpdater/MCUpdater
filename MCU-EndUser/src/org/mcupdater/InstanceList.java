@@ -99,22 +99,14 @@ public class InstanceList extends ScrolledComposite {
 	}
 	
 	public void changeSelection(String serverId) {
-		if (!selected.isEmpty()) {
-			for(Control c : listBase.getChildren()) {
-				if (c instanceof InstanceCell) {
-					InstanceCell cell = (InstanceCell) c;
-					if (cell.getServerId() == selected) {
-						cell.setSelected(false);
-					}
-				}
-			}
-		}
 		selected = serverId;
 		for(Control c : listBase.getChildren()) {
 			if (c instanceof InstanceCell) {
 				InstanceCell cell = (InstanceCell) c;
-				if (cell.getServerId() == selected) {
+				if (cell.getServerId().equals(selected)) {
 					cell.setSelected(true);
+				} else {
+					cell.setSelected(false);
 				}
 			}
 		}

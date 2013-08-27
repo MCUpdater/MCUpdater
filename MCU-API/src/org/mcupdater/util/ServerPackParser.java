@@ -44,7 +44,7 @@ public class ServerPackParser {
 	public static Document readXmlFromUrl(String serverUrl) throws Exception
 	{
 		MCUpdater.apiLogger.fine("readXMLFromUrl(" + serverUrl + ")");
-		if (serverUrl.equals("http://www.example.org/ServerPack.xml")) {
+		if (serverUrl.equals("http://www.example.org/ServerPack.xml") || serverUrl.isEmpty()) {
 			return null;
 		}
 		//_log("Reading "+serverUrl+"...");
@@ -94,7 +94,7 @@ public class ServerPackParser {
 			docEle = parent;
 			version = 1;
 		}
-		System.out.println(serverId + ": " + version);
+		MCUpdater.apiLogger.log(Level.FINE, serverId + ": format=" + version);
 		NodeList nl;
 		switch (version) {
 		case 2:

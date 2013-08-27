@@ -1,6 +1,8 @@
 package org.mcupdater;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -17,12 +19,20 @@ public class MCULogin extends Composite {
 
 	public MCULogin(Composite parent) {
 		super(parent, SWT.NONE);
-		Settings settings = MainShell.getInstance().getSettingsManager().getSettings();
+		Settings settings = SettingsManager.getInstance().getSettings();
 		translate = MainShell.getInstance().translate;
 		this.setLayout(new GridLayout(2,false));
 		Label profilePrompt = new Label(this, SWT.NONE);
 		profilePrompt.setText(translate.profile);
 		profileName = new Combo(this, SWT.READ_ONLY);
+		profileName.addModifyListener(new ModifyListener(){
+			@Override
+			public void modifyText(ModifyEvent e){
+				if (!((Combo)e.getSource()).getText().isEmpty()) {
+					MainShell.getInstance().setSelectedInstance(SettingsManager.getInstance().getSettings().findProfile(((Combo)e.getSource()).getText()).getLastInstance());
+				}
+			}
+		});
 		refreshProfiles(settings);
 	}
 
@@ -44,6 +54,15 @@ public class MCULogin extends Composite {
 			}
 		}
 		return null;
+	}
+
+	public void setSelectedProfile(String lastProfile) {
+		for (int i = 0; i < profileName.getItemCount(); i++){
+			if (profileName.getItem(i).equals(lastProfile)) {
+				profileName.select(i);
+				return;
+			}
+		}
 	}
 
 }
