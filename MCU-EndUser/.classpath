@@ -8,7 +8,7 @@
 	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.equinox.registry_3.5.200.v20120522-1841.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.equinox.registry_3.5.200.v20120522-1841.jar"/>
 	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.core.runtime_3.8.0.v20120912-155025.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.core.runtime_3.8.0.v20120912-155025.jar"/>
 	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.text_3.5.200.v20120523-1310.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.text_3.5.200.v20120523-1310.jar"/>
-	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.swt.gtk.linux.x86_64_3.100.1.v4236b.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.swt.gtk.linux.x86_64_3.100.1.v4236b.jar"/>
+	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.swt.gtk.linux.x86_3.100.1.v4236b.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.swt.gtk.linux.x86_64_3.100.1.v4236b.jar"/>
 	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.jface_3.8.102.v20130123-162658.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.jface_3.8.102.v20130123-162658.jar"/>
 	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.jface.text_3.8.2.v20121126-164145.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.jface.text_3.8.2.v20121126-164145.jar"/>
 	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.ui.workbench_3.104.0.v20130204-164612.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.ui.workbench_3.104.0.v20130204-164612.jar"/>
@@ -19,5 +19,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/MCU-API"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MCU-DownloadLib"/>
 	<classpathentry kind="lib" path="gson-2.2.4.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MCU-Yggdrasil"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
