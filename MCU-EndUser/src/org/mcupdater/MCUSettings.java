@@ -16,7 +16,6 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
@@ -33,6 +32,7 @@ import org.mcupdater.settings.Settings.TextField;
 import org.mcupdater.translate.TranslateProxy;
 
 public class MCUSettings extends Composite {
+	private static MCUSettings INSTANCE;
 	
 	private ScrolledComposite scroller;
 	private Composite content;
@@ -44,6 +44,7 @@ public class MCUSettings extends Composite {
 //	final private GridData gdFullSpan = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
 	private Text txtNewUrl;
 	private Composite toolbar;
+	private Label lblState;
 	private Text txtMinMem;
 	private Text txtMaxMem;
 	private Text txtPermGen;
@@ -85,9 +86,10 @@ public class MCUSettings extends Composite {
 	
 	public MCUSettings(Composite parent) {
 		super(parent, SWT.NONE);
+		INSTANCE = this;
 		FormLayout settingsLayout = new FormLayout();
 		toolbar = new Composite(this, SWT.BORDER);
-		toolbar.setLayout(new RowLayout(SWT.HORIZONTAL));
+		toolbar.setLayout(new GridLayout(3,false));
 		FormData toolbarData = new FormData();
 		{
 			toolbarData.left = new FormAttachment(0, 0);
@@ -131,6 +133,7 @@ public class MCUSettings extends Composite {
 	private void buildPanel() {
 		{
 			Button btnSave = new Button(toolbar,SWT.PUSH);
+			btnSave.setLayoutData(new GridData(SWT.LEFT,SWT.CENTER,false,false,1,1));
 			btnSave.setText(translate.save);
 			btnSave.addSelectionListener(new SelectionListener(){
 				@Override
@@ -143,6 +146,7 @@ public class MCUSettings extends Composite {
 			});
 			
 			Button btnReload = new Button(toolbar,SWT.PUSH);
+			btnReload.setLayoutData(new GridData(SWT.LEFT,SWT.CENTER,false,false,1,1));
 			btnReload.setText(translate.reload);
 			btnReload.addSelectionListener(new SelectionListener(){
 				@Override
@@ -156,6 +160,11 @@ public class MCUSettings extends Composite {
 					MainShell.getInstance().refreshProfiles();
 				}
 			});
+			
+			lblState = new Label(toolbar, SWT.NONE);
+			setState(settingsManager.isDirty());
+			lblState.setLayoutData(new GridData(SWT.FILL,SWT.CENTER,true,false,1,1));
+			lblState.setSize(lblState.computeSize(300, SWT.DEFAULT)); 
 		}
 
 		{ // Profiles
@@ -181,7 +190,7 @@ public class MCUSettings extends Composite {
 				btnProfileAdd.addSelectionListener(new SelectionAdapter() {
 					
 					public void widgetSelected(SelectionEvent arg0) {
-						final Shell dialog = new Shell(MainShell.getInstance().shell, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
+						final Shell dialog = new Shell(MainShell.getInstance().getShell(), SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 						{
 							dialog.setText(translate.addProfile);
 							GridLayout dialogLayout = new GridLayout(4,false);
@@ -349,7 +358,7 @@ public class MCUSettings extends Composite {
 				}
 				@Override
 				public void widgetSelected(SelectionEvent arg0) {
-					DirectoryDialog directoryDialog = new DirectoryDialog(MainShell.getInstance().shell);
+					DirectoryDialog directoryDialog = new DirectoryDialog(MainShell.getInstance().getShell());
 					String newPath = directoryDialog.open();
 					if (newPath != null && !newPath.isEmpty()) {
 						txtJavaHome.setText(newPath);
@@ -386,7 +395,7 @@ public class MCUSettings extends Composite {
 				}
 				@Override
 				public void widgetSelected(SelectionEvent arg0) {
-					DirectoryDialog directoryDialog = new DirectoryDialog(MainShell.getInstance().shell);
+					DirectoryDialog directoryDialog = new DirectoryDialog(MainShell.getInstance().getShell());
 					directoryDialog.setMessage("Select new instance path");
 					directoryDialog.setFilterPath(txtInstanceRoot.getText());
 					String newPath = directoryDialog.open();
@@ -522,7 +531,7 @@ public class MCUSettings extends Composite {
 		}
 	}
 
-	private void reloadProfiles() {
+	public void reloadProfiles() {
 		lstProfiles.removeAll();
 		for (Profile entry : settingsManager.getSettings().getProfiles()) {
 			lstProfiles.add(entry.getName());
@@ -534,5 +543,15 @@ public class MCUSettings extends Composite {
 		for (String entry : settingsManager.getSettings().getPackURLs()) {
 			lstPackList.add(entry);
 		}		
+	}
+	
+	public static void setState(boolean isDirty) {
+		if (!(INSTANCE == null || INSTANCE.lblState == null)){
+			if (isDirty) {
+				INSTANCE.lblState.setText("State: Not Saved");
+			} else {
+				INSTANCE.lblState.setText("State: Saved");
+			}
+		}
 	}
 }

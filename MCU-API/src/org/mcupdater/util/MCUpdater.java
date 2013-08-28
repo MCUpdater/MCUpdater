@@ -735,6 +735,8 @@ public class MCUpdater {
 				if (entry.getInJar() && updateJar) {
 					jarMods.add(new Downloadable(entry.getName(),String.valueOf(entry.getJarOrder()) + "-" + entry.getId() + ".jar",entry.getMD5(),100000,entry.getUrls()));
 					keepMeta.put(String.valueOf(entry.getJarOrder()) + "-" + cleanForFile(entry.getId()) + ".jar", entry.getKeepMeta());
+					instData.setProperty("mod:" + entry.getId(), entry.getMD5());
+					jarModCount++;
 				} else if (entry.getCoreMod()) {
 					generalFiles.add(new Downloadable(entry.getName(),"coremods/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),100000,entry.getUrls()));
 				} else if (entry.getIsLibrary()) {
@@ -850,6 +852,14 @@ public class MCUpdater {
 					entry.delete();
 				}
 				writeMCServerFile(server.getName(), server.getAddress(), server.getServerId());
+				instData.setProperty("serverID", server.getServerId());
+				instData.setProperty("revision", server.getRevision());
+				try {
+					instData.store(Files.newOutputStream(getInstanceRoot().resolve(server.getServerId()).resolve("instance.dat")), "Instance Data");
+				} catch (IOException e) {
+					apiLogger.log(Level.SEVERE, "I/O error", e);
+				}
+
 			}
 		});
 		jarQueue.processQueue(jarExecutor);

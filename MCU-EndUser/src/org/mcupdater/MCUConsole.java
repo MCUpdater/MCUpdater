@@ -32,7 +32,7 @@ public class MCUConsole extends Composite {
 		});
 	}
 
-	public void appendLine(String text, LineStyle style) {
+	public void appendLine(final String text, final LineStyle style) {
 		console.append(text + "\n");
 		console.setLineBackground(console.getLineCount()-2, 1, new Color(Display.getCurrent(), style.getColor()));
 	}

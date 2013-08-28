@@ -117,8 +117,8 @@ public class MCULogic {
 			while ((line = buffRead.readLine()) != null)
 			{
 				if( line.length() > 0) {
-					System.out.println(line);
-					//parent.baseLogger.info(line);
+					//System.out.println(line);
+					MainShell.getInstance().consoleWrite(line);
 				}
 			}
 		} catch (IOException e) {

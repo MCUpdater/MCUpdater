@@ -43,11 +43,11 @@ public class Profile {
 				System.out.println("old-> " + accessToken + ": " + clientToken);
 				SessionResponse response = auth.refresh(accessToken, clientToken);
 				if (!response.getError().isEmpty()) {
-					throw new Exception(response.getErrorMessage());
+					throw new Exception("Authentication error: " + response.getErrorMessage());
 				} else {
 					this.accessToken = response.getAccessToken();
 					this.clientToken = response.getClientToken();
-					System.out.println("new-> " + accessToken + ": " + clientToken);
+					//System.out.println("new-> " + accessToken + ": " + clientToken);
 
 					SettingsManager.getInstance().getSettings().addOrReplaceProfile(this);
 					if (!SettingsManager.getInstance().isDirty()) {

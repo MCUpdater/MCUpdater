@@ -11,6 +11,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.mcupdater.MCUSettings;
 import org.mcupdater.MainShell;
 import org.mcupdater.util.MCUpdater;
 
@@ -49,6 +50,7 @@ public class SettingsManager {
 			this.settings = gson.fromJson(reader, Settings.class);
 			reader.close();
 			this.dirty=false;
+			MCUSettings.setState(false);			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -141,6 +143,7 @@ public class SettingsManager {
 			writer.append(jsonOut);
 			writer.close();
 			this.dirty = false;
+			MCUSettings.setState(false);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}		
@@ -152,5 +155,6 @@ public class SettingsManager {
 	
 	public void setDirty() {
 		this.dirty = true;
+		MCUSettings.setState(true);
 	}
 }

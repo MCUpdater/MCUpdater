@@ -14,6 +14,9 @@ import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import joptsimple.ArgumentAcceptingOptionSpec;
 import joptsimple.OptionParser;
@@ -37,9 +40,11 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Sash;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
+import org.mcupdater.MCUConsole.LineStyle;
 import org.mcupdater.mojang.AssetManager;
 import org.mcupdater.settings.Profile;
 import org.mcupdater.settings.Settings;
@@ -55,7 +60,7 @@ import org.mcupdater.translate.Languages;
 public class MainShell extends MCUApp {
 
 	private static MainShell INSTANCE;
-	protected Shell shell;
+	private Shell shell;
 	private ServerList selected;
 	private MCUBrowser browser;
 	private List<Module> modList;
@@ -71,6 +76,8 @@ public class MainShell extends MCUApp {
 	private MCULogin login;
 	private Button btnUpdate;
 	private Button btnLaunch;
+	private final Display display;
+	private MCUSettings cmpSettings;
 
 	/**
 	 * Launch the application.
@@ -82,17 +89,34 @@ public class MainShell extends MCUApp {
 			ArgumentAcceptingOptionSpec<String> packSpec = optParser.accepts("ServerPack").withRequiredArg().ofType(String.class);
 			ArgumentAcceptingOptionSpec<File> rootSpec = optParser.accepts("MCURoot").withRequiredArg().ofType(File.class);
 			OptionSet options = optParser.parse(args);
+			MCUpdater mcu = MCUpdater.getInstance(options.valueOf(rootSpec));
 			INSTANCE = new MainShell();
 			INSTANCE.setDefaultPack(options.valueOf(packSpec));
+			mcu.setParent(INSTANCE);
 			SettingsManager.getInstance();
-			MCUpdater.getInstance(options.valueOf(rootSpec)).setParent(INSTANCE);
-			System.out.println(MCUpdater.getInstance().getArchiveFolder().toString());
 			INSTANCE.open();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
+	private MainShell() {
+		display = Display.getDefault();
+		this.baseLogger = Logger.getLogger("MCUpdater");
+		baseLogger.setLevel(Level.ALL);
+		FileHandler mcuHandler;
+		try {
+			mcuHandler = new FileHandler(MCUpdater.getInstance().getArchiveFolder().resolve("MCUpdater.log").toString(), 0, 3);
+			mcuHandler.setFormatter(new FMLStyleFormatter());
+			baseLogger.addHandler(mcuHandler);
+		} catch (SecurityException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		Version.setApp(this);
+	}
+	
 	private void setDefaultPack(String packUrl) {
 		this.defaultUrl = packUrl;
 	}
@@ -101,7 +125,6 @@ public class MainShell extends MCUApp {
 	 * Open the window.
 	 */
 	public void open() {
-		final Display display = Display.getDefault();
 		try {
 			translate = Languages.valueOf(Languages.getLocale()).getProxy();
 		} catch (Exception e) {
@@ -110,14 +133,14 @@ public class MainShell extends MCUApp {
 		}		
 		createContents();
 		processSettings();
-		shell.open();
-		shell.layout();
+		getShell().open();
+		getShell().layout();
 		tracker = new MCUClientTracker(display, progress); 
 				
 		final DownloadQueue assetsQueue = AssetManager.downloadAssets(MCUpdater.getInstance().getArchiveFolder().resolve("assets").toFile(), tracker);
 		progress.addProgressBar(assetsQueue.getName(), "Minecraft");
 		executor = new ThreadPoolExecutor(0, 8, 30000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
-		while (!shell.isDisposed()) {
+		while (!getShell().isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();
 			}
@@ -152,20 +175,20 @@ public class MainShell extends MCUApp {
 	 * Create contents of the window.
 	 */
 	protected void createContents() {
-		shell = new Shell();
-		shell.setSize(1175, 592);
-		shell.setText("MCUpdater 3.1.0");
-		shell.setLayout(new GridLayout(1,false));
+		setShell(new Shell());
+		getShell().setSize(1175, 592);
+		getShell().setText("MCUpdater " + Version.VERSION);
+		getShell().setLayout(new GridLayout(1,false));
 		
-		shell.addListener(SWT.RESIZE, new Listener() {
+		getShell().addListener(SWT.RESIZE, new Listener() {
 
 			@Override
 			public void handleEvent(Event arg0) {
-				shell.layout();
+				getShell().layout();
 			}
 		});
 		
-		final Composite mainArea = new Composite(shell, SWT.NONE);
+		final Composite mainArea = new Composite(getShell(), SWT.NONE);
 		mainArea.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		mainArea.setLayout(new FormLayout());
 		{
@@ -241,11 +264,15 @@ public class MainShell extends MCUApp {
 					tbtmConsole.setText(translate.console);
 					console = new MCUConsole(tabFolder);
 					tbtmConsole.setControl(console);
+					ConsoleHandler consoleHandler = new ConsoleHandler(console);
+					consoleHandler.setLevel(Level.INFO);
+					baseLogger.addHandler(consoleHandler);
+					MCUpdater.apiLogger.addHandler(consoleHandler);
 				}
 				TabItem tbtmSettings = new TabItem(tabFolder, SWT.NONE);
 				{
 					tbtmSettings.setText(translate.settings);
-					MCUSettings cmpSettings = new MCUSettings(tabFolder);
+					cmpSettings = new MCUSettings(tabFolder);
 					tbtmSettings.setControl(cmpSettings);
 				}
 				TabItem tbtmModules = new TabItem(tabFolder, SWT.NONE);
@@ -302,7 +329,7 @@ public class MainShell extends MCUApp {
 //			});
 		}
 		
-		Composite cmpStatus = new Composite(shell, SWT.NONE);
+		Composite cmpStatus = new Composite(getShell(), SWT.NONE);
 		cmpStatus.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
 		{
 			cmpStatus.setLayout(new GridLayout(4, false));
@@ -378,7 +405,10 @@ public class MainShell extends MCUApp {
 						try {
 							MCULogic.doLaunch(selected, modules.getModules(), launchProfile);
 						} catch (Exception e) {
-							e.printStackTrace();
+							MessageBox msg = new MessageBox(getShell(), SWT.ICON_WARNING);
+							msg.setMessage(e.getMessage() + "\n\nNote: An authentication error can occur if your profile is out of sync with Mojang's servers.\nRe-add your profile in the Settings tab to resync with Mojang.");
+							log(e.getMessage());
+							msg.open();
 						}
 					}
 				}
@@ -412,8 +442,7 @@ public class MainShell extends MCUApp {
 
 	@Override
 	public void log(String msg) {
-		// TODO Auto-generated method stub
-		
+		baseLogger.info(msg);
 	}
 
 	@Override
@@ -459,5 +488,22 @@ public class MainShell extends MCUApp {
 
 	public String getDefaultPack() {
 		return this.defaultUrl;
+	}
+
+	public Display getDisplay() {
+		return display;
+	}
+
+	public Shell getShell() {
+		return shell;
+	}
+
+	public void setShell(Shell shell) {
+		this.shell = shell;
+	}
+
+	public void consoleWrite(String line) {
+		// writes to the console without writing to the log file.
+		console.appendLine(line, LineStyle.NORMAL);
 	}
 }
