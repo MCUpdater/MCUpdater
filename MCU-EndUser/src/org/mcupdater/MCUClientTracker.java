@@ -15,12 +15,12 @@ public class MCUClientTracker implements TrackerListener {
 
 	@Override
 	public void onQueueFinished(final DownloadQueue queue) {
-		System.out.println(queue.getName() + ": Finished!");
+		MainShell.getInstance().log(queue.getName() + ": Finished!");
 		display.syncExec(new Runnable(){
 			@Override
 			public void run() {
 				if (progress == null || progress.isDisposed()) { return; }
-				progress.updateProgress(queue.getName(),1.0F,queue.getTotalFileCount(),queue.getSuccessFileCount());
+				progress.updateProgress(queue.getName(),queue.getParent(),1.0F,queue.getTotalFileCount(),queue.getSuccessFileCount());
 			}
 		});
 
@@ -28,19 +28,18 @@ public class MCUClientTracker implements TrackerListener {
 
 	@Override
 	public void onQueueProgress(final DownloadQueue queue) {
-		//System.out.println(queue.getName() + ": " + (100.0F * queue.getProgress()) + "%");
 		display.syncExec(new Runnable(){
 			@Override
 			public void run() {
 				if (progress == null || progress.isDisposed()) { return; }
-				progress.updateProgress(queue.getName(),queue.getProgress(),queue.getTotalFileCount(),queue.getSuccessFileCount());
+				progress.updateProgress(queue.getName(),queue.getParent(),queue.getProgress(),queue.getTotalFileCount(),queue.getSuccessFileCount());
 			}
 		});
 	}
 
 	@Override
 	public void printMessage(String msg) {
-		System.out.println(msg);				
+		MainShell.getInstance().log(msg);				
 	}
 
 }

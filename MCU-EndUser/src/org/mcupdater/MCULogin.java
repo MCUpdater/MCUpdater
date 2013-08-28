@@ -34,6 +34,7 @@ public class MCULogin extends Composite {
 			}
 		});
 		refreshProfiles(settings);
+		this.setSize(this.computeSize(100,SWT.DEFAULT));
 	}
 
 	public void refreshProfiles(Settings settings) {
