@@ -19,5 +19,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/MCU-API"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/MCU-DownloadLib"/>
 	<classpathentry kind="lib" path="gson-2.2.4.jar"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/MCU-Yggdrasil"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

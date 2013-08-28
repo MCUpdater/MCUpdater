@@ -12,9 +12,9 @@ public abstract class MCUApp {
 
 	public abstract void setStatus(String string);
 	//public abstract void setProgressBar(int i);
-	public abstract void addProgressBar(String title);
+	public abstract void addProgressBar(String title, String parent);
 	public abstract void log(String msg);
 	public abstract boolean requestLogin();
 	public abstract void addServer(ServerList entry);
-	public abstract DownloadQueue submitNewQueue(String queueName, Collection<Downloadable> files, File basePath, File cachePath);
+	public abstract DownloadQueue submitNewQueue(String queueName, String parent, Collection<Downloadable> files, File basePath, File cachePath);
 }

@@ -226,6 +226,7 @@ public class MCUSettings extends Composite {
 										newProfile.setName(authResponse.getSelectedProfile().getName());
 										settingsManager.getSettings().addOrReplaceProfile(newProfile);
 										settingsManager.setDirty();
+										reloadProfiles();
 										dialog.close();
 									} else {
 										response.setText(authResponse.getErrorMessage());

@@ -125,12 +125,12 @@ public class MCUCLI extends MCUApp {
 		
 	}
 	@Override
-	public void addProgressBar(String title) {
+	public void addProgressBar(String title, String parent) {
 		// TODO Auto-generated method stub
 		
 	}
 	@Override
-	public DownloadQueue submitNewQueue(String queueName,
+	public DownloadQueue submitNewQueue(String queueName, String parent,
 			Collection<Downloadable> files, File basePath, File cachePath) {
 		// TODO Auto-generated method stub
 		return null;

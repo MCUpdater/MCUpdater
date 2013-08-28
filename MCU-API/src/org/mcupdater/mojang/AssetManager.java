@@ -20,7 +20,7 @@ import org.w3c.dom.NodeList;
 
 public class AssetManager {
 	public static DownloadQueue downloadAssets(File baseDirectory, TrackerListener listener) {
-		DownloadQueue queue = new DownloadQueue("Minecraft Assets", listener, getAssets(baseDirectory), baseDirectory, null);
+		DownloadQueue queue = new DownloadQueue("Assets", "Minecraft", listener, getAssets(baseDirectory), baseDirectory, null);
 		return queue;
 	}
 	

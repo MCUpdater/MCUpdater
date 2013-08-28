@@ -64,6 +64,8 @@ public class MainShell extends MCUApp {
 	private MCUClientTracker tracker;
 	private String defaultUrl = "";
 	private MCULogin login;
+	private Button btnUpdate;
+	private Button btnLaunch;
 
 	/**
 	 * Launch the application.
@@ -98,7 +100,7 @@ public class MainShell extends MCUApp {
 		tracker = new MCUClientTracker(display, progress); 
 				
 		final DownloadQueue assetsQueue = AssetManager.downloadAssets(MCUpdater.getInstance().getArchiveFolder().resolve("assets").toFile(), tracker);
-		progress.addProgressBar(assetsQueue.getName());
+		progress.addProgressBar(assetsQueue.getName(), "Minecraft");
 		executor = new ThreadPoolExecutor(0, 8, 30000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		while (!shell.isDisposed()) {
 			if (!display.readAndDispatch()) {
@@ -107,7 +109,28 @@ public class MainShell extends MCUApp {
 			if (!assetsQueue.isActive()) {
 				assetsQueue.processQueue(executor);			
 			}
+			if (progress.getActiveCount() > 0) {
+				btnLaunch.setEnabled(false);
+			} else {
+				if (!(selected == null) && !isPlaying()){
+					btnLaunch.setEnabled(true);
+				} else {
+					btnLaunch.setEnabled(false);
+				}
+			}
+			if (!(selected == null)) {
+				if (progress.getActiveById(selected.getServerId()) > 0){
+					btnUpdate.setEnabled(false);
+				} else {
+					btnUpdate.setEnabled(true);
+				}
+			}
 		}
+	}
+
+	private boolean isPlaying() {
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 	/**
@@ -220,7 +243,7 @@ public class MainShell extends MCUApp {
 				{
 					tbtmProgress.setText(translate.progress);
 					progress = new MCUProgress(tabFolder);
-					tbtmProgress.setControl(progress);
+					tbtmProgress.setControl(progress); 
 				}
 			}
 			
@@ -276,13 +299,14 @@ public class MainShell extends MCUApp {
 			login = new MCULogin(cmpStatus);
 			login.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER,false,false,1,1));
 
-			Button btnUpdate = new Button(cmpStatus, SWT.PUSH);
+			btnUpdate = new Button(cmpStatus, SWT.PUSH);
 			btnUpdate.setLayoutData(new GridData(SWT.LEFT,SWT.CENTER,false,false,1,1));
 			btnUpdate.setText(translate.update);
 			btnUpdate.addSelectionListener(new SelectionListener() {
 				
 				@Override
 				public void widgetSelected(SelectionEvent arg0) {
+					btnUpdate.setEnabled(false);
 					MCUpdater.getInstance().getInstanceRoot().resolve(selected.getServerId()).toFile().mkdirs();
 					
 					final List<Module> selectedMods = new ArrayList<Module>();
@@ -315,7 +339,7 @@ public class MainShell extends MCUApp {
 				public void widgetDefaultSelected(SelectionEvent arg0) { widgetSelected(arg0); }
 			});
 			
-			Button btnLaunch = new Button(cmpStatus, SWT.PUSH);
+			btnLaunch = new Button(cmpStatus, SWT.PUSH);
 			btnLaunch.setLayoutData(new GridData(SWT.LEFT,SWT.CENTER,false,false,1,1));
 			btnLaunch.setText(translate.launchMinecraft);
 			btnLaunch.addSelectionListener(new SelectionListener()
@@ -328,6 +352,7 @@ public class MainShell extends MCUApp {
 
 				@Override
 				public void widgetSelected(SelectionEvent arg0) {
+					btnLaunch.setEnabled(false);
 					Profile launchProfile = login.getSelectedProfile();
 					if (!(launchProfile == null)) {
 						SettingsManager.getInstance().getSettings().setLastProfile(launchProfile.getName());
@@ -389,14 +414,14 @@ public class MainShell extends MCUApp {
 	}
 
 	@Override
-	public void addProgressBar(String title) {
-		progress.addProgressBar(title);
+	public void addProgressBar(String title, String parent) {
+		progress.addProgressBar(title, parent);
 	}
 
 	@Override
-	public DownloadQueue submitNewQueue(String queueName, Collection<Downloadable> files, File basePath, File cachePath) {
-		progress.addProgressBar(queueName);
-		return new DownloadQueue(queueName, tracker, files, basePath, cachePath);
+	public DownloadQueue submitNewQueue(String queueName, String parent, Collection<Downloadable> files, File basePath, File cachePath) {
+		progress.addProgressBar(queueName, parent);
+		return new DownloadQueue(queueName, parent, tracker, files, basePath, cachePath);
 		
 	}
 

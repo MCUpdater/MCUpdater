@@ -18,7 +18,7 @@ public class Settings {
 		timeoutLength
 	}
 
-	private List<Profile> profiles;
+	private List<Profile> profiles = new ArrayList<Profile>();
 	private String lastProfile;
 	private String minMemory;
 	private String maxMemory;

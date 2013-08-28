@@ -615,7 +615,7 @@ public class MCUpdater {
 		Path binPath = instancePath.resolve("bin");
 		final Path productionJar;
 		//File jar = null;
-		final File tmpFolder = archiveFolder.resolve("temp").toFile();
+		final File tmpFolder = instancePath.resolve("temp").toFile();
 		tmpFolder.mkdirs();
 		Set<Downloadable> jarMods = new HashSet<Downloadable>();
 		Set<Downloadable> generalFiles = new HashSet<Downloadable>();
@@ -643,14 +643,14 @@ public class MCUpdater {
 						//TODO: Log error using logger
 						e.printStackTrace();
 					}
-					Downloadable entry = new Downloadable(lib.getName(),lib.getFilename(),"",0,urls);
+					Downloadable entry = new Downloadable(lib.getName(),lib.getFilename(),"",100000,urls);
 					libSet.add(entry);
 					if (lib.hasNatives()) {
 						libExtract.add(lib.getFilename());
 					}
 				}
 			}
-			libraryQueue = parent.submitNewQueue("Libraries", libSet, instancePath.resolve("lib").toFile(), DownloadCache.getDir());
+			libraryQueue = parent.submitNewQueue("Libraries", server.getServerId(), libSet, instancePath.resolve("lib").toFile(), DownloadCache.getDir());
 
 			productionJar = binPath.resolve("minecraft.jar");
 			List<URL> jarUrl = new ArrayList<URL>();
@@ -660,7 +660,7 @@ public class MCUpdater {
 				//TODO: Log error using logger
 				e2.printStackTrace();
 			}
-			jarMods.add(new Downloadable("Minecraft jar","0.jar","",0,jarUrl));
+			jarMods.add(new Downloadable("Minecraft jar","0.jar","",3000000,jarUrl));
 			keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
 			break;
 		case SERVER:
@@ -731,20 +731,20 @@ public class MCUpdater {
 			try {
 				Collections.sort(entry.getPrioritizedUrls());
 				if (entry.getInJar() && updateJar) {
-					jarMods.add(new Downloadable(entry.getName(),String.valueOf(entry.getJarOrder()) + "-" + entry.getId() + ".jar",entry.getMD5(),0,entry.getUrls()));
+					jarMods.add(new Downloadable(entry.getName(),String.valueOf(entry.getJarOrder()) + "-" + entry.getId() + ".jar",entry.getMD5(),100000,entry.getUrls()));
 					keepMeta.put(String.valueOf(entry.getJarOrder()) + "-" + cleanForFile(entry.getId()) + ".jar", entry.getKeepMeta());
 				} else if (entry.getCoreMod()) {
-					generalFiles.add(new Downloadable(entry.getName(),"coremods/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),0,entry.getUrls()));
+					generalFiles.add(new Downloadable(entry.getName(),"coremods/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),100000,entry.getUrls()));
 				} else if (entry.getIsLibrary()) {
-					generalFiles.add(new Downloadable(entry.getName(),"lib/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),0,entry.getUrls()));
+					generalFiles.add(new Downloadable(entry.getName(),"lib/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),100000,entry.getUrls()));
 				} else if (entry.getExtract()) {
-					generalFiles.add(new Downloadable(entry.getName(),cleanForFile(entry.getId()) + ".zip",entry.getMD5(),0,entry.getUrls()));
+					generalFiles.add(new Downloadable(entry.getName(),cleanForFile(entry.getId()) + ".zip",entry.getMD5(),100000,entry.getUrls()));
 					modExtract.put(cleanForFile(entry.getId()) + ".zip", entry.getInRoot());
 				} else {
 					if (entry.getPath().isEmpty()) {
-						generalFiles.add(new Downloadable(entry.getName(),"mods/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),0,entry.getUrls()));
+						generalFiles.add(new Downloadable(entry.getName(),"mods/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),100000,entry.getUrls()));
 					} else {
-						generalFiles.add(new Downloadable(entry.getName(),entry.getPath(),entry.getMD5(),0,entry.getUrls()));
+						generalFiles.add(new Downloadable(entry.getName(),entry.getPath(),entry.getMD5(),100000,entry.getUrls()));
 					}
 				}
 				// 0
@@ -755,7 +755,7 @@ public class MCUpdater {
 					if (confFile.exists() && cfEntry.isNoOverwrite()) { continue; }
 					List<URL> configUrl = new ArrayList<URL>();
 					configUrl.add(new URL(cfEntry.getUrl()));
-					generalFiles.add(new Downloadable(cfEntry.getPath(),cfEntry.getPath(),cfEntry.getMD5(),0,configUrl));
+					generalFiles.add(new Downloadable(cfEntry.getPath(),cfEntry.getPath(),cfEntry.getMD5(),100000,configUrl));
 					//1
 					// save in cache for future reference
 					//					if( MD5 != null ) {
@@ -774,8 +774,8 @@ public class MCUpdater {
 			parent.log("  Done ("+modsLoaded+"/"+modCount+")");
 		}
 		instData.setProperty("jarModCount", Integer.toString(jarModCount));
-		generalQueue = parent.submitNewQueue("Instance files", generalFiles, instancePath.toFile(), DownloadCache.getDir());
-		jarQueue = parent.submitNewQueue("Jar build files", jarMods, tmpFolder, DownloadCache.getDir());
+		generalQueue = parent.submitNewQueue("Instance files", server.getServerId(), generalFiles, instancePath.toFile(), DownloadCache.getDir());
+		jarQueue = parent.submitNewQueue("Jar build files", server.getServerId(), jarMods, tmpFolder, DownloadCache.getDir());
 		TaskableExecutor libExecutor = new TaskableExecutor(2, new Runnable(){
 
 			@Override
