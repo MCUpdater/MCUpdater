@@ -22,7 +22,6 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -55,7 +54,7 @@ import org.mcupdater.util.Archive;
 import org.w3c.dom.*;
 
 public class MCUpdater {
-	public static final ResourceBundle Customization = ResourceBundle.getBundle("customization");
+	//public static final ResourceBundle Customization = ResourceBundle.getBundle("customization");
 	//private List<Module> modList = new ArrayList<Module>();
 	private Path MCFolder;
 	private Path archiveFolder;
@@ -67,7 +66,7 @@ public class MCUpdater {
 	private String newestMC = "";
 	private Map<String,String> versionMap = new HashMap<String,String>();
 	public static Logger apiLogger;
-	private Path lwjglFolder;
+	//private Path lwjglFolder;
 	private int timeoutLength = 5000;
 	
 	private static MCUpdater INSTANCE;
@@ -81,11 +80,18 @@ public class MCUpdater {
 		return null;
 	}
 	
-	public static MCUpdater getInstance() {
+	public static MCUpdater getInstance(File file) {
 		if( INSTANCE == null ) {
-			INSTANCE = new MCUpdater();
+			INSTANCE = new MCUpdater(file);
 		}
 		return INSTANCE;
+	}
+	
+	public static MCUpdater getInstance() {
+		if( INSTANCE == null ) {
+			INSTANCE = new MCUpdater(null);
+		}
+		return INSTANCE;		
 	}
 	
 	public static String cpDelimiter() {
@@ -97,11 +103,10 @@ public class MCUpdater {
 		}
 	}
 	
-	private MCUpdater()
+	private MCUpdater(File desiredRoot)
 	{
 		apiLogger = Logger.getLogger("MCU-API");
 		apiLogger.setLevel(Level.ALL);
-		String customPath = Customization.getString("customPath");
 		//String[] nativeNames;
 		//String nativePrefix;
 		if(System.getProperty("os.name").startsWith("Windows"))
@@ -124,10 +129,10 @@ public class MCUpdater {
 			//nativePrefix = "lwjgl-2.9.0/native/linux/";
 			//nativeNames = new String[] {"libjinput-linux.so","libjinput-linux64.so","liblwjgl.so","liblwjgl64.so","libopenal.so","libopenal64.so"};
 		}
-		if (!customPath.isEmpty()) {
-			archiveFolder = new Path(customPath);
+		if (!(desiredRoot == null)) {
+			archiveFolder = new Path(desiredRoot);
 		}
-		lwjglFolder = this.archiveFolder.resolve("LWJGL");
+		//lwjglFolder = this.archiveFolder.resolve("LWJGL");
 		try {
 			FileHandler apiHandler = new FileHandler(archiveFolder.resolve("MCU-API.log").toString(), 0, 3);
 			apiHandler.setFormatter(new FMLStyleFormatter());
@@ -156,34 +161,34 @@ public class MCUpdater {
 		} catch (IllegalArgumentException e) {
 			_debug( "Suppressed attempt to re-init download cache?!" );
 		}
-		try {
-			long start = System.currentTimeMillis();
-			URL md5s = new URL("http://files.mcupdater.com/md5.dat");
-			URLConnection md5Con = md5s.openConnection();
-			md5Con.setConnectTimeout(this.timeoutLength);
-			md5Con.setReadTimeout(this.timeoutLength);
-			InputStreamReader input = new InputStreamReader(md5Con.getInputStream());
-			BufferedReader buffer = new BufferedReader(input);
-			String currentLine = null;
-			while(true){
-				currentLine = buffer.readLine();
-				if(currentLine != null){
-					String entry[] = currentLine.split("\\|");
-					versionMap.put(entry[0], entry[1]);
-					newestMC = entry[1]; // Most recent entry in md5.dat is the current release
-				} else {
-					break;
-				}
-			}
-			buffer.close();
-			input.close();
-			apiLogger.fine("Took "+(System.currentTimeMillis()-start)+"ms to load md5.dat");
-			apiLogger.fine("newest Minecraft in md5.dat: " + newestMC);
-		} catch (MalformedURLException e) {
-			apiLogger.log(Level.SEVERE, "Bad URL", e);
-		} catch (IOException e) {
-			apiLogger.log(Level.SEVERE, "I/O Error", e);
-		}
+//		try {
+//			long start = System.currentTimeMillis();
+//			URL md5s = new URL("http://files.mcupdater.com/md5.dat");
+//			URLConnection md5Con = md5s.openConnection();
+//			md5Con.setConnectTimeout(this.timeoutLength);
+//			md5Con.setReadTimeout(this.timeoutLength);
+//			InputStreamReader input = new InputStreamReader(md5Con.getInputStream());
+//			BufferedReader buffer = new BufferedReader(input);
+//			String currentLine = null;
+//			while(true){
+//				currentLine = buffer.readLine();
+//				if(currentLine != null){
+//					String entry[] = currentLine.split("\\|");
+//					versionMap.put(entry[0], entry[1]);
+//					newestMC = entry[1]; // Most recent entry in md5.dat is the current release
+//				} else {
+//					break;
+//				}
+//			}
+//			buffer.close();
+//			input.close();
+//			apiLogger.fine("Took "+(System.currentTimeMillis()-start)+"ms to load md5.dat");
+//			apiLogger.fine("newest Minecraft in md5.dat: " + newestMC);
+//		} catch (MalformedURLException e) {
+//			apiLogger.log(Level.SEVERE, "Bad URL", e);
+//		} catch (IOException e) {
+//			apiLogger.log(Level.SEVERE, "I/O Error", e);
+//		}
 		/* Download LWJGL
 		File tempFile = this.archiveFolder.resolve("lwjgl-2.9.0.zip").toFile();
 		if (!tempFile.exists()) {
@@ -392,9 +397,10 @@ public class MCUpdater {
 		return archiveFolder;
 	}
 
-	public Path getLWJGLFolder() {
-		return lwjglFolder;
-	}
+//	public Path getLWJGLFolder() {
+//		return lwjglFolder;
+//	}
+	
 	public Path getInstanceRoot() {
 		return instanceRoot;
 	}
@@ -640,8 +646,7 @@ public class MCUpdater {
 					try {
 						urls.add(new URL(lib.getDownloadUrl()));
 					} catch (MalformedURLException e) {
-						//TODO: Log error using logger
-						e.printStackTrace();
+						apiLogger.log(Level.SEVERE, "Bad URL", e);
 					}
 					Downloadable entry = new Downloadable(lib.getName(),lib.getFilename(),"",100000,urls);
 					libSet.add(entry);
@@ -657,8 +662,7 @@ public class MCUpdater {
 			try {
 				jarUrl.add(new URL("https://s3.amazonaws.com/Minecraft.Download/versions/" + server.getVersion() + "/" + server.getVersion() + ".jar"));
 			} catch (MalformedURLException e2) {
-				//TODO: Log error using logger
-				e2.printStackTrace();
+				apiLogger.log(Level.SEVERE, "Bad URL", e2);
 			}
 			jarMods.add(new Downloadable("Minecraft jar","0.jar","",3000000,jarUrl));
 			keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
@@ -721,8 +725,6 @@ public class MCUpdater {
 		int modCount = toInstall.size();
 		int modsLoaded = 0;
 		int errorCount = 0;
-		
-		// TODO: consolidate download logic for mods & configs
 		
 		while(itMods.hasNext()) {
 			Module entry = itMods.next();

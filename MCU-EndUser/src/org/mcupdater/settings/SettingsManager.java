@@ -96,7 +96,7 @@ public class SettingsManager {
 				e.printStackTrace();
 			}
 		} else {
-			newSettings.addPackURL(MCUpdater.Customization.getString("InitialServer.text"));
+			newSettings.addPackURL(MainShell.getInstance().getDefaultPack());
 		}
 		return newSettings;
 	}
@@ -119,7 +119,7 @@ public class SettingsManager {
 		newSettings.setTimeoutLength(5000);
 		newSettings.setAutoConnect(true);
 		newSettings.setMinimizeOnLaunch(true);
-		newSettings.addPackURL(MCUpdater.Customization.getString("InitialServer.text"));
+		newSettings.addPackURL(MainShell.getInstance().getDefaultPack());
 		return newSettings;
 	}
 

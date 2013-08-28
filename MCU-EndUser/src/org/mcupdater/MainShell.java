@@ -14,6 +14,11 @@ import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import joptsimple.ArgumentAcceptingOptionSpec;
+import joptsimple.OptionParser;
+import joptsimple.OptionSet;
+
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.events.SelectionEvent;
@@ -62,7 +67,7 @@ public class MainShell extends MCUApp {
 	private ThreadPoolExecutor executor;
 	private InstanceList iList;
 	private MCUClientTracker tracker;
-	private String defaultUrl = "";
+	private String defaultUrl;
 	private MCULogin login;
 	private Button btnUpdate;
 	private Button btnLaunch;
@@ -73,13 +78,23 @@ public class MainShell extends MCUApp {
 	 */
 	public static void main(String[] args) {
 		try {
+			OptionParser optParser = new OptionParser();
+			ArgumentAcceptingOptionSpec<String> packSpec = optParser.accepts("ServerPack").withRequiredArg().ofType(String.class);
+			ArgumentAcceptingOptionSpec<File> rootSpec = optParser.accepts("MCURoot").withRequiredArg().ofType(File.class);
+			OptionSet options = optParser.parse(args);
 			INSTANCE = new MainShell();
+			INSTANCE.setDefaultPack(options.valueOf(packSpec));
 			SettingsManager.getInstance();
-			MCUpdater.getInstance().setParent(INSTANCE);
+			MCUpdater.getInstance(options.valueOf(rootSpec)).setParent(INSTANCE);
+			System.out.println(MCUpdater.getInstance().getArchiveFolder().toString());
 			INSTANCE.open();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void setDefaultPack(String packUrl) {
+		this.defaultUrl = packUrl;
 	}
 
 	/**
@@ -440,5 +455,9 @@ public class MainShell extends MCUApp {
 
 	public void setSelectedInstance(String lastInstance) {
 		iList.changeSelection(lastInstance);
+	}
+
+	public String getDefaultPack() {
+		return this.defaultUrl;
 	}
 }
