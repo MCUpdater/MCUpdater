@@ -20,6 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -161,34 +162,34 @@ public class MCUpdater {
 		} catch (IllegalArgumentException e) {
 			_debug( "Suppressed attempt to re-init download cache?!" );
 		}
-//		try {
-//			long start = System.currentTimeMillis();
-//			URL md5s = new URL("http://files.mcupdater.com/md5.dat");
-//			URLConnection md5Con = md5s.openConnection();
-//			md5Con.setConnectTimeout(this.timeoutLength);
-//			md5Con.setReadTimeout(this.timeoutLength);
-//			InputStreamReader input = new InputStreamReader(md5Con.getInputStream());
-//			BufferedReader buffer = new BufferedReader(input);
-//			String currentLine = null;
-//			while(true){
-//				currentLine = buffer.readLine();
-//				if(currentLine != null){
-//					String entry[] = currentLine.split("\\|");
-//					versionMap.put(entry[0], entry[1]);
-//					newestMC = entry[1]; // Most recent entry in md5.dat is the current release
-//				} else {
-//					break;
-//				}
-//			}
-//			buffer.close();
-//			input.close();
-//			apiLogger.fine("Took "+(System.currentTimeMillis()-start)+"ms to load md5.dat");
-//			apiLogger.fine("newest Minecraft in md5.dat: " + newestMC);
-//		} catch (MalformedURLException e) {
-//			apiLogger.log(Level.SEVERE, "Bad URL", e);
-//		} catch (IOException e) {
-//			apiLogger.log(Level.SEVERE, "I/O Error", e);
-//		}
+		try {
+			long start = System.currentTimeMillis();
+			URL md5s = new URL("http://files.mcupdater.com/md5.dat");
+			URLConnection md5Con = md5s.openConnection();
+			md5Con.setConnectTimeout(this.timeoutLength);
+			md5Con.setReadTimeout(this.timeoutLength);
+			InputStreamReader input = new InputStreamReader(md5Con.getInputStream());
+			BufferedReader buffer = new BufferedReader(input);
+			String currentLine = null;
+			while(true){
+				currentLine = buffer.readLine();
+				if(currentLine != null){
+					String entry[] = currentLine.split("\\|");
+					versionMap.put(entry[0], entry[1]);
+					newestMC = entry[1]; // Most recent entry in md5.dat is the current release
+				} else {
+					break;
+				}
+			}
+			buffer.close();
+			input.close();
+			apiLogger.fine("Took "+(System.currentTimeMillis()-start)+"ms to load md5.dat");
+			apiLogger.fine("newest Minecraft in md5.dat: " + newestMC);
+		} catch (MalformedURLException e) {
+			apiLogger.log(Level.SEVERE, "Bad URL", e);
+		} catch (IOException e) {
+			apiLogger.log(Level.SEVERE, "I/O Error", e);
+		}
 		/* Download LWJGL
 		File tempFile = this.archiveFolder.resolve("lwjgl-2.9.0.zip").toFile();
 		if (!tempFile.exists()) {
@@ -664,7 +665,14 @@ public class MCUpdater {
 			} catch (MalformedURLException e2) {
 				apiLogger.log(Level.SEVERE, "Bad URL", e2);
 			}
-			jarMods.add(new Downloadable("Minecraft jar","0.jar","",3000000,jarUrl));
+			String jarMD5 = "";
+			for (Entry<String,String> entry : versionMap.entrySet()) {
+				if (entry.getValue().equals(server.getVersion())) {
+					jarMD5 = entry.getKey();
+					break;
+				}
+			}
+			jarMods.add(new Downloadable("Minecraft jar","0.jar",jarMD5,3000000,jarUrl));
 			keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
 			break;
 		case SERVER:
