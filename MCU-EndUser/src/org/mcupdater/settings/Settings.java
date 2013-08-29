@@ -223,4 +223,8 @@ public class Settings {
 		}
 		return null;
 	}
+
+	public void removeProfile(String name) {
+		this.profiles.remove(findProfile(name));
+	}
 }

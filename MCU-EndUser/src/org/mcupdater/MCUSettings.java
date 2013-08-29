@@ -265,7 +265,10 @@ public class MCUSettings extends Composite {
 					
 					@Override
 					public void widgetSelected(SelectionEvent arg0) {
-						
+						if (lstProfiles.getSelectionIndex() > -1) {
+							settingsManager.getSettings().removeProfile(lstProfiles.getSelection()[0]);
+							settingsManager.setDirty();
+						}
 					}
 					@Override
 					public void widgetDefaultSelected(SelectionEvent arg0) { widgetSelected(arg0); }
