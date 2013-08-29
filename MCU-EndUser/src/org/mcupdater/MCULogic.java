@@ -22,6 +22,7 @@ import org.mcupdater.settings.Profile;
 import org.mcupdater.settings.Settings;
 import org.mcupdater.settings.SettingsManager;
 import org.mcupdater.util.MCUpdater;
+import org.mcupdater.util.Module;
 import org.mcupdater.util.ServerList;
 import org.mcupdater.util.ServerPackParser;
 import org.w3c.dom.Document;
@@ -61,6 +62,7 @@ public class MCULogic {
 		args.add("-Xms" + settings.getMinMemory());
 		args.add("-Xmx" + settings.getMaxMemory());
 		args.add("-XX:PermSize=" + settings.getPermGen());
+		args.addAll(Arrays.asList(settings.getJvmOpts().split(" ")));
 		args.add("-Djava.library.path=" + mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("lib").resolve("natives"));
 		if (!Version.requestedFeatureLevel(selected.getVersion(), "1.6")){
 			args.add("-Dminecraft.applet.TargetDirectory=" + mcu.getInstanceRoot().resolve(selected.getServerId()).toString());
@@ -74,6 +76,13 @@ public class MCULogic {
 			if (entry.isSelected()) {
 				if (entry.getModule().getIsLibrary()) {
 					libs.add(entry.getModule().getId() + ".jar");
+					if (entry.getModule().hasSubmodules()) {
+						for (Module sm : entry.getModule().getSubmodules()) {
+							if (sm.getIsLibrary()) {
+								libs.add(sm.getId() + ".jar");
+							}
+						}
+					}
 				}
 				if (!entry.getModule().getLaunchArgs().isEmpty()) {
 					clArgs.append(" " + entry.getModule().getLaunchArgs());

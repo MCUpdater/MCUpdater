@@ -24,14 +24,16 @@ public class Module {
 	private String md5 = "";
 	private ModSide side = ModSide.BOTH;
 	private List<ConfigFile> configs = new ArrayList<ConfigFile>();
+	private List<Module> submodules = new ArrayList<Module>();
 	private HashMap<String,String> meta = new HashMap<String,String>();
 	private boolean isLibrary = false;
 	private String launchArgs = "";
 	
-	public Module(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta, boolean isLibrary, String launchArgs){
+	public Module(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta, boolean isLibrary, String launchArgs, List<Module> submodules){
 		this(name, id, url, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, meta);
 		this.setIsLibrary(isLibrary);
 		this.setLaunchArgs(launchArgs);
+		this.submodules.addAll(submodules);
 	}
 	
 	public Module(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta)
@@ -284,6 +286,17 @@ public class Module {
 	public List<PrioritizedURL> getPrioritizedUrls() {
 		return this.urls;
 	}
-
+	
+	public boolean hasConfigs() {
+		return (this.configs.size() > 0);
+	}
+	
+	public boolean hasSubmodules() {
+		return (this.submodules.size() > 0);
+	}
+	
+	public List<Module> getSubmodules() {
+		return this.submodules;
+	}
 }
 

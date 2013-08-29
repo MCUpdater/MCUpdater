@@ -358,6 +358,9 @@ public class MainShell extends MCUApp {
 						System.out.println("Module: " + entry.getModule().getName());
 						if (entry.isSelected()) {
 							selectedMods.add(entry.getModule());
+							if (entry.getModule().hasSubmodules()){
+								selectedMods.addAll(entry.getModule().getSubmodules());
+							}
 						}
 					}
 					final Properties instData = new Properties();

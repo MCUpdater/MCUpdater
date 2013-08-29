@@ -169,7 +169,7 @@ public class ServerPackParser {
 		String path = getTextValue(el, "ModPath");
 		Element elReq = (Element) el.getElementsByTagName("Required").item(0);
 		boolean required = Boolean.parseBoolean(elReq.getTextContent());
-		boolean isDefault = Boolean.parseBoolean(elReq.getAttribute("IsDefault"));
+		boolean isDefault = Boolean.parseBoolean(elReq.getAttribute("isDefault"));
 		Element elType = (Element) el.getElementsByTagName("ModType").item(0);
 		boolean inRoot = Boolean.parseBoolean(elType.getAttribute("inRoot"));
 		int order = parseInt(elType.getAttribute("order"));
@@ -200,12 +200,20 @@ public class ServerPackParser {
 		}
 		String md5 = getTextValue(el,"MD5");
 		List<ConfigFile> configs = new ArrayList<ConfigFile>();
+		List<Module> submodules = new ArrayList<Module>();
 		nl = el.getElementsByTagName("ConfigFile");
 		for(int i = 0; i < nl.getLength(); i++) 
 		{
 			Element elConfig = (Element)nl.item(i);
 			ConfigFile cf = getConfigFileV1(elConfig);
 			configs.add(cf);
+		}
+		nl = el.getElementsByTagName("Submodule");
+		for(int i = 0; i < nl.getLength(); i++)
+		{
+			Element elSubmod = (Element)nl.item(i);
+			Module sm = getModuleV2(elSubmod);
+			submodules.add(sm);
 		}
 		HashMap<String,String> mapMeta = new HashMap<String,String>();
 		NodeList nlMeta = el.getElementsByTagName("Meta");
@@ -218,7 +226,7 @@ public class ServerPackParser {
 				mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 			}
 		}
-		Module m = new Module(name, id, urls, depends, required, jar, order, keepMeta, extract, inRoot, isDefault, coremod, md5, configs, side, path, mapMeta, library, launchArgs);	
+		Module m = new Module(name, id, urls, depends, required, jar, order, keepMeta, extract, inRoot, isDefault, coremod, md5, configs, side, path, mapMeta, library, launchArgs, submodules);	
 		return m;
 	}
 

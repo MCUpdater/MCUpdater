@@ -71,7 +71,7 @@
 			</xs:element>
 			<xs:element type="xs:string" name="MD5" minOccurs="0" maxOccurs="1" />
 			<xs:element type="tns:MetaType" name="Meta" minOccurs="0" maxOccurs="1" />
-			<!-- <xs:element type="tns:ModuleType" name="Submodule" maxOccurs="unbounded" minOccurs="0" /> -->
+			<xs:element type="tns:ModuleType" name="Submodule" maxOccurs="unbounded" minOccurs="0" />
 			<xs:element type="tns:ConfigType" name="ConfigFile" maxOccurs="unbounded" minOccurs="0" />
 		</xs:sequence>
 		<xs:attribute type="xs:string" name="name" use="required" />
