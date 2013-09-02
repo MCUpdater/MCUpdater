@@ -482,11 +482,11 @@ public class MainShell extends MCUApp {
 
 	public void processSettings() {
 		Settings settings = SettingsManager.getInstance().getSettings();
+		MCUpdater.getInstance().setInstanceRoot(new Path(settings.getInstanceRoot()));
+		MCUpdater.getInstance().getInstanceRoot().toFile().mkdirs();
 		refreshProfiles();
 		refreshInstances();
 		login.setSelectedProfile(settings.getLastProfile());
-		MCUpdater.getInstance().setInstanceRoot(new Path(settings.getInstanceRoot()));
-		MCUpdater.getInstance().getInstanceRoot().toFile().mkdirs();
 	}
 
 	public void setSelectedInstance(String lastInstance) {
@@ -517,5 +517,9 @@ public class MainShell extends MCUApp {
 				console.appendLine(line, LineStyle.NORMAL);				
 			}
 		});
+	}
+
+	public ServerList getSelectedInstance() {
+		return this.selected;
 	}
 }

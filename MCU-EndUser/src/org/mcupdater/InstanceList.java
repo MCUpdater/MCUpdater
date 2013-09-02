@@ -1,11 +1,15 @@
 package org.mcupdater;
 
+import j7compat.Files;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
+import java.util.logging.Level;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -17,6 +21,7 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
 import org.mcupdater.util.MCUpdater;
 import org.mcupdater.util.ServerList;
 
@@ -113,8 +118,29 @@ public class InstanceList extends ScrolledComposite {
 		for (ServerList entry : this.instances ) {
 			if (entry.getServerId().equals(selected)) {
 				MainShell.getInstance().changeSelectedInstance(entry);
+				Properties instData = new Properties();
+				try {
+					instData.load(Files.newInputStream(MCUpdater.getInstance().getInstanceRoot().resolve(entry.getServerId()).resolve("instance.dat")));
+				} catch (IOException e1) {
+					MainShell.getInstance().baseLogger.log(Level.SEVERE, "I/O error", e1);
+				}
+				final boolean needUpdate = !entry.getRevision().equals(instData.getProperty("revision"));
+				// check for mcu version update
+				final boolean needMCUUpgrade = Version.isVersionOld(entry.getMCUVersion());
+
+				String warningMessage = null;
+				if( needUpdate ) {
+					warningMessage = "Your configuration is out of sync with the server. Updating is necessary.";
+				} else if( needMCUUpgrade ) {
+					warningMessage = "The server requires a newer version of MCUpdater than you currently have installed.\nPlease upgrade as soon as possible, things are not likely to update correctly otherwise.";
+				}
+
+				if (warningMessage != null) {
+					MessageBox msg = new MessageBox(getShell(), SWT.ICON_WARNING);
+					msg.setMessage(warningMessage);
+					msg.open();
+				}
 			}
 		}
 	}
-
 }

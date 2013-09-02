@@ -451,7 +451,7 @@ public class MCUSettings extends Composite {
 			cmpListControl.setLayout(new GridLayout(3, false));
 			{
 				lstPackList = new List(cmpListControl, SWT.V_SCROLL | SWT.BORDER);
-				lstPackList.setLayoutData(new GridData(SWT.FILL,SWT.FILL,true, true,3,4));
+				lstPackList.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true, false,3,1));
 
 				txtNewUrl = new Text(cmpListControl, SWT.BORDER);
 				txtNewUrl.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true, false,1,1));
