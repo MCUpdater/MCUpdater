@@ -859,7 +859,7 @@ public class MCUpdater {
 					File entry = li.previous();
 					entry.delete();
 				}
-				writeMCServerFile(server.getName(), server.getAddress(), server.getServerId());
+				if (server.isGenerateList()) { writeMCServerFile(server.getName(), server.getAddress(), server.getServerId()); }
 				instData.setProperty("serverID", server.getServerId());
 				instData.setProperty("revision", server.getRevision());
 				try {

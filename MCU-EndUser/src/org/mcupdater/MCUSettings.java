@@ -236,6 +236,7 @@ public class MCUSettings extends Composite {
 										settingsManager.getSettings().addOrReplaceProfile(newProfile);
 										settingsManager.setDirty();
 										reloadProfiles();
+										MainShell.getInstance().refreshProfiles();
 										dialog.close();
 									} else {
 										response.setText(authResponse.getErrorMessage());
@@ -268,6 +269,8 @@ public class MCUSettings extends Composite {
 						if (lstProfiles.getSelectionIndex() > -1) {
 							settingsManager.getSettings().removeProfile(lstProfiles.getSelection()[0]);
 							settingsManager.setDirty();
+							reloadProfiles();
+							MainShell.getInstance().refreshProfiles();
 						}
 					}
 					@Override

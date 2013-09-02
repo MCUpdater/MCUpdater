@@ -78,6 +78,7 @@ public class MainShell extends MCUApp {
 	private Button btnLaunch;
 	private final Display display;
 	private MCUSettings cmpSettings;
+	private boolean playing;
 
 	/**
 	 * Launch the application.
@@ -166,11 +167,14 @@ public class MainShell extends MCUApp {
 		}
 	}
 
-	private boolean isPlaying() {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean isPlaying() {
+		return this.playing;
 	}
 
+	public void setPlaying(boolean state) {
+		this.playing = state;
+	}
+	
 	/**
 	 * Create contents of the window.
 	 */
@@ -505,8 +509,13 @@ public class MainShell extends MCUApp {
 		this.shell = shell;
 	}
 
-	public void consoleWrite(String line) {
-		// writes to the console without writing to the log file.
-		console.appendLine(line, LineStyle.NORMAL);
+	public void consoleWrite(final String line) {
+		display.syncExec(new Runnable() {
+			
+			@Override
+			public void run() {
+				console.appendLine(line, LineStyle.NORMAL);				
+			}
+		});
 	}
 }

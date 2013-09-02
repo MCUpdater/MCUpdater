@@ -63,6 +63,10 @@ public class MCULogic {
 		args.add("-Xmx" + settings.getMaxMemory());
 		args.add("-XX:PermSize=" + settings.getPermGen());
 		args.addAll(Arrays.asList(settings.getJvmOpts().split(" ")));
+		if (System.getProperty("os.name").startsWith("Mac")) {
+			args.add("-Xdock:icon=" + mcu.getArchiveFolder().resolve("assets").resolve("icons").resolve("minecraft.icns").toString());
+			args.add("-Xdock:name=Minecraft(MCUpdater)");
+		}
 		args.add("-Djava.library.path=" + mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("lib").resolve("natives"));
 		if (!Version.requestedFeatureLevel(selected.getVersion(), "1.6")){
 			args.add("-Dminecraft.applet.TargetDirectory=" + mcu.getInstanceRoot().resolve(selected.getServerId()).toString());
@@ -111,29 +115,42 @@ public class MCULogic {
 		fields.put("version_name", selected.getVersion());
 		fields.put("game_directory", mcu.getInstanceRoot().resolve(selected.getServerId()).toString());
 		fields.put("game_assets", mcu.getArchiveFolder().resolve("assets").toString());
-		args.addAll(Arrays.asList(fieldReplacer.replace(tmpclArgs).split(" ")));
+		String[] fieldArr = tmpclArgs.split(" ");
+		for (int i = 0; i < fieldArr.length; i++) {
+			fieldArr[i] = fieldReplacer.replace(fieldArr[i]);
+		}
+		args.addAll(Arrays.asList(fieldArr));
 		
 		for (String entry : args) {
 			System.out.println(entry);
 		}
-		ProcessBuilder pb = new ProcessBuilder(args);
+		final ProcessBuilder pb = new ProcessBuilder(args);
 		pb.directory(mcu.getInstanceRoot().resolve(selected.getServerId()).toFile());
 		pb.redirectErrorStream(true);
-		try {
-			Process task = pb.start();
-			BufferedReader buffRead = new BufferedReader(new InputStreamReader(task.getInputStream()));
-			String line;
-			while ((line = buffRead.readLine()) != null)
-			{
-				if( line.length() > 0) {
-					//System.out.println(line);
-					MainShell.getInstance().consoleWrite(line);
+		Thread gameThread = new Thread(new Runnable(){
+
+			@Override
+			public void run() {
+				try {
+					Process task = pb.start();
+					BufferedReader buffRead = new BufferedReader(new InputStreamReader(task.getInputStream()));
+					String line;
+					while ((line = buffRead.readLine()) != null)
+					{
+						if( line.length() > 0) {
+							//System.out.println(line);
+							MainShell.getInstance().consoleWrite(line);
+						}
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				} finally {
+					MainShell.getInstance().setPlaying(false);
 				}
 			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		});
+		gameThread.start();
+		MainShell.getInstance().setPlaying(true);
 
 	}
 
