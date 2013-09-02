@@ -106,7 +106,7 @@ public class SettingsManager {
 	public Settings getDefaultSettings() {
 		Settings newSettings = new Settings();
 		newSettings.setMinMemory("512M");
-		newSettings.setMaxMemory("1GB");
+		newSettings.setMaxMemory("1G");
 		newSettings.setPermGen("128M");
 		newSettings.setResWidth(1280);
 		newSettings.setResHeight(720);
