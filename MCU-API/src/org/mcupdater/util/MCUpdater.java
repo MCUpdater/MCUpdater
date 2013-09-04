@@ -897,7 +897,7 @@ public class MCUpdater {
 	}
 	
 	private String cleanForFile(String id) {
-		return id.replaceAll("[^a-zA-Z_0-9]", "_");
+		return id.replaceAll("[^a-zA-Z_0-9\\-]", "_");
 	}
 
 	public void writeMCServerFile(String name, String ip, String instance) {

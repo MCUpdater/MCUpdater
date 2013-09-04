@@ -168,12 +168,19 @@ public class ServerPackParser {
 		}
 		String path = getTextValue(el, "ModPath");
 		Element elReq = (Element) el.getElementsByTagName("Required").item(0);
-		boolean required = Boolean.parseBoolean(elReq.getTextContent());
-		boolean isDefault = Boolean.parseBoolean(elReq.getAttribute("isDefault"));
+		boolean required;
+		boolean isDefault;
+		if (elReq == null) {
+			required = true;
+			isDefault = true;
+		} else {
+			required = parseBooleanWithDefault(elReq.getTextContent(),true);
+			isDefault = parseBooleanWithDefault(elReq.getAttribute("isDefault"),false);
+		}
 		Element elType = (Element) el.getElementsByTagName("ModType").item(0);
-		boolean inRoot = Boolean.parseBoolean(elType.getAttribute("inRoot"));
+		boolean inRoot = parseBooleanWithDefault(elType.getAttribute("inRoot"),false);
 		int order = parseInt(elType.getAttribute("order"));
-		boolean keepMeta = Boolean.parseBoolean(elType.getAttribute("keepMeta"));
+		boolean keepMeta = parseBooleanWithDefault(elType.getAttribute("keepMeta"),false);
 		String launchArgs = elType.getAttribute("launchArgs");
 		String jreArgs = elType.getAttribute("jreArgs");
 		ModType modType = ModType.valueOf(elType.getTextContent());
@@ -313,7 +320,15 @@ public class ServerPackParser {
 	}
 
 	private static Boolean getBooleanValue(Element ele, String tagName) {
-		return Boolean.parseBoolean(getTextValue(ele,tagName));
+		return parseBooleanWithDefault(getTextValue(ele,tagName), false);
+	}
+
+	private static Boolean parseBooleanWithDefault(String textValue, boolean state) {
+		try {
+			return Boolean.parseBoolean(textValue);
+		} catch (Exception e) {
+			return state;
+		}
 	}
 
 	public static List<Module> loadFromFile(File packFile, String serverId) {
