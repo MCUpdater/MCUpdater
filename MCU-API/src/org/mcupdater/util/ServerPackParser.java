@@ -175,6 +175,7 @@ public class ServerPackParser {
 		int order = parseInt(elType.getAttribute("order"));
 		boolean keepMeta = Boolean.parseBoolean(elType.getAttribute("keepMeta"));
 		String launchArgs = elType.getAttribute("launchArgs");
+		String jreArgs = elType.getAttribute("jreArgs");
 		ModType modType = ModType.valueOf(elType.getTextContent());
 		boolean coremod = false;
 		boolean jar = false;
@@ -226,7 +227,7 @@ public class ServerPackParser {
 				mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 			}
 		}
-		Module m = new Module(name, id, urls, depends, required, jar, order, keepMeta, extract, inRoot, isDefault, coremod, md5, configs, side, path, mapMeta, library, launchArgs, submodules);	
+		Module m = new Module(name, id, urls, depends, required, jar, order, keepMeta, extract, inRoot, isDefault, coremod, md5, configs, side, path, mapMeta, library, launchArgs, jreArgs, submodules);	
 		return m;
 	}
 

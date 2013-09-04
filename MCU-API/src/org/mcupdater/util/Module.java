@@ -28,11 +28,13 @@ public class Module {
 	private HashMap<String,String> meta = new HashMap<String,String>();
 	private boolean isLibrary = false;
 	private String launchArgs = "";
+	private String jreArgs = "";
 	
-	public Module(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta, boolean isLibrary, String launchArgs, List<Module> submodules){
+	public Module(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta, boolean isLibrary, String launchArgs, String jreArgs, List<Module> submodules){
 		this(name, id, url, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, meta);
 		this.setIsLibrary(isLibrary);
 		this.setLaunchArgs(launchArgs);
+		this.setJreArgs(jreArgs);
 		this.submodules.addAll(submodules);
 	}
 	
@@ -297,6 +299,14 @@ public class Module {
 	
 	public List<Module> getSubmodules() {
 		return this.submodules;
+	}
+
+	public String getJreArgs() {
+		return jreArgs;
+	}
+
+	public void setJreArgs(String jreArgs) {
+		this.jreArgs = jreArgs;
 	}
 }
 

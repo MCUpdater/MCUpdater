@@ -65,6 +65,7 @@
 							<xs:attribute type="xs:integer" name="order" />
 							<xs:attribute type="xs:boolean" name="keepMeta" />
 							<xs:attribute type="xs:string" name="launchArgs" />
+							<xs:attribute type="xs:string" name="jreArgs" />
 						</xs:extension>
 					</xs:simpleContent>
 				</xs:complexType>

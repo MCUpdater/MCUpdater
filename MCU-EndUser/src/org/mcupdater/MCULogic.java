@@ -80,16 +80,25 @@ public class MCULogic {
 			if (entry.isSelected()) {
 				if (entry.getModule().getIsLibrary()) {
 					libs.add(entry.getModule().getId() + ".jar");
-					if (entry.getModule().hasSubmodules()) {
-						for (Module sm : entry.getModule().getSubmodules()) {
-							if (sm.getIsLibrary()) {
-								libs.add(sm.getId() + ".jar");
-							}
-						}
-					}
 				}
 				if (!entry.getModule().getLaunchArgs().isEmpty()) {
 					clArgs.append(" " + entry.getModule().getLaunchArgs());
+				}
+				if (!entry.getModule().getJreArgs().isEmpty()) {
+					args.addAll(Arrays.asList(entry.getModule().getJreArgs().split(" ")));
+				}
+				if (entry.getModule().hasSubmodules()) {
+					for (Module sm : entry.getModule().getSubmodules()) {
+						if (sm.getIsLibrary()) {
+							libs.add(sm.getId() + ".jar");
+						}
+						if (!sm.getLaunchArgs().isEmpty()) {
+							clArgs.append(" " + sm.getLaunchArgs());
+						}
+						if (!sm.getJreArgs().isEmpty()) {
+							args.addAll(Arrays.asList(sm.getJreArgs().split(" ")));
+						}
+					}
 				}
 			}
 		}
