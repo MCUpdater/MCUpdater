@@ -38,7 +38,7 @@
 			<Submodule id="launchwrapper" name="Mojang (LaunchWrapper)">
 				<URL>https://s3.amazonaws.com/Minecraft.Download/libraries/net/minecraft/launchwrapper/1.5/launchwrapper-1.5.jar</URL>
 				<Required>true</Required>
-				<ModType order="3">Library</ModType>
+				<ModType order="2">Library</ModType>
 			</Submodule>
 			<Submodule id="asm" name="Mojang (ASM)">
 				<URL>https://s3.amazonaws.com/Minecraft.Download/libraries/org/ow2/asm/asm-all/4.1/asm-all-4.1.jar</URL>
@@ -65,7 +65,7 @@
 	<Server id="162-Opti" name="1.6.2 Optifine" newsUrl="http://mcupdater.com"
 		revision="1.6.2" serverAddress="localhost" version="1.6.2"
 		mainClass="net.minecraft.launchwrapper.Launch">
-		<Import>162</Import>
+		<Import url="http://files.mcupdater.com/example/forge.php">forge</Import>
 		<Module id="optifine" name="Optifine">
 			<URL>http://optifine.net/download.php?f=OptiFine_1.6.2_HD_U_B4.zip</URL>
 			<Required isDefault="true">false</Required>

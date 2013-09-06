@@ -58,6 +58,7 @@ public class ServerPackParser {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		URLConnection serverConn = server.openConnection();
 		serverConn.setRequestProperty("User-Agent", "MCUpdater/" + Version.VERSION);
+		//TODO: Pass the username as a header
 		serverConn.setConnectTimeout(MCUpdater.getInstance().getTimeout());
 		serverConn.setReadTimeout(MCUpdater.getInstance().getTimeout());
 		try {

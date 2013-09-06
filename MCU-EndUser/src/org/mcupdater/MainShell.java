@@ -141,6 +141,9 @@ public class MainShell extends MCUApp {
 		final DownloadQueue assetsQueue = AssetManager.downloadAssets(MCUpdater.getInstance().getArchiveFolder().resolve("assets").toFile(), tracker);
 		progress.addProgressBar(assetsQueue.getName(), "Minecraft");
 		executor = new ThreadPoolExecutor(0, 8, 30000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+		int activeJobs = 0;
+		ServerList currentSelection = null;
+		boolean playState = false;
 		while (!getShell().isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();
@@ -148,20 +151,26 @@ public class MainShell extends MCUApp {
 			if (!assetsQueue.isActive()) {
 				assetsQueue.processQueue(executor);			
 			}
-			if (progress.getActiveCount() > 0) {
-				btnLaunch.setEnabled(false);
-			} else {
-				if (!(selected == null) && !isPlaying()){
-					btnLaunch.setEnabled(true);
-				} else {
+			if (activeJobs != progress.getActiveCount() || currentSelection != selected || playState != isPlaying()) {
+				currentSelection = selected;
+				activeJobs = progress.getActiveCount();
+				playState = isPlaying();
+				lblStatus.setText("Active jobs: " + activeJobs);
+				if (activeJobs > 0) {
 					btnLaunch.setEnabled(false);
-				}
-			}
-			if (!(selected == null)) {
-				if (progress.getActiveById(selected.getServerId()) > 0){
-					btnUpdate.setEnabled(false);
 				} else {
-					btnUpdate.setEnabled(true);
+					if (!(currentSelection == null) && !playState){
+						btnLaunch.setEnabled(true);
+					} else {
+						btnLaunch.setEnabled(false);
+					}
+				}
+				if (!(currentSelection == null)) {
+					if (progress.getActiveById(currentSelection.getServerId()) > 0){
+						btnUpdate.setEnabled(false);
+					} else {
+						btnUpdate.setEnabled(true);
+					}
 				}
 			}
 		}

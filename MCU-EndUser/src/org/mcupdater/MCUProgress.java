@@ -152,14 +152,19 @@ public class MCUProgress extends Composite{
 
 				@Override
 				public void run() {
-					pbProgress.setSelection((int)(progress * 10000.0F));
-					lblStatus.setText(String.format("%d/%d",successfulFiles,totalFiles));
-					if (pbProgress.getSelection() == pbProgress.getMaximum()){
-						lblStatus.setText("Finished");
-						btnDismiss.setEnabled(true);
-						active = false;
+					try {
+						pbProgress.setSelection((int)(progress * 10000.0F));
+						lblStatus.setText(String.format("%d/%d",successfulFiles,totalFiles));
+						if (pbProgress.getSelection() == pbProgress.getMaximum()){
+							lblStatus.setText("Finished");
+							btnDismiss.setEnabled(true);
+							active = false;
+						}
+						container.pack();
+					} catch (Exception e) {
+						// Because weird things sometimes happen when completed jobs are disposed.
+						e.printStackTrace();
 					}
-					container.pack();
 				}
 			});
 		}

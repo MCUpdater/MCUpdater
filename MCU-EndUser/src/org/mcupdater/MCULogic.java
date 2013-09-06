@@ -3,7 +3,6 @@ package org.mcupdater;
 import j7compat.Path;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -151,8 +150,8 @@ public class MCULogic {
 							MainShell.getInstance().consoleWrite(line);
 						}
 					}
-				} catch (IOException e) {
-					e.printStackTrace();
+				} catch (Exception e) {
+					MainShell.getInstance().consoleWrite(e.getMessage());
 				} finally {
 					MainShell.getInstance().setPlaying(false);
 				}

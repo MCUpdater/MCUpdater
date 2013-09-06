@@ -2,8 +2,6 @@ package org.mcupdater;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ModifyEvent;
@@ -21,10 +19,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.List;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.mcupdater.Yggdrasil.AuthManager;
-import org.mcupdater.Yggdrasil.SessionResponse;
 import org.mcupdater.settings.Profile;
 import org.mcupdater.settings.Settings;
 import org.mcupdater.settings.SettingsManager;
@@ -190,71 +185,12 @@ public class MCUSettings extends Composite {
 				btnProfileAdd.addSelectionListener(new SelectionAdapter() {
 					
 					public void widgetSelected(SelectionEvent arg0) {
-						final Shell dialog = new Shell(MainShell.getInstance().getShell(), SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
-						{
-							dialog.setText(translate.addProfile);
-							GridLayout dialogLayout = new GridLayout(4,false);
-							dialogLayout.marginLeft = 5;
-							dialogLayout.marginRight = 5;
-							dialog.setLayout(dialogLayout);
-							
-							Label username = new Label(dialog, SWT.NONE);
-							username.setText(translate.username);
-							username.setLayoutData(new GridData(SWT.RIGHT,SWT.CENTER,false,false));
-							final Text txtUsername = new Text(dialog, SWT.FILL | SWT.BORDER);
-							txtUsername.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false,3,1));
-
-							Label password = new Label(dialog, SWT.NONE);
-							password.setText(translate.password);
-							password.setLayoutData(new GridData(SWT.RIGHT,SWT.CENTER,false,false));
-							final Text txtPassword = new Text(dialog, SWT.FILL | SWT.BORDER | SWT.PASSWORD);
-							txtPassword.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false,3,1));
-							
-							final Label response = new Label(dialog, SWT.NONE);
-							response.setAlignment(SWT.LEFT);
-							response.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1));
-							
-							Button login = new Button(dialog, SWT.PUSH);
-							login.setText(translate.login);
-							login.setLayoutData(new GridData(SWT.RIGHT,SWT.TOP,true,false,3,1));
-							
-							Button cancel = new Button(dialog, SWT.PUSH);
-							cancel.setText(translate.cancel);
-							cancel.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,false,false));
-							
-							login.addSelectionListener(new SelectionAdapter() {
-								public void widgetSelected(SelectionEvent e) {
-									AuthManager auth = new AuthManager();
-									SessionResponse authResponse = auth.authenticate(txtUsername.getText(), txtPassword.getText(), UUID.randomUUID().toString());
-									if (authResponse.getError().isEmpty()){
-										Profile newProfile = new Profile();
-										newProfile.setStyle("Yggdrasil");
-										newProfile.setUsername(txtUsername.getText());
-										newProfile.setAccessToken(authResponse.getAccessToken());
-										newProfile.setClientToken(authResponse.getClientToken());
-										newProfile.setName(authResponse.getSelectedProfile().getName());
-										settingsManager.getSettings().addOrReplaceProfile(newProfile);
-										settingsManager.setDirty();
-										reloadProfiles();
-										MainShell.getInstance().refreshProfiles();
-										dialog.close();
-									} else {
-										response.setText(authResponse.getErrorMessage());
-									}
-									//dialog.close();
-								}
-							});
-
-							cancel.addSelectionListener(new SelectionAdapter() {
-								public void widgetSelected(SelectionEvent e) {
-									dialog.close();
-								}
-							});
-
-							dialog.setDefaultButton(login);
-							dialog.pack();
-							dialog.open();
-							dialog.setSize(dialog.computeSize(360, SWT.DEFAULT));
+						Profile newProfile = LoginDialog.doLogin(MainShell.getInstance().getShell(), MainShell.getInstance().translate);
+						if (newProfile.getStyle().equals("Yggdrasil")) {
+							settingsManager.getSettings().addOrReplaceProfile(newProfile);
+							settingsManager.setDirty();
+							reloadProfiles();
+							MainShell.getInstance().refreshProfiles();
 						}
 					}
 				});

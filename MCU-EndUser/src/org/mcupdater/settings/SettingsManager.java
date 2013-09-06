@@ -112,9 +112,6 @@ public class SettingsManager {
 		newSettings.setResHeight(720);
 		newSettings.setFullScreen(false);
 		newSettings.setJrePath(System.getProperty("java.home"));
-		if (System.getProperty("os.name").startsWith("Mac")) {
-			newSettings.setJrePath("/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0");
-		}
 		newSettings.setJvmOpts("-XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+AggressiveOpts");
 		newSettings.setInstanceRoot(MCUpdater.getInstance().getArchiveFolder().resolve("instances").toString());
 		newSettings.setProgramWrapper("");
