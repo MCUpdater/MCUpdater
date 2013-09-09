@@ -18,7 +18,7 @@ import org.mcupdater.translate.TranslateProxy;
 
 public class LoginDialog {
 
-	public static Profile doLogin(Shell parent, TranslateProxy translate){
+	public static Profile doLogin(Shell parent, TranslateProxy translate, String initialUsername){
 		final Profile newProfile = new Profile();
 		final Shell dialog = new Shell(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 		{
@@ -32,6 +32,7 @@ public class LoginDialog {
 			username.setText(translate.username);
 			username.setLayoutData(new GridData(SWT.RIGHT,SWT.CENTER,false,false));
 			final Text txtUsername = new Text(dialog, SWT.FILL | SWT.BORDER);
+			txtUsername.setText(initialUsername);
 			txtUsername.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false,3,1));
 
 			Label password = new Label(dialog, SWT.NONE);

@@ -1,5 +1,7 @@
 package org.mcupdater.settings;
 
+import org.mcupdater.LoginDialog;
+import org.mcupdater.MainShell;
 import org.mcupdater.Yggdrasil.AuthManager;
 import org.mcupdater.Yggdrasil.SessionResponse;
 
@@ -43,7 +45,18 @@ public class Profile {
 				System.out.println("old-> " + accessToken + ": " + clientToken);
 				SessionResponse response = auth.refresh(accessToken, clientToken);
 				if (!response.getError().isEmpty()) {
-					throw new Exception("Authentication error: " + response.getErrorMessage());
+					try {
+						Profile newProfile = LoginDialog.doLogin(MainShell.getInstance().getShell(), MainShell.getInstance().translate, this.username);
+						if (newProfile.getStyle().equals("Yggdrasil")) {
+							SettingsManager.getInstance().getSettings().addOrReplaceProfile(newProfile);
+							if (!SettingsManager.getInstance().isDirty()) {
+								SettingsManager.getInstance().saveSettings();
+							}
+							return newProfile.getSessionKey();
+						}
+					} catch (Exception e) {
+						throw new Exception("Authentication error: " + response.getErrorMessage());
+					}
 				} else {
 					this.accessToken = response.getAccessToken();
 					this.clientToken = response.getClientToken();

@@ -185,7 +185,7 @@ public class MCUSettings extends Composite {
 				btnProfileAdd.addSelectionListener(new SelectionAdapter() {
 					
 					public void widgetSelected(SelectionEvent arg0) {
-						Profile newProfile = LoginDialog.doLogin(MainShell.getInstance().getShell(), MainShell.getInstance().translate);
+						Profile newProfile = LoginDialog.doLogin(MainShell.getInstance().getShell(), MainShell.getInstance().translate, "");
 						if (newProfile.getStyle().equals("Yggdrasil")) {
 							settingsManager.getSettings().addOrReplaceProfile(newProfile);
 							settingsManager.setDirty();

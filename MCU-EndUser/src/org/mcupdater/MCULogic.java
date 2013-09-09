@@ -31,6 +31,12 @@ import org.w3c.dom.NodeList;
 public class MCULogic {
 	
 	public static void doLaunch(ServerList selected, List<ModuleCheckbox> list, Profile user) throws Exception {
+		String playerName;
+		String sessionKey;
+		{ // Do profile validation
+			playerName = user.getName();
+			sessionKey = user.getSessionKey();
+		}
 		MinecraftVersion mcVersion = MinecraftVersion.loadVersion(selected.getVersion());
 		String mainClass;
 		List<String> args = new ArrayList<String>();
@@ -118,8 +124,8 @@ public class MCULogic {
 		System.out.println(tmpclArgs);
 		Map<String,String> fields = new HashMap<String,String>();
 		StrSubstitutor fieldReplacer = new StrSubstitutor(fields);
-		fields.put("auth_player_name", user.getName());
-		fields.put("auth_session", user.getSessionKey());
+		fields.put("auth_player_name", playerName);
+		fields.put("auth_session", sessionKey);
 		fields.put("version_name", selected.getVersion());
 		fields.put("game_directory", mcu.getInstanceRoot().resolve(selected.getServerId()).toString());
 		fields.put("game_assets", mcu.getArchiveFolder().resolve("assets").toString());
