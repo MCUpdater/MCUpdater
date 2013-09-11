@@ -5,6 +5,10 @@ public enum Languages {
 	en_GB(en_US.getProxy()),
 	en_CA(en_US.getProxy()),
 	en_AU(en_US.getProxy()),
+	fr_FR(new FRFrench()),
+	fr_CA(fr_FR.getProxy()),
+	fr_BE(fr_FR.getProxy()),
+	fr_LU(fr_FR.getProxy()),
 	;
 	
 	private TranslateProxy proxy;

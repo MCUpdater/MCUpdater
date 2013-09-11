@@ -740,11 +740,13 @@ public class MCUpdater {
 			parent.log("Mod: "+entry.getName());
 			try {
 				Collections.sort(entry.getPrioritizedUrls());
-				if (entry.getInJar() && updateJar) {
-					jarMods.add(new Downloadable(entry.getName(),String.valueOf(entry.getJarOrder()) + "-" + entry.getId() + ".jar",entry.getMD5(),100000,entry.getUrls()));
-					keepMeta.put(String.valueOf(entry.getJarOrder()) + "-" + cleanForFile(entry.getId()) + ".jar", entry.getKeepMeta());
-					instData.setProperty("mod:" + entry.getId(), entry.getMD5());
-					jarModCount++;
+				if (entry.getInJar()) {
+					if (updateJar) {
+						jarMods.add(new Downloadable(entry.getName(),String.valueOf(entry.getJarOrder()) + "-" + entry.getId() + ".jar",entry.getMD5(),100000,entry.getUrls()));
+						keepMeta.put(String.valueOf(entry.getJarOrder()) + "-" + cleanForFile(entry.getId()) + ".jar", entry.getKeepMeta());
+						instData.setProperty("mod:" + entry.getId(), entry.getMD5());
+						jarModCount++;
+					}
 				} else if (entry.getCoreMod()) {
 					generalFiles.add(new Downloadable(entry.getName(),"coremods/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),100000,entry.getUrls()));
 				} else if (entry.getIsLibrary()) {
