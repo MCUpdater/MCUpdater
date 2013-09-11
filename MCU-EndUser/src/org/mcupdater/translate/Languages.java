@@ -9,7 +9,13 @@ public enum Languages {
 	fr_BE(fr_FR.getProxy()),
 	fr_CA(fr_FR.getProxy()),
 	fr_LU(fr_FR.getProxy()),
-	fr_CH(fr_FR.getProxy())
+	fr_CH(fr_FR.getProxy()),
+	de_DE(new DEDeutsch()),
+	de_AT(de_DE.getProxy()),
+	de_CH(de_DE.getProxy()),
+	de_BE(de_DE.getProxy()),
+	de_LU(de_DE.getProxy()),
+	de_LI(de_DE.getProxy()),
 	;
 	
 	private TranslateProxy proxy;
