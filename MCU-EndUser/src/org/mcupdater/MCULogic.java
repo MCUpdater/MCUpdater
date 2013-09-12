@@ -62,7 +62,7 @@ public class MCULogic {
 				e.printStackTrace();
 			}
 		}
-		clArgs.append(" --resourcePackDir " + mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("resourcepacks"));
+		clArgs.append(" --resourcePackDir " + handleWhitespace(mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("resourcepacks").toString()));
 		args.add((new Path(settings.getJrePath()).resolve("bin").resolve("java").toString()));
 		args.add("-Xms" + settings.getMinMemory());
 		args.add("-Xmx" + settings.getMaxMemory());
@@ -72,7 +72,7 @@ public class MCULogic {
 			args.add("-Xdock:icon=" + mcu.getArchiveFolder().resolve("assets").resolve("icons").resolve("minecraft.icns").toString());
 			args.add("-Xdock:name=Minecraft(MCUpdater)");
 		}
-		args.add("-Djava.library.path=" + mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("lib").resolve("natives"));
+		args.add("-Djava.library.path=" + mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("lib").resolve("natives").toString());
 		if (!Version.requestedFeatureLevel(selected.getVersion(), "1.6")){
 			args.add("-Dminecraft.applet.TargetDirectory=" + mcu.getInstanceRoot().resolve(selected.getServerId()).toString());
 		}
@@ -115,9 +115,9 @@ public class MCULogic {
 		args.add("-cp");
 		StringBuilder classpath = new StringBuilder();
 		for (String entry: libs) {
-			classpath.append(mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("lib").resolve(entry).toString()).append(MCUpdater.cpDelimiter());
+			classpath.append(handleWhitespace(mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("lib").resolve(entry).toString())).append(MCUpdater.cpDelimiter());
 		}
-		classpath.append(mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("bin").resolve("minecraft.jar").toString());
+		classpath.append(handleWhitespace(mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("bin").resolve("minecraft.jar").toString()));
 		args.add(classpath.toString());
 		args.add(mainClass);
 		String tmpclArgs = clArgs.toString();
@@ -218,4 +218,12 @@ public class MCULogic {
 		}
 	}
 
+	private static String handleWhitespace(String path) {
+		String osName = System.getProperty("os.name");
+		if (osName.startsWith("Windows")) {
+			return "\"" + path + "\"";
+		} else {
+			return path.replace(" ", "\\ ");
+		}
+	}
 }
