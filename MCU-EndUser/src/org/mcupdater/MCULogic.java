@@ -115,9 +115,9 @@ public class MCULogic {
 		args.add("-cp");
 		StringBuilder classpath = new StringBuilder();
 		for (String entry: libs) {
-			classpath.append(handleWhitespace(mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("lib").resolve(entry).toString())).append(MCUpdater.cpDelimiter());
+			classpath.append(mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("lib").resolve(entry).toString()).append(MCUpdater.cpDelimiter());
 		}
-		classpath.append(handleWhitespace(mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("bin").resolve("minecraft.jar").toString()));
+		classpath.append(mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("bin").resolve("minecraft.jar").toString());
 		args.add(classpath.toString());
 		args.add(mainClass);
 		String tmpclArgs = clArgs.toString();
