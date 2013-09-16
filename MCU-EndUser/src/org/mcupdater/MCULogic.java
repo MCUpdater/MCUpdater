@@ -62,7 +62,7 @@ public class MCULogic {
 				e.printStackTrace();
 			}
 		}
-		clArgs.append(" --resourcePackDir " + handleWhitespace(mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("resourcepacks").toString()));
+		clArgs.append(" --resourcePackDir {$resource_packs}");
 		args.add((new Path(settings.getJrePath()).resolve("bin").resolve("java").toString()));
 		args.add("-Xms" + settings.getMinMemory());
 		args.add("-Xmx" + settings.getMaxMemory());
@@ -129,6 +129,7 @@ public class MCULogic {
 		fields.put("version_name", selected.getVersion());
 		fields.put("game_directory", mcu.getInstanceRoot().resolve(selected.getServerId()).toString());
 		fields.put("game_assets", mcu.getArchiveFolder().resolve("assets").toString());
+		fields.put("resource_packs", mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("resourcepacks").toString());
 		String[] fieldArr = tmpclArgs.split(" ");
 		for (int i = 0; i < fieldArr.length; i++) {
 			fieldArr[i] = fieldReplacer.replace(fieldArr[i]);
@@ -215,15 +216,6 @@ public class MCULogic {
 
 			return slList;
 
-		}
-	}
-
-	private static String handleWhitespace(String path) {
-		String osName = System.getProperty("os.name");
-		if (osName.startsWith("Windows")) {
-			return "\"" + path + "\"";
-		} else {
-			return path.replace(" ", "\\ ");
 		}
 	}
 }

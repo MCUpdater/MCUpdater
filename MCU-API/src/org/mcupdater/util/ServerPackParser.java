@@ -13,6 +13,10 @@ import java.util.logging.Level;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 
 import org.mcupdater.Version;
 import org.w3c.dom.DOMException;
@@ -155,88 +159,97 @@ public class ServerPackParser {
 	}
 
 	private static Module getModuleV2(Element el) {
-		String name = el.getAttribute("name");
-		String id = el.getAttribute("id");
-		String depends = el.getAttribute("depends");
-		String side = el.getAttribute("side");
-		List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
-		NodeList nl = el.getElementsByTagName("URL");
-		for (int i = 0; i < nl.getLength(); i++) {
-			Element elURL = (Element) nl.item(i);
-			String url = elURL.getTextContent();
-			int priority = parseInt(elURL.getAttribute("priority"));
-			urls.add(new PrioritizedURL(url, priority));
-		}
-		String path = getTextValue(el, "ModPath");
-		Element elReq = (Element) el.getElementsByTagName("Required").item(0);
-		boolean required;
-		boolean isDefault;
-		if (elReq == null) {
-			required = true;
-			isDefault = true;
-		} else {
-			required = parseBooleanWithDefault(elReq.getTextContent(),true);
-			isDefault = parseBooleanWithDefault(elReq.getAttribute("isDefault"),false);
-		}
-		Element elType = (Element) el.getElementsByTagName("ModType").item(0);
-		boolean inRoot = parseBooleanWithDefault(elType.getAttribute("inRoot"),false);
-		int order = parseInt(elType.getAttribute("order"));
-		boolean keepMeta = parseBooleanWithDefault(elType.getAttribute("keepMeta"),false);
-		String launchArgs = elType.getAttribute("launchArgs");
-		String jreArgs = elType.getAttribute("jreArgs");
-		ModType modType = ModType.valueOf(elType.getTextContent());
-		boolean coremod = false;
-		boolean jar = false;
-		boolean library = false;
-		boolean extract = false;
-		switch (modType) {
-		case Coremod:
-			coremod = true;
-			break;
-		case Extract:
-			extract = true;
-			break;
-		case Jar:
-			jar = true;
-			break;
-		case Library:
-			library = true;
-			break;
-		case Option:
-			throw new RuntimeException("Module type 'Option' not implemented");
-		default:
-			break;
-		}
-		String md5 = getTextValue(el,"MD5");
-		List<ConfigFile> configs = new ArrayList<ConfigFile>();
-		List<Module> submodules = new ArrayList<Module>();
-		nl = el.getElementsByTagName("ConfigFile");
-		for(int i = 0; i < nl.getLength(); i++) 
-		{
-			Element elConfig = (Element)nl.item(i);
-			ConfigFile cf = getConfigFileV1(elConfig);
-			configs.add(cf);
-		}
-		nl = el.getElementsByTagName("Submodule");
-		for(int i = 0; i < nl.getLength(); i++)
-		{
-			Element elSubmod = (Element)nl.item(i);
-			Module sm = getModuleV2(elSubmod);
-			submodules.add(sm);
-		}
-		HashMap<String,String> mapMeta = new HashMap<String,String>();
-		NodeList nlMeta = el.getElementsByTagName("Meta");
-		if (nlMeta.getLength() > 0){
-			Element elMeta = (Element) nlMeta.item(0);
-			NodeList nlMetaChildren = elMeta.getElementsByTagName("*");
-			for(int i = 0; i < nlMetaChildren.getLength(); i++)
-			{
-				Node child = nlMetaChildren.item(i);
-				mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
+		XPath xpath = XPathFactory.newInstance().newXPath();
+		try {
+
+			String name = el.getAttribute("name");
+			String id = el.getAttribute("id");
+			String depends = el.getAttribute("depends");
+			String side = el.getAttribute("side");
+			List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
+			NodeList nl;
+			nl = (NodeList) xpath.evaluate("URL", el, XPathConstants.NODESET);
+			for (int i = 0; i < nl.getLength(); i++) {
+				Element elURL = (Element) nl.item(i);
+				String url = elURL.getTextContent();
+				int priority = parseInt(elURL.getAttribute("priority"));
+				urls.add(new PrioritizedURL(url, priority));
 			}
+			String path = (String) xpath.evaluate("ModPath", el, XPathConstants.STRING);
+			Element elReq = (Element) el.getElementsByTagName("Required").item(0);
+			boolean required;
+			boolean isDefault;
+			if (elReq == null) {
+				required = true;
+				isDefault = true;
+			} else {
+				required = parseBooleanWithDefault(elReq.getTextContent(),true);
+				isDefault = parseBooleanWithDefault(elReq.getAttribute("isDefault"),false);
+			}
+			Element elType = (Element) el.getElementsByTagName("ModType").item(0);
+			boolean inRoot = parseBooleanWithDefault(elType.getAttribute("inRoot"),false);
+			int order = parseInt(elType.getAttribute("order"));
+			boolean keepMeta = parseBooleanWithDefault(elType.getAttribute("keepMeta"),false);
+			String launchArgs = elType.getAttribute("launchArgs");
+			String jreArgs = elType.getAttribute("jreArgs");
+			ModType modType = ModType.valueOf(elType.getTextContent());
+			boolean coremod = false;
+			boolean jar = false;
+			boolean library = false;
+			boolean extract = false;
+			switch (modType) {
+			case Coremod:
+				coremod = true;
+				break;
+			case Extract:
+				extract = true;
+				break;
+			case Jar:
+				jar = true;
+				break;
+			case Library:
+				library = true;
+				break;
+			case Option:
+				throw new RuntimeException("Module type 'Option' not implemented");
+			default:
+				break;
+			}
+			String md5 = (String) xpath.evaluate("MD5", el, XPathConstants.STRING);
+			List<ConfigFile> configs = new ArrayList<ConfigFile>();
+			List<Module> submodules = new ArrayList<Module>();
+			nl = el.getElementsByTagName("ConfigFile");
+			for(int i = 0; i < nl.getLength(); i++) 
+			{
+				Element elConfig = (Element)nl.item(i);
+				ConfigFile cf = getConfigFileV1(elConfig);
+				configs.add(cf);
+			}
+			nl = el.getElementsByTagName("Submodule");
+			for(int i = 0; i < nl.getLength(); i++)
+			{
+				Element elSubmod = (Element)nl.item(i);
+				Module sm = getModuleV2(elSubmod);
+				submodules.add(sm);
+			}
+			HashMap<String,String> mapMeta = new HashMap<String,String>();
+			NodeList nlMeta = el.getElementsByTagName("Meta");
+			if (nlMeta.getLength() > 0){
+				Element elMeta = (Element) nlMeta.item(0);
+				NodeList nlMetaChildren = elMeta.getElementsByTagName("*");
+				for(int i = 0; i < nlMetaChildren.getLength(); i++)
+				{
+					Node child = nlMetaChildren.item(i);
+					mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
+				}
+			}
+			Module m = new Module(name, id, urls, depends, required, jar, order, keepMeta, extract, inRoot, isDefault, coremod, md5, configs, side, path, mapMeta, library, launchArgs, jreArgs, submodules);	
+			return m;
+		} catch (XPathExpressionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
 		}
-		Module m = new Module(name, id, urls, depends, required, jar, order, keepMeta, extract, inRoot, isDefault, coremod, md5, configs, side, path, mapMeta, library, launchArgs, jreArgs, submodules);	
-		return m;
 	}
 
 	private static int parseInt(String attribute) {

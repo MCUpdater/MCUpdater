@@ -80,6 +80,7 @@ public class InstanceCell extends Composite {
 	}
 	
 	public void setIcon(Image image) {
+		image = new Image(image.getDevice(), image.getImageData().scaledTo(32, 32));
 		this.lblIcon.setImage(image);
 		layout(true);
 	}
