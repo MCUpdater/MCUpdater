@@ -192,6 +192,7 @@ public class MainShell extends MCUApp {
 				}
 			}
 		}
+		display.dispose();
 	}
 
 	public boolean isPlaying() {
