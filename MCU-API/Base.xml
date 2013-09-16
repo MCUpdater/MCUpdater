@@ -72,4 +72,6 @@
 			<ModType order="20" jreArgs="-Dfml.ignorePatchDiscrepancies=true">Library</ModType>
 		</Module>
 	</Server>
+	<Server id="163" name="1.6.3 Test" newsUrl="http://mcupdater.com" revision="1.6.3" serverAddress="localhost" version="1.6.3">
+	</Server>
 </ServerPack>

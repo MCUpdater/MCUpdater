@@ -153,6 +153,7 @@ public class MCUSettings extends Composite {
 					loadFields();
 					MainShell.getInstance().refreshInstances();
 					MainShell.getInstance().refreshProfiles();
+					MainShell.getInstance().login.setSelectedProfile(settingsManager.getSettings().getLastProfile());
 				}
 			});
 			
@@ -173,7 +174,9 @@ public class MCUSettings extends Composite {
 			cmpProfiles.setLayout(new GridLayout(2,false));
 			{
 				lstProfiles = new List(cmpProfiles,SWT.BORDER);
-				lstProfiles.setLayoutData(new GridData(SWT.FILL,SWT.FILL,true,true,1,5));
+				GridData gdList = new GridData(SWT.FILL,SWT.TOP,true,true,1,5);
+				gdList.heightHint = 3 * lstProfiles.getItemHeight();
+				lstProfiles.setLayoutData(gdList);
 				
 				Composite cmpProfButtonPanel = new Composite(cmpProfiles,SWT.NONE);
 				cmpProfButtonPanel.setLayoutData(new GridData(SWT.LEFT,SWT.TOP,false,true,1,5));
@@ -190,7 +193,9 @@ public class MCUSettings extends Composite {
 							settingsManager.getSettings().addOrReplaceProfile(newProfile);
 							settingsManager.setDirty();
 							reloadProfiles();
+							String selectedProfile = MainShell.getInstance().login.getSelectedProfile().getName();
 							MainShell.getInstance().refreshProfiles();
+							MainShell.getInstance().login.setSelectedProfile(selectedProfile);
 						}
 					}
 				});
@@ -387,7 +392,9 @@ public class MCUSettings extends Composite {
 			cmpListControl.setLayout(new GridLayout(3, false));
 			{
 				lstPackList = new List(cmpListControl, SWT.V_SCROLL | SWT.BORDER);
-				lstPackList.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true, false,3,1));
+				GridData gdList = new GridData(SWT.FILL,SWT.TOP,true,false,3,1);
+				gdList.heightHint = 3 * lstPackList.getItemHeight();
+				lstPackList.setLayoutData(gdList);
 
 				txtNewUrl = new Text(cmpListControl, SWT.BORDER);
 				txtNewUrl.setLayoutData(new GridData(SWT.FILL,SWT.TOP,true, false,1,1));

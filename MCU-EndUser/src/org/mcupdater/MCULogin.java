@@ -1,8 +1,11 @@
 package org.mcupdater;
 
+import java.net.URL;
+
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -16,12 +19,15 @@ public class MCULogin extends Composite {
 
 	private TranslateProxy translate;
 	private Combo profileName;
+	private Label imgFace;
 
 	public MCULogin(Composite parent) {
 		super(parent, SWT.NONE);
 		Settings settings = SettingsManager.getInstance().getSettings();
 		translate = MainShell.getInstance().translate;
-		this.setLayout(new GridLayout(2,false));
+		this.setLayout(new GridLayout(3,false));
+		imgFace = new Label(this, SWT.NONE);
+		imgFace.setImage(new Image(MainShell.getInstance().getDisplay(), 16, 16));
 		Label profilePrompt = new Label(this, SWT.NONE);
 		profilePrompt.setText(translate.profile);
 		profileName = new Combo(this, SWT.READ_ONLY);
@@ -30,6 +36,13 @@ public class MCULogin extends Composite {
 			public void modifyText(ModifyEvent e){
 				if (!((Combo)e.getSource()).getText().isEmpty()) {
 					MainShell.getInstance().setSelectedInstance(SettingsManager.getInstance().getSettings().findProfile(((Combo)e.getSource()).getText()).getLastInstance());
+					try {
+						URL avatarUrl = new URL("http://cravatar.tomheinan.com/" + ((Combo)e.getSource()).getText() + "/16");
+						imgFace.setImage(new Image(MainShell.getInstance().getDisplay(), avatarUrl.openStream()));
+						imgFace.pack(true);
+					} catch (Exception e1) {
+						imgFace.setImage(new Image(MainShell.getInstance().getDisplay(),16,16));
+					}
 				}
 			}
 		});
@@ -43,6 +56,8 @@ public class MCULogin extends Composite {
 		for (Profile entry : settings.getProfiles()){
 			profileName.add(entry.getName());
 		}
+		profileName.pack(true);
+		this.pack();
 	}
 
 	public Profile getSelectedProfile() {

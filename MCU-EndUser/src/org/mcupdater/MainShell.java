@@ -73,12 +73,13 @@ public class MainShell extends MCUApp {
 	private InstanceList iList;
 	private MCUClientTracker tracker;
 	private String defaultUrl;
-	private MCULogin login;
+	public MCULogin login;
 	private Button btnUpdate;
 	private Button btnLaunch;
 	private final Display display;
 	private MCUSettings cmpSettings;
 	private boolean playing;
+	private Composite cmpStatus;
 
 	/**
 	 * Launch the application.
@@ -143,6 +144,23 @@ public class MainShell extends MCUApp {
 		executor = new ThreadPoolExecutor(0, 8, 30000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		int activeJobs = 0;
 		ServerList currentSelection = null;
+		if (SettingsManager.getInstance().getSettings().getProfiles().size() == 0) {
+			try {
+				Profile newProfile = LoginDialog.doLogin(getShell(), translate, "");
+				if (newProfile.getStyle().equals("Yggdrasil")) {
+					SettingsManager.getInstance().getSettings().addOrReplaceProfile(newProfile);
+					SettingsManager.getInstance().getSettings().setLastProfile(newProfile.getName());
+					if (!SettingsManager.getInstance().isDirty()) {
+						SettingsManager.getInstance().saveSettings();
+					}
+					refreshProfiles();
+					cmpSettings.reloadProfiles();
+					login.setSelectedProfile(newProfile.getName());
+				}
+			} catch (Exception e) {
+			}
+
+		}
 		boolean playState = false;
 		while (!getShell().isDisposed()) {
 			if (!display.readAndDispatch()) {
@@ -342,7 +360,7 @@ public class MainShell extends MCUApp {
 //			});
 		}
 		
-		Composite cmpStatus = new Composite(getShell(), SWT.NONE);
+		cmpStatus = new Composite(getShell(), SWT.NONE);
 		cmpStatus.setLayoutData(new GridData(SWT.FILL, SWT.BOTTOM, true, false));
 		{
 			cmpStatus.setLayout(new GridLayout(4, false));
@@ -487,6 +505,7 @@ public class MainShell extends MCUApp {
 
 	public void refreshProfiles() {
 		login.refreshProfiles(SettingsManager.getInstance().getSettings());
+		cmpStatus.layout();
 	}
 
 	public void processSettings() {
