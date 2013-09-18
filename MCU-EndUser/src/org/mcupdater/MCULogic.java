@@ -62,7 +62,7 @@ public class MCULogic {
 				e.printStackTrace();
 			}
 		}
-		clArgs.append(" --resourcePackDir {$resource_packs}");
+		clArgs.append(" --resourcePackDir ${resource_packs}");
 		args.add((new Path(settings.getJrePath()).resolve("bin").resolve("java").toString()));
 		args.add("-Xms" + settings.getMinMemory());
 		args.add("-Xmx" + settings.getMaxMemory());
