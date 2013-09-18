@@ -156,7 +156,11 @@ public class MCUProgress extends Composite{
 						pbProgress.setSelection((int)(progress * 10000.0F));
 						lblStatus.setText(String.format("%d/%d",successfulFiles,totalFiles));
 						if (pbProgress.getSelection() == pbProgress.getMaximum()){
-							lblStatus.setText("Finished");
+							if (successfulFiles == totalFiles) {
+								lblStatus.setText("Finished");
+							} else {
+								lblStatus.setText((totalFiles - successfulFiles) + " failed!");
+							}
 							btnDismiss.setEnabled(true);
 							active = false;
 						}

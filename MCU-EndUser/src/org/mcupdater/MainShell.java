@@ -189,6 +189,8 @@ public class MainShell extends MCUApp {
 					} else {
 						btnUpdate.setEnabled(true);
 					}
+				} else {
+					btnUpdate.setEnabled(false);
 				}
 			}
 		}
@@ -374,6 +376,7 @@ public class MainShell extends MCUApp {
 			login.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER,false,false,1,1));
 
 			btnUpdate = new Button(cmpStatus, SWT.PUSH);
+			btnUpdate.setEnabled(false);
 			btnUpdate.setLayoutData(new GridData(SWT.LEFT,SWT.CENTER,false,false,1,1));
 			btnUpdate.setText(translate.update);
 			btnUpdate.addSelectionListener(new SelectionListener() {
@@ -417,6 +420,7 @@ public class MainShell extends MCUApp {
 			});
 			
 			btnLaunch = new Button(cmpStatus, SWT.PUSH);
+			btnLaunch.setEnabled(false);
 			btnLaunch.setLayoutData(new GridData(SWT.LEFT,SWT.CENTER,false,false,1,1));
 			btnLaunch.setText(translate.launchMinecraft);
 			btnLaunch.addSelectionListener(new SelectionListener()

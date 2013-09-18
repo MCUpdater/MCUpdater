@@ -2,6 +2,8 @@ package org.mcupdater;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.graphics.Color;
@@ -23,6 +25,19 @@ public class MCUConsole extends Composite {
 		FontData[] fdConsole = console.getFont().getFontData();
 		fdConsole[0].setHeight(8);
 		console.setFont(new Font(Display.getCurrent(), fdConsole));
+		console.addKeyListener(new KeyListener(){
+
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+				if (arg0.stateMask == SWT.CONTROL && arg0.keyCode == 'a') {
+					console.selectAll();
+				}
+			}
+
+			@Override
+			public void keyReleased(KeyEvent arg0) {}
+			
+		});
 		console.addModifyListener(new ModifyListener()
 		{
 			@Override
