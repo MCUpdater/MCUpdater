@@ -41,6 +41,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -773,11 +774,6 @@ public class MainForm extends MCUApp {
 		lblStatus.setText(text);
 	}
 
-	@Override
-	public void setProgressBar(int value) {
-		progressBar.setValue(value);
-	}
-
 	public void setPlayerName(String playerName) {
 		this.lblPlayerName2.setText(playerName);
 	}
@@ -867,92 +863,92 @@ public class MainForm extends MCUApp {
 	}
 
 	private void updateInstance() {
-		new Thread() {
-			public void run() {
-				if (!mcu.checkVersionCache(selected.getVersion(), ModSide.CLIENT)) {
-					JOptionPane.showMessageDialog(null, "Unable to validate Minecraft version!", "MCUpdater", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-				btnUpdate.setEnabled(false);
-				btnLaunchMinecraft.setEnabled(false);
-				mcu.getMCVersion();
-//				int saveConfig = JOptionPane.showConfirmDialog(null, "Do you want to save a backup of your existing configuration?", "MCUpdater", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
-//				if(saveConfig == JOptionPane.YES_OPTION){
-//					setStatus("Creating backup");
-//					setProgressBar(10);
-//					Calendar cal = Calendar.getInstance();
-//					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-//					String backDesc = (String) JOptionPane.showInputDialog(null,"Enter description for backup:", "MCUpdater", JOptionPane.QUESTION_MESSAGE, null, null, ("Automatic backup: " + sdf.format(cal.getTime())));
-//					log("Creating backup ("+backDesc+") ...");
-//					mcu.saveConfig(backDesc);
-//					log("Backup complete.");
-//				} else if(saveConfig == JOptionPane.CANCEL_OPTION){
-//					btnUpdate.setEnabled(true);
-//					btnLaunchMinecraft.setEnabled(true);
+//		new Thread() {
+//			public void run() {
+//				if (!mcu.checkVersionCache(selected.getVersion(), ModSide.CLIENT)) {
+//					JOptionPane.showMessageDialog(null, "Unable to validate Minecraft version!", "MCUpdater", JOptionPane.ERROR_MESSAGE);
 //					return;
 //				}
-				tabs.setSelectedIndex(tabs.getTabCount()-1);
-				Properties instData = new Properties();
-				Path instanceFile = mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("instance.dat");
-				try {
-					instData.load(Files.newInputStream(instanceFile));
-				} catch (IOException e1) {
-					baseLogger.log(Level.SEVERE, "I/O error", e1);
-				}
-
-				List<Module> toInstall = new ArrayList<Module>();
-				List<Component> selects = new ArrayList<Component>(Arrays.asList(pnlModList.getComponents()));
-				Iterator<Component> it = selects.iterator();
-				setStatus("Preparing module list");
-				log("Preparing module list for instance (" + selected.getName() + ")...");
-				setProgressBar(20);
-				while(it.hasNext()) {
-					Component baseEntry = it.next();
-					if(baseEntry.getClass().toString().equals("class org.smbarbour.mcu.JModuleCheckBox")) {
-						JModuleCheckBox entry = (JModuleCheckBox) baseEntry;
-						if(entry.isSelected()){
-							toInstall.add(entry.getModule());
-						}
-					}
-				}
-				boolean result = false;
-				try {
-					setStatus("Installing mods");
-					log("Installing mods...");
-					setProgressBar(25);
-					result = mcu.installMods(selected, toInstall, chkHardUpdate.isSelected(), instData, ModSide.CLIENT);
-					if (selected.isGenerateList()) {
-						setStatus("Writing servers.dat");
-						log("Writing servers.dat");
-						setProgressBar(90);
-						mcu.writeMCServerFile(selected.getName(), selected.getAddress(), selected.getServerId());
-					}
-					setStatus("Finished");
-					setProgressBar(100);
-				} catch (FileNotFoundException fnf) {
-					log("! Error: "+fnf.getMessage());
-					JOptionPane.showMessageDialog(null, fnf.getMessage(), "MCUpdater", JOptionPane.ERROR_MESSAGE);
-				}
-				instData.setProperty("serverID", selected.getServerId());
-				instData.setProperty("revision", selected.getRevision());
-				try {
-					instData.store(Files.newOutputStream(instanceFile), "Instance Data");
-				} catch (IOException e) {
-					baseLogger.log(Level.SEVERE, "I/O error", e);
-				}
-				if (result) {
-					log("Update complete.");
-					JOptionPane.showMessageDialog(frmMain, "Your update is complete.", "Update Complete", JOptionPane.INFORMATION_MESSAGE);
-				} else {
-					log("Update Failed!");
-					setStatus("Update Failed!");
-					setProgressBar(0);
-					JOptionPane.showMessageDialog(frmMain, "The update failed to complete successfully.", "Update Failed", JOptionPane.ERROR_MESSAGE);
-				}
-				btnUpdate.setEnabled(true);
-				btnLaunchMinecraft.setEnabled(true);
-			}
-		}.start();
+//				btnUpdate.setEnabled(false);
+//				btnLaunchMinecraft.setEnabled(false);
+//				mcu.getMCVersion();
+////				int saveConfig = JOptionPane.showConfirmDialog(null, "Do you want to save a backup of your existing configuration?", "MCUpdater", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+////				if(saveConfig == JOptionPane.YES_OPTION){
+////					setStatus("Creating backup");
+////					setProgressBar(10);
+////					Calendar cal = Calendar.getInstance();
+////					SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+////					String backDesc = (String) JOptionPane.showInputDialog(null,"Enter description for backup:", "MCUpdater", JOptionPane.QUESTION_MESSAGE, null, null, ("Automatic backup: " + sdf.format(cal.getTime())));
+////					log("Creating backup ("+backDesc+") ...");
+////					mcu.saveConfig(backDesc);
+////					log("Backup complete.");
+////				} else if(saveConfig == JOptionPane.CANCEL_OPTION){
+////					btnUpdate.setEnabled(true);
+////					btnLaunchMinecraft.setEnabled(true);
+////					return;
+////				}
+//				tabs.setSelectedIndex(tabs.getTabCount()-1);
+//				Properties instData = new Properties();
+//				Path instanceFile = mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("instance.dat");
+//				try {
+//					instData.load(Files.newInputStream(instanceFile));
+//				} catch (IOException e1) {
+//					baseLogger.log(Level.SEVERE, "I/O error", e1);
+//				}
+//
+//				List<Module> toInstall = new ArrayList<Module>();
+//				List<Component> selects = new ArrayList<Component>(Arrays.asList(pnlModList.getComponents()));
+//				Iterator<Component> it = selects.iterator();
+//				setStatus("Preparing module list");
+//				log("Preparing module list for instance (" + selected.getName() + ")...");
+//				setProgressBar(20);
+//				while(it.hasNext()) {
+//					Component baseEntry = it.next();
+//					if(baseEntry.getClass().toString().equals("class org.smbarbour.mcu.JModuleCheckBox")) {
+//						JModuleCheckBox entry = (JModuleCheckBox) baseEntry;
+//						if(entry.isSelected()){
+//							toInstall.add(entry.getModule());
+//						}
+//					}
+//				}
+//				boolean result = false;
+//				try {
+//					setStatus("Installing mods");
+//					log("Installing mods...");
+//					setProgressBar(25);
+//					result = mcu.installMods(selected, toInstall, chkHardUpdate.isSelected(), instData, ModSide.CLIENT);
+//					if (selected.isGenerateList()) {
+//						setStatus("Writing servers.dat");
+//						log("Writing servers.dat");
+//						setProgressBar(90);
+//						mcu.writeMCServerFile(selected.getName(), selected.getAddress(), selected.getServerId());
+//					}
+//					setStatus("Finished");
+//					setProgressBar(100);
+//				} catch (FileNotFoundException fnf) {
+//					log("! Error: "+fnf.getMessage());
+//					JOptionPane.showMessageDialog(null, fnf.getMessage(), "MCUpdater", JOptionPane.ERROR_MESSAGE);
+//				}
+//				instData.setProperty("serverID", selected.getServerId());
+//				instData.setProperty("revision", selected.getRevision());
+//				try {
+//					instData.store(Files.newOutputStream(instanceFile), "Instance Data");
+//				} catch (IOException e) {
+//					baseLogger.log(Level.SEVERE, "I/O error", e);
+//				}
+//				if (result) {
+//					log("Update complete.");
+//					JOptionPane.showMessageDialog(frmMain, "Your update is complete.", "Update Complete", JOptionPane.INFORMATION_MESSAGE);
+//				} else {
+//					log("Update Failed!");
+//					setStatus("Update Failed!");
+//					setProgressBar(0);
+//					JOptionPane.showMessageDialog(frmMain, "The update failed to complete successfully.", "Update Failed", JOptionPane.ERROR_MESSAGE);
+//				}
+//				btnUpdate.setEnabled(true);
+//				btnLaunchMinecraft.setEnabled(true);
+//			}
+//		}.start();
 	}
 	private void launchMinecraft() {
 		if (serverList.getSelectedIndex() == -1) {
@@ -1114,6 +1110,18 @@ public class MainForm extends MCUApp {
 
 			}
 		}
+	}
+
+	@Override
+	public void addProgressBar(String title, String parent) {
+		// TODO Auto-generated method stub
+		
+	}
+	@Override
+	public DownloadQueue submitNewQueue(String queueName, String parent,
+			Collection<Downloadable> files, File basePath, File cachePath) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
 

@@ -46,12 +46,12 @@
 				<ModType order="3">Library</ModType>
 			</Submodule>
 			<Submodule id="scala-lib" name="Minecraft Forge (scala-library)">
-				<URL>http://files.minecraftforge.net/maven/org/scala-lang/scala-library/2.10.2/scala-library-2.10.2.jar</URL>
+				<URL>http://files.minecraftforge.net/maven/org/scala-lang/scala-library/2.10.2/scala-library-2.10.2.jar.pack.lzma</URL>
 				<Required>true</Required>
 				<ModType order="4">Library</ModType>
 			</Submodule>
 			<Submodule id="scala-compiler" name="Minecraft Forge (scala-compiler)">
-				<URL>http://files.minecraftforge.net/maven/org/scala-lang/scala-compiler/2.10.2/scala-compiler-2.10.2.jar</URL>
+				<URL>http://files.minecraftforge.net/maven/org/scala-lang/scala-compiler/2.10.2/scala-compiler-2.10.2.jar.pack.lzma</URL>
 				<Required>true</Required>
 				<ModType order="5">Library</ModType>
 			</Submodule>
@@ -72,6 +72,6 @@
 			<ModType order="20" jreArgs="-Dfml.ignorePatchDiscrepancies=true">Library</ModType>
 		</Module>
 	</Server>
-	<Server id="163" name="1.6.3 Test" newsUrl="http://mcupdater.com" revision="1.6.3" serverAddress="localhost" version="1.6.3">
+	<Server id="163" name="1.6.4 Test" newsUrl="http://mcupdater.com" revision="1.6.4" serverAddress="localhost" version="1.6.4">
 	</Server>
 </ServerPack>

@@ -42,7 +42,6 @@ import javax.swing.ImageIcon;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.FileUtils;
 import org.mcupdater.DownloadQueue;
 import org.mcupdater.Downloadable;
 import org.mcupdater.FMLStyleFormatter;
@@ -953,6 +952,7 @@ public class MCUpdater {
 		apiLogger.fine(msg);
 	}
 
+	/*
 	public boolean checkVersionCache(String version, ModSide side) {
 		File requestedJar;
 		switch (side) {
@@ -1003,7 +1003,9 @@ public class MCUpdater {
 		}
 		return false;
 	}
+	*/
 	
+	/*
 	private void doPatch(File requestedJar, File newestJar, String version) {
 		try {
 			URL patchURL;
@@ -1026,6 +1028,7 @@ public class MCUpdater {
 			apiLogger.log(Level.SEVERE, "General Error", e);
 		}
 	}
+	*/
 
 	private Cipher getCipher(int mode, String password) throws Exception {
 		Random random = new Random(92845025L);
