@@ -504,8 +504,11 @@ public class MainShell extends MCUApp {
 	@Override
 	public DownloadQueue submitNewQueue(String queueName, String parent, Collection<Downloadable> files, File basePath, File cachePath) {
 		progress.addProgressBar(queueName, parent);
-		return new DownloadQueue(queueName, parent, tracker, files, basePath, cachePath);
-		
+		if (login.getSelectedProfile() != null) {
+			return new DownloadQueue(queueName, parent, tracker, files, basePath, cachePath, login.getSelectedProfile().getName());
+		} else {
+			return new DownloadQueue(queueName, parent, tracker, files, basePath, cachePath);
+		}
 	}
 
 	public void refreshProfiles() {
