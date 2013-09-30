@@ -21,6 +21,7 @@ public class Module {
 	private boolean inRoot = false;
 	private boolean isDefault = false;
 	private boolean coreMod = false;
+	private boolean litemod = false;
 	private String md5 = "";
 	private ModSide side = ModSide.BOTH;
 	private List<ConfigFile> configs = new ArrayList<ConfigFile>();
@@ -30,11 +31,12 @@ public class Module {
 	private String launchArgs = "";
 	private String jreArgs = "";
 	
-	public Module(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta, boolean isLibrary, String launchArgs, String jreArgs, List<Module> submodules){
+	public Module(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta, boolean isLibrary, boolean litemod, String launchArgs, String jreArgs, List<Module> submodules){
 		this(name, id, url, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, meta);
 		this.setIsLibrary(isLibrary);
 		this.setLaunchArgs(launchArgs);
 		this.setJreArgs(jreArgs);
+		this.setLitemod(litemod);
 		this.submodules.addAll(submodules);
 	}
 	
@@ -307,6 +309,14 @@ public class Module {
 
 	public void setJreArgs(String jreArgs) {
 		this.jreArgs = jreArgs;
+	}
+
+	public boolean isLitemod() {
+		return litemod;
+	}
+
+	public void setLitemod(boolean litemod) {
+		this.litemod = litemod;
 	}
 }
 

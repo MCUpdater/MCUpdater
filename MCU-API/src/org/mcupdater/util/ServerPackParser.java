@@ -197,6 +197,7 @@ public class ServerPackParser {
 			boolean jar = false;
 			boolean library = false;
 			boolean extract = false;
+			boolean litemod = false;
 			switch (modType) {
 			case Coremod:
 				coremod = true;
@@ -209,6 +210,9 @@ public class ServerPackParser {
 				break;
 			case Library:
 				library = true;
+				break;
+			case Litemod:
+				litemod = true;
 				break;
 			case Option:
 				throw new RuntimeException("Module type 'Option' not implemented");
@@ -243,7 +247,7 @@ public class ServerPackParser {
 					mapMeta.put(child.getNodeName(), getTextValue(elMeta, child.getNodeName()));
 				}
 			}
-			Module m = new Module(name, id, urls, depends, required, jar, order, keepMeta, extract, inRoot, isDefault, coremod, md5, configs, side, path, mapMeta, library, launchArgs, jreArgs, submodules);	
+			Module m = new Module(name, id, urls, depends, required, jar, order, keepMeta, extract, inRoot, isDefault, coremod, md5, configs, side, path, mapMeta, library, litemod, launchArgs, jreArgs, submodules);	
 			return m;
 		} catch (XPathExpressionException e) {
 			// TODO Auto-generated catch block

@@ -27,45 +27,15 @@
 		</Module> 
 	</Server>
 	-->
-	<Server id="162" name="MCU3 1.6.2" newsUrl="http://mcupdater.com"
-		revision="1.6.2" serverAddress="localhost" version="1.6.2"
-		mainClass="net.minecraft.launchwrapper.Launch">
-		<Module id="forge" name="Minecraft Forge">
-			<URL>http://files.minecraftforge.net/minecraftforge/minecraftforge-universal-1.6.2-9.10.0.842.jar</URL>
-			<Required>true</Required>
-			<ModType order="1"
-				launchArgs="--tweakClass cpw.mods.fml.common.launcher.FMLTweaker">Library</ModType>
-			<Submodule id="launchwrapper" name="Mojang (LaunchWrapper)">
-				<URL>https://s3.amazonaws.com/Minecraft.Download/libraries/net/minecraft/launchwrapper/1.5/launchwrapper-1.5.jar</URL>
-				<Required>true</Required>
-				<ModType order="2">Library</ModType>
-			</Submodule>
-			<Submodule id="asm" name="Mojang (ASM)">
-				<URL>https://s3.amazonaws.com/Minecraft.Download/libraries/org/ow2/asm/asm-all/4.1/asm-all-4.1.jar</URL>
-				<Required>true</Required>
-				<ModType order="3">Library</ModType>
-			</Submodule>
-			<Submodule id="scala-lib" name="Minecraft Forge (scala-library)">
-				<URL>http://files.minecraftforge.net/maven/org/scala-lang/scala-library/2.10.2/scala-library-2.10.2.jar.pack.lzma</URL>
-				<Required>true</Required>
-				<ModType order="4">Library</ModType>
-			</Submodule>
-			<Submodule id="scala-compiler" name="Minecraft Forge (scala-compiler)">
-				<URL>http://files.minecraftforge.net/maven/org/scala-lang/scala-compiler/2.10.2/scala-compiler-2.10.2.jar.pack.lzma</URL>
-				<Required>true</Required>
-				<ModType order="5">Library</ModType>
-			</Submodule>
-			<Submodule id="lzma" name="Mojang (LZMA)">
-				<URL>https://s3.amazonaws.com/Minecraft.Download/libraries/lzma/lzma/0.0.1/lzma-0.0.1.jar</URL>
-				<Required>true</Required>
-				<ModType order="6">Library</ModType>
-			</Submodule>
-		</Module>
+	<Server id="164" name="MCU3 1.6.4" newsUrl="http://mcupdater.com"
+		revision="1.6.4" serverAddress="localhost" version="1.6.4"
+		mainClass="net.minecraft.launchwrapper.Launch" generateList="false">
+		<Import url="http://files.mcupdater.com/example/forge.php?mc=1.6.4&amp;forge=9.11.0.891">forge</Import>
 	</Server>
 	<Server id="162-Opti" name="1.6.2 Optifine" newsUrl="http://mcupdater.com"
 		revision="1.6.2" serverAddress="localhost" version="1.6.2"
 		mainClass="net.minecraft.launchwrapper.Launch">
-		<Import url="http://files.mcupdater.com/example/forge.php">forge</Import>
+		<Import url="http://files.mcupdater.com/example/forge.php?mc=1.6.2&amp;forge=9.10.0.842">forge</Import>
 		<Module id="optifine" name="Optifine">
 			<URL>http://optifine.net/download.php?f=OptiFine_1.6.2_HD_U_B4.zip</URL>
 			<Required isDefault="true">false</Required>

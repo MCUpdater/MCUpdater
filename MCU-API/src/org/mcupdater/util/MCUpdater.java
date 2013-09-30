@@ -755,7 +755,7 @@ public class MCUpdater {
 					modExtract.put(cleanForFile(entry.getId()) + ".zip", entry.getInRoot());
 				} else {
 					if (entry.getPath().isEmpty()) {
-						generalFiles.add(new Downloadable(entry.getName(),"mods/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),100000,entry.getUrls()));
+						generalFiles.add(new Downloadable(entry.getName(),"mods/" + cleanForFile(entry.getId()) + (entry.isLitemod() ? ".litemod" : ".jar"),entry.getMD5(),100000,entry.getUrls()));
 					} else {
 						generalFiles.add(new Downloadable(entry.getName(),entry.getPath(),entry.getMD5(),100000,entry.getUrls()));
 					}

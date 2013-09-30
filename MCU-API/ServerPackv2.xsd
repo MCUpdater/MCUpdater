@@ -117,6 +117,7 @@
 			<xs:enumeration value="Coremod" />
 			<xs:enumeration value="Jar" />
 			<xs:enumeration value="Extract" />
+			<xs:enumeration value="Litemod" />
 			<!-- <xs:enumeration value="Option" /> -->
 		</xs:restriction>
 	</xs:simpleType>
