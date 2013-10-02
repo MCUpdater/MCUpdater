@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <project default="package" name="Create Runnable Jar for Project MCUpdater">
 	<property name="MCU-API.location" value="MCU-API"/>
-	<property name="MCUpdater.location" value="mcu"/>
-	<property name="MCU-Launcher.location" value="MCU-Launcher"/>
+	<property name="MCUpdater.location" value="MCU-EndUser"/>
+	<!--property name="MCU-Launcher.location" value="MCU-Launcher"/-->
 
 	<property environment="ENV"/>
 	<include file="version.xml"/> <!-- Version data import -->
@@ -37,7 +37,7 @@
 			</propertyset>
 		</ant>
 	</target>
-	<target name="package" depends="build-API,build-Launcher,build-Client">
+	<target name="package" depends="build-API,build-Client">
 		<mkdir dir="dist"/>
 		<property name="git_branch" value="${ENV.GIT_BRANCH}"/>
 		<echo message="git_branch = ${git_branch}"/>
@@ -54,12 +54,13 @@
 
 		<jar destfile="dist/MCUpdater${BRANCH-TAG}.${VER.MAJOR}.${VER.MINOR}.${ENV.BUILD_NUMBER}.jar" filesetmanifest="mergewithoutmain">
 			<manifest>
-				<attribute name="Main-Class" value="org.smbarbour.mcu.Main"/>
+				<attribute name="Main-Class" value="org.mcupdater.MainShell"/>
 				<attribute name="Class-Path" value="."/>
-				<attribute name="SplashScreen-Image" value="mcu-splash.png"/>
+				<!--attribute name="SplashScreen-Image" value="mcu-splash.png"/-->
 			</manifest>
 			<fileset dir="${MCUpdater.location}/bin"/>
 			<fileset excludes="version.properties" dir="${MCU-API.location}/bin"/>
+			<!--
 			<fileset dir="${MCU-Launcher.location}/bin"/>
 			<zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/commons-codec-1.6.jar"/>
 			<zipfileset excludes="META-INF/*.SF" src="${MCU-API.location}/commons-io-2.1.jar"/>
@@ -67,6 +68,7 @@
 			<zipfileset src="${MCUpdater.location}/resources/famfamfam_silk_icons_v013.zip"/>
 			<zipfileset src="${MCUpdater.location}/resources/assets.zip"/>
 			<zipfileset src="${MCU-API.location}/assets-API.zip"/>
+			-->
 		</jar>
 	</target>
 </project>
