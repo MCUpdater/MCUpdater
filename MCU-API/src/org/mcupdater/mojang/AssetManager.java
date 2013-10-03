@@ -13,6 +13,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.mcupdater.DownloadQueue;
 import org.mcupdater.Downloadable;
 import org.mcupdater.TrackerListener;
+import org.mcupdater.util.MCUpdater;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -28,6 +29,7 @@ public class AssetManager {
 		Set<Downloadable> assets = new HashSet<Downloadable>();
 		try {
 			URL resourceUrl = new URL("https://s3.amazonaws.com/Minecraft.Resources/");
+			URL localUrl = MCUpdater.getInstance().getMCFolder().resolve("assets").toFile().toURI().toURL();
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		    DocumentBuilder db = dbf.newDocumentBuilder();
 		    Document doc = db.parse(resourceUrl.openConnection().getInputStream());
@@ -51,6 +53,7 @@ public class AssetManager {
 		    				}
 		    			}
 		    			List<URL> urls = new ArrayList<URL>();
+		    			urls.add(new URL(localUrl + key));
 		    			urls.add(new URL(resourceUrl + key));
 		    			Downloadable download = new Downloadable(key, key, etag, size, urls);
 		    			assets.add(download);

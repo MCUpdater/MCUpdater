@@ -20,6 +20,7 @@ public class LoginDialog {
 
 	public static Profile doLogin(Shell parent, TranslateProxy translate, String initialUsername){
 		final Profile newProfile = new Profile();
+		newProfile.setStyle("Invalid");
 		final Shell dialog = new Shell(parent, SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL);
 		{
 			dialog.setText(translate.addProfile);
