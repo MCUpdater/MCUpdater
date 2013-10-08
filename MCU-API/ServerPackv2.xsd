@@ -37,6 +37,17 @@
 	</xs:complexType>
 
 	<xs:complexType name="ModuleType">
+		<xs:complexContent>
+			<xs:extension base="tns:ModuleGenericType">
+				<xs:sequence>
+					<xs:element type="tns:ModuleGenericType" name="Submodule" maxOccurs="unbounded" minOccurs="0" />
+					<xs:element type="tns:ConfigType" name="ConfigFile" maxOccurs="unbounded" minOccurs="0" />
+				</xs:sequence>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:complexType name="ModuleGenericType">
 		<xs:sequence>
 			<xs:element name="URL" minOccurs="0" maxOccurs="unbounded">
 				<xs:complexType>
@@ -72,8 +83,6 @@
 			</xs:element>
 			<xs:element type="xs:string" name="MD5" minOccurs="0" maxOccurs="1" />
 			<xs:element type="tns:MetaType" name="Meta" minOccurs="0" maxOccurs="1" />
-			<xs:element type="tns:ModuleType" name="Submodule" maxOccurs="unbounded" minOccurs="0" />
-			<xs:element type="tns:ConfigType" name="ConfigFile" maxOccurs="unbounded" minOccurs="0" />
 		</xs:sequence>
 		<xs:attribute type="xs:string" name="name" use="required" />
 		<xs:attribute type="xs:string" name="id" use="required" />
