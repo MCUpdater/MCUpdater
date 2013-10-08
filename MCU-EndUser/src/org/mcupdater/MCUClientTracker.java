@@ -7,6 +7,7 @@ public class MCUClientTracker implements TrackerListener {
 	
 	private Display display;
 	private MCUProgress progress;
+	private int updateCounter = 0;
 
 	public MCUClientTracker(Display display, MCUProgress progress) {
 		this.display = display;
@@ -28,13 +29,17 @@ public class MCUClientTracker implements TrackerListener {
 
 	@Override
 	public void onQueueProgress(final DownloadQueue queue) {
-		display.syncExec(new Runnable(){
-			@Override
-			public void run() {
-				if (progress == null || progress.isDisposed()) { return; }
-				progress.updateProgress(queue.getName(),queue.getParent(),queue.getProgress(),queue.getTotalFileCount(),queue.getSuccessFileCount());
-			}
-		});
+		updateCounter++;
+		if (updateCounter == 10) {
+			display.syncExec(new Runnable(){
+				@Override
+				public void run() {
+					if (progress == null || progress.isDisposed()) { return; }
+					progress.updateProgress(queue.getName(),queue.getParent(),queue.getProgress(),queue.getTotalFileCount(),queue.getSuccessFileCount());
+				}
+			});
+			updateCounter = 0;
+		}
 	}
 
 	@Override

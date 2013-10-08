@@ -36,5 +36,7 @@ public class FRFrench extends TranslateProxy {
 		password = "Mot de passe:";
 		login = "S'identifier";
 		cancel = "Annuler";
+		updateRequired = "Votre configuration n'est pas synchronisé avec le serveur. Mise à jour est nécessaire."; // Translated by Google Translate
+		oldMCUpdater = "Le serveur nécessite une version plus récente d'MCUpdater que vous avez installée.\nVeuillez mettre à jour dès que possible, les choses ne sont pas susceptibles de mettre à jour correctement autrement."; // Translated by Google Translate
 	}
 }

@@ -122,7 +122,7 @@ public class InstanceList extends ScrolledComposite {
 				try {
 					instData.load(Files.newInputStream(MCUpdater.getInstance().getInstanceRoot().resolve(entry.getServerId()).resolve("instance.dat")));
 				} catch (IOException e1) {
-					MainShell.getInstance().baseLogger.log(Level.SEVERE, "I/O error", e1);
+					MainShell.getInstance().baseLogger.log(Level.WARNING, "instance.dat file not found.");
 				}
 				final boolean needUpdate = !entry.getRevision().equals(instData.getProperty("revision"));
 				// check for mcu version update
@@ -130,9 +130,9 @@ public class InstanceList extends ScrolledComposite {
 
 				String warningMessage = null;
 				if( needUpdate ) {
-					warningMessage = "Your configuration is out of sync with the server. Updating is necessary.";
+					warningMessage = MainShell.getInstance().translate.updateRequired;
 				} else if( needMCUUpgrade ) {
-					warningMessage = "The server requires a newer version of MCUpdater than you currently have installed.\nPlease upgrade as soon as possible, things are not likely to update correctly otherwise.";
+					warningMessage = MainShell.getInstance().translate.oldMCUpdater;
 				}
 
 				if (warningMessage != null) {

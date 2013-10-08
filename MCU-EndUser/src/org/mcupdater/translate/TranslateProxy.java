@@ -35,4 +35,6 @@ public abstract class TranslateProxy {
 	public String password = "#MISSING#";
 	public String login = "#MISSING#";
 	public String cancel = "#MISSING#";
+	public String updateRequired = "#MISSING#";
+	public String oldMCUpdater = "#MISSING#";
 }

@@ -36,5 +36,7 @@ public class USEnglish extends TranslateProxy {
 		password = "Password:";
 		login = "Login";
 		cancel = "Cancel";
+		updateRequired = "Your configuration is out of sync with the server. Updating is necessary.";
+		oldMCUpdater = "The server requires a newer version of MCUpdater than you currently have installed.\nPlease upgrade as soon as possible, things are not likely to update correctly otherwise.";
 	}
 }
