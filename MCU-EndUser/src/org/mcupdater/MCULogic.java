@@ -121,7 +121,6 @@ public class MCULogic {
 		args.add(classpath.toString());
 		args.add(mainClass);
 		String tmpclArgs = clArgs.toString();
-		System.out.println(tmpclArgs);
 		Map<String,String> fields = new HashMap<String,String>();
 		StrSubstitutor fieldReplacer = new StrSubstitutor(fields);
 		fields.put("auth_player_name", playerName);
@@ -136,9 +135,12 @@ public class MCULogic {
 		}
 		args.addAll(Arrays.asList(fieldArr));
 		
+		MainShell.getInstance().log("Launch args:");
+		MainShell.getInstance().log("===============================");
 		for (String entry : args) {
-			System.out.println(entry);
+			MainShell.getInstance().log(entry);
 		}
+		MainShell.getInstance().log("===============================");
 		final ProcessBuilder pb = new ProcessBuilder(args);
 		pb.directory(mcu.getInstanceRoot().resolve(selected.getServerId()).toFile());
 		pb.redirectErrorStream(true);
