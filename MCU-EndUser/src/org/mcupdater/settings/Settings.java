@@ -56,7 +56,12 @@ public class Settings {
 	}
 
 	public void setMinMemory(String minMemory) {
-		this.minMemory = minMemory;
+		try {
+			this.minMemory = minMemory;
+		} catch (Exception e) {
+			// ignore errors
+		}
+		
 	}
 
 	public String getMaxMemory() {
@@ -80,7 +85,11 @@ public class Settings {
 	}
 
 	public void setResWidth(int resWidth) {
-		this.resWidth = resWidth;
+		try {
+			this.resWidth = resWidth;
+		} catch (Exception e) {
+			// ignore errors
+		}
 	}
 
 	public int getResHeight() {
@@ -202,10 +211,18 @@ public class Settings {
 			setProgramWrapper(value);
 			break;
 		case resHeight:
-			setResHeight(Integer.parseInt(value));
+			try {
+				setResHeight(Integer.parseInt(value));
+			} catch (Exception e) {
+				// ignore errors
+			}
 			break;
 		case resWidth:
-			setResWidth(Integer.parseInt(value));
+			try {
+				setResWidth(Integer.parseInt(value));
+			} catch (Exception e) {
+				// ignore errors
+			}
 			break;
 		case timeoutLength:
 			setTimeoutLength(Integer.parseInt(value));

@@ -16,6 +16,7 @@ public enum Languages {
 	de_BE(de_DE.getProxy()),
 	de_LU(de_DE.getProxy()),
 	de_LI(de_DE.getProxy()),
+	pl_PL(new PLPolish()),
 	;
 	
 	private TranslateProxy proxy;

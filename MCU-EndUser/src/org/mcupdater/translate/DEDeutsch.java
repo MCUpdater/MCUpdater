@@ -36,7 +36,8 @@ public class DEDeutsch extends TranslateProxy {
 		password = "Passwort:";
 		login = "Login";
 		cancel = "Abbrechen";
-		updateRequired = "Ihre Konfiguration ist nicht synchron mit dem Server. Aktualisierung erforderlich ist."; // Translated by Google Translate
-		oldMCUpdater = "Der Server benötigt eine neuere Version von MCUpdater als Sie derzeit installiert haben.\nBitte aktualisieren Sie so bald wie möglich, sind die Dinge wahrscheinlich nicht richtig sonst zu aktualisieren."; // Translated by Google Translate
+		updateRequired = "Deine Konfiguration ist nicht synchronisiert mit dem Server, du musst sie aktualisieren.";
+		oldMCUpdater = "Dieses Server verwendet neue Version von MPUpdater als aktuell.\nDu must ihm am schnellstem aktualisieren, wenn nicht dann können einige Fehler entstehen.";
+		// oldMCUpdater = "Der Server benötigt eine neuere Version von MCUpdater als Sie derzeit installiert haben.\nBitte aktualisieren Sie so bald wie möglich, sind die Dinge wahrscheinlich nicht richtig sonst zu aktualisieren."; // Translated by Google Translate
 	}
 }

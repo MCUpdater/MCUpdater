@@ -630,7 +630,8 @@ public class MCUpdater {
 		DownloadQueue libraryQueue = null;
 		final List<String> libExtract = new ArrayList<String>();
 		final Map<String,Boolean> modExtract = new HashMap<String,Boolean>();
-		final Map<String,Boolean> keepMeta = new TreeMap<String,Boolean>(); 
+		final Map<String,Boolean> keepMeta = new TreeMap<String,Boolean>();
+		Downloadable baseJar = null;
 		switch (side){
 		case CLIENT:
 			MinecraftVersion version = MinecraftVersion.loadVersion(server.getVersion());
@@ -671,7 +672,7 @@ public class MCUpdater {
 					break;
 				}
 			}
-			jarMods.add(new Downloadable("Minecraft jar","0.jar",jarMD5,3000000,jarUrl));
+			baseJar = new Downloadable("Minecraft jar","0.jar",jarMD5,3000000,jarUrl);
 			keepMeta.put("0.jar", Version.requestedFeatureLevel(server.getVersion(), "1.6"));
 			break;
 		case SERVER:
@@ -703,6 +704,9 @@ public class MCUpdater {
 		}
 		if (jarModCount != Integer.parseInt(instData.getProperty("jarModCount","0"))) {
 			updateJar = true;
+		}
+		if (updateJar && baseJar != null) {
+			jarMods.add(baseJar);
 		}
 		jarModCount = 0;
 		apiLogger.info("Instance path: " + instancePath.toString());
@@ -898,7 +902,7 @@ public class MCUpdater {
 	}
 	
 	private String cleanForFile(String id) {
-		return id.replaceAll("[^a-zA-Z_0-9\\-]", "_");
+		return id.replaceAll("[^a-zA-Z_0-9\\-.]", "_");
 	}
 
 	public void writeMCServerFile(String name, String ip, String instance) {
