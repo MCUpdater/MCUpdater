@@ -746,55 +746,56 @@ public class MCUpdater {
 			GenericModule entry = itMods.next();
 			parent.setStatus("Mod: " + entry.getName());
 			parent.log("Mod: "+entry.getName());
-			try {
-				Collections.sort(entry.getPrioritizedUrls());
-				if (entry.getInJar()) {
-					if (updateJar) {
-						jarMods.add(new Downloadable(entry.getName(),String.valueOf(entry.getJarOrder()) + "-" + entry.getId() + ".jar",entry.getMD5(),100000,entry.getUrls()));
-						keepMeta.put(String.valueOf(entry.getJarOrder()) + "-" + cleanForFile(entry.getId()) + ".jar", entry.getKeepMeta());
-						instData.setProperty("mod:" + entry.getId(), entry.getMD5());
-						jarModCount++;
-					}
-				} else if (entry.getCoreMod()) {
-					generalFiles.add(new Downloadable(entry.getName(),"coremods/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),100000,entry.getUrls()));
-				} else if (entry.getIsLibrary()) {
-					generalFiles.add(new Downloadable(entry.getName(),"lib/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),100000,entry.getUrls()));
-				} else if (entry.getExtract()) {
-					generalFiles.add(new Downloadable(entry.getName(),cleanForFile(entry.getId()) + ".zip",entry.getMD5(),100000,entry.getUrls()));
-					modExtract.put(cleanForFile(entry.getId()) + ".zip", entry.getInRoot());
+			Collections.sort(entry.getPrioritizedUrls());
+			if (entry.getInJar()) {
+				if (updateJar) {
+					jarMods.add(new Downloadable(entry.getName(),String.valueOf(entry.getJarOrder()) + "-" + entry.getId() + ".jar",entry.getMD5(),100000,entry.getUrls()));
+					keepMeta.put(String.valueOf(entry.getJarOrder()) + "-" + cleanForFile(entry.getId()) + ".jar", entry.getKeepMeta());
+					instData.setProperty("mod:" + entry.getId(), entry.getMD5());
+					jarModCount++;
+				}
+			} else if (entry.getCoreMod()) {
+				generalFiles.add(new Downloadable(entry.getName(),"coremods/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),100000,entry.getUrls()));
+			} else if (entry.getIsLibrary()) {
+				generalFiles.add(new Downloadable(entry.getName(),"lib/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),100000,entry.getUrls()));
+			} else if (entry.getExtract()) {
+				generalFiles.add(new Downloadable(entry.getName(),cleanForFile(entry.getId()) + ".zip",entry.getMD5(),100000,entry.getUrls()));
+				modExtract.put(cleanForFile(entry.getId()) + ".zip", entry.getInRoot());
+			} else {
+				if (entry.getPath().isEmpty()) {
+					generalFiles.add(new Downloadable(entry.getName(),"mods/" + cleanForFile(entry.getId()) + (entry.isLitemod() ? ".litemod" : ".jar"),entry.getMD5(),100000,entry.getUrls()));
 				} else {
-					if (entry.getPath().isEmpty()) {
-						generalFiles.add(new Downloadable(entry.getName(),"mods/" + cleanForFile(entry.getId()) + (entry.isLitemod() ? ".litemod" : ".jar"),entry.getMD5(),100000,entry.getUrls()));
-					} else {
-						generalFiles.add(new Downloadable(entry.getName(),entry.getPath(),entry.getMD5(),100000,entry.getUrls()));
-					}
+					generalFiles.add(new Downloadable(entry.getName(),entry.getPath(),entry.getMD5(),100000,entry.getUrls()));
 				}
-				// 0
-				Iterator<ConfigFile> itConfigs = configs.iterator();
-				while(itConfigs.hasNext()) {
-					final ConfigFile cfEntry = itConfigs.next();
-					final File confFile = instancePath.resolve(cfEntry.getPath()).toFile();
-					if (confFile.exists() && cfEntry.isNoOverwrite()) { continue; }
-					List<URL> configUrl = new ArrayList<URL>();
-					configUrl.add(new URL(cfEntry.getUrl()));
-					generalFiles.add(new Downloadable(cfEntry.getPath(),cfEntry.getPath(),cfEntry.getMD5(),100000,configUrl));
-					//1
-					// save in cache for future reference
-					//					if( MD5 != null ) {
-					//						final boolean cached = DownloadCache.cacheFile(confFile, MD5);
-					//						if( cached ) {
-					//							_debug(confFile.getName() + " saved in cache");							
-					//						}
-					//					}
-				}
+			}
+			// 0
+			modsLoaded++;
+			//			parent.setProgressBar((int)( (65 / modCount) * modsLoaded + 25));
+			parent.log("  Done ("+modsLoaded+"/"+modCount+")");
+		}
+		Iterator<ConfigFile> itConfigs = configs.iterator();
+		while(itConfigs.hasNext()) {
+			final ConfigFile cfEntry = itConfigs.next();
+			final File confFile = instancePath.resolve(cfEntry.getPath()).toFile();
+			if (confFile.exists() && cfEntry.isNoOverwrite()) { continue; }
+			List<URL> configUrl = new ArrayList<URL>();
+			try {
+				configUrl.add(new URL(cfEntry.getUrl()));
 			} catch (MalformedURLException e) {
 				++errorCount;
 				apiLogger.log(Level.SEVERE, "General Error", e);
 			}
-			modsLoaded++;
-//			parent.setProgressBar((int)( (65 / modCount) * modsLoaded + 25));
-			parent.log("  Done ("+modsLoaded+"/"+modCount+")");
+			generalFiles.add(new Downloadable(cfEntry.getPath(),cfEntry.getPath(),cfEntry.getMD5(),10000,configUrl));
+			//1
+			// save in cache for future reference
+			//					if( MD5 != null ) {
+			//						final boolean cached = DownloadCache.cacheFile(confFile, MD5);
+			//						if( cached ) {
+			//							_debug(confFile.getName() + " saved in cache");							
+			//						}
+			//					}
 		}
+
 		instData.setProperty("jarModCount", Integer.toString(jarModCount));
 		generalQueue = parent.submitNewQueue("Instance files", server.getServerId(), generalFiles, instancePath.toFile(), DownloadCache.getDir());
 		jarQueue = parent.submitNewQueue("Jar build files", server.getServerId(), jarMods, tmpFolder, DownloadCache.getDir());
