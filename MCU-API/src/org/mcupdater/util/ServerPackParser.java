@@ -19,6 +19,11 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.mcupdater.Version;
+import org.mcupdater.model.ConfigFile;
+import org.mcupdater.model.GenericModule;
+import org.mcupdater.model.ModType;
+import org.mcupdater.model.Module;
+import org.mcupdater.model.PrioritizedURL;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -221,7 +226,7 @@ public class ServerPackParser {
 			}
 			String md5 = (String) xpath.evaluate("MD5", el, XPathConstants.STRING);
 			List<ConfigFile> configs = new ArrayList<ConfigFile>();
-			List<Module> submodules = new ArrayList<Module>();
+			List<GenericModule> submodules = new ArrayList<GenericModule>();
 			nl = el.getElementsByTagName("ConfigFile");
 			for(int i = 0; i < nl.getLength(); i++) 
 			{
@@ -233,7 +238,7 @@ public class ServerPackParser {
 			for(int i = 0; i < nl.getLength(); i++)
 			{
 				Element elSubmod = (Element)nl.item(i);
-				Module sm = getModuleV2(elSubmod);
+				GenericModule sm = (GenericModule)getModuleV2(elSubmod);
 				submodules.add(sm);
 			}
 			HashMap<String,String> mapMeta = new HashMap<String,String>();
@@ -264,6 +269,7 @@ public class ServerPackParser {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	private static Module getModuleV1(Element modEl)
 	{
 		String name = modEl.getAttribute("name");

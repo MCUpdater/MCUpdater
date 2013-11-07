@@ -1,4 +1,4 @@
-package org.mcupdater.util;
+package org.mcupdater.model;
 
 public class LoginData {
 	private String userName = "";

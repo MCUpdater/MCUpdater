@@ -1,4 +1,4 @@
-package org.mcupdater.util;
+package org.mcupdater.model;
 
 import java.util.Locale;
 

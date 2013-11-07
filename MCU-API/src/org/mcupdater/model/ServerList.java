@@ -1,4 +1,4 @@
-package org.mcupdater.util;
+package org.mcupdater.model;
 
 public class ServerList implements Comparable<ServerList>{
 	private String name;

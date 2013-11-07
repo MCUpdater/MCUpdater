@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.logging.*;
 
-import org.mcupdater.util.ServerList;
+import org.mcupdater.model.ServerList;
 
 public abstract class MCUApp {
 	

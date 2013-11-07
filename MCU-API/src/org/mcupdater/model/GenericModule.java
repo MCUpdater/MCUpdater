@@ -1,4 +1,4 @@
-package org.mcupdater.util;
+package org.mcupdater.model;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -7,41 +7,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-public class Module {
-	private String name = "";
-	private String id = "";
-	private List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
-	private String path = "";
-	private String depends = "";
-	private boolean required = false;
-	private boolean inJar = false;
-	private int order = 1;
-	private boolean keepMeta = false;
-	private boolean extract = false;
-	private boolean inRoot = false;
-	private boolean isDefault = false;
-	private boolean coreMod = false;
-	private boolean litemod = false;
-	private String md5 = "";
-	private ModSide side = ModSide.BOTH;
-	private List<ConfigFile> configs = new ArrayList<ConfigFile>();
-	private List<Module> submodules = new ArrayList<Module>();
-	private HashMap<String,String> meta = new HashMap<String,String>();
-	private boolean isLibrary = false;
-	private String launchArgs = "";
-	private String jreArgs = "";
-	
-	public Module(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta, boolean isLibrary, boolean litemod, String launchArgs, String jreArgs, List<Module> submodules){
-		this(name, id, url, depends, required, inJar, jarOrder, keepMeta, extract, inRoot, isDefault, coreMod, md5, configs, side, path, meta);
-		this.setIsLibrary(isLibrary);
-		this.setLaunchArgs(launchArgs);
-		this.setJreArgs(jreArgs);
-		this.setLitemod(litemod);
-		this.submodules.addAll(submodules);
-	}
-	
-	public Module(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs, String side, String path, HashMap<String, String> meta)
-	{
+
+public class GenericModule {
+	protected String name = "";
+	protected String id = "";
+	protected List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
+	protected String path = "";
+	protected String depends = "";
+	protected boolean required = false;
+	protected boolean inJar = false;
+	protected int order = 1;
+	protected boolean keepMeta = false;
+	protected boolean extract = false;
+	protected boolean inRoot = false;
+	protected boolean isDefault = false;
+	protected boolean coreMod = false;
+	protected boolean litemod = false;
+	protected String md5 = "";
+	protected ModSide side = ModSide.BOTH;
+	protected HashMap<String,String> meta = new HashMap<String,String>();
+	protected boolean isLibrary = false;
+	protected String launchArgs = "";
+	protected String jreArgs = "";
+
+	public GenericModule(String name, String id, List<PrioritizedURL> url, String depends, boolean required, boolean inJar, int jarOrder, boolean keepMeta, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, String side, String path, HashMap<String, String> meta, boolean isLibrary, boolean litemod, String launchArgs, String jreArgs){
 		this.setName(name);
 		this.setId(id);
 		this.setUrls(url);
@@ -57,12 +46,10 @@ public class Module {
 		this.setMD5(md5);
 		this.setSide(side);
 		this.setPath(path);
-		if(configs != null)
-		{
-			this.configs = configs;
-		} else {
-			this.configs = new ArrayList<ConfigFile>();
-		}
+		this.setIsLibrary(isLibrary);
+		this.setLaunchArgs(launchArgs);
+		this.setJreArgs(jreArgs);
+		this.setLitemod(litemod);
 		if(meta != null)
 		{
 			this.setMeta(meta);
@@ -70,21 +57,9 @@ public class Module {
 			this.setMeta(new HashMap<String,String>());
 		}
 	}
-
+	
 	private void setJarOrder(int jarOrder) {
 		this.order = jarOrder;
-	}
-
-	@Deprecated
-	public Module(String name, String id, String url, String depends, boolean required, boolean inJar, boolean extract, boolean inRoot, boolean isDefault, boolean coreMod, String md5, List<ConfigFile> configs)
-	{
-		this(name, id, makeList(url), depends, required, inJar, 0, true, extract, inRoot, isDefault, coreMod, md5, configs, null, null, null);
-	}
-	
-	private static List<PrioritizedURL> makeList(String url) {
-		List<PrioritizedURL> urls = new ArrayList<PrioritizedURL>();
-		urls.add(new PrioritizedURL(url, 0));
-		return urls;
 	}
 
 	public String getName()
@@ -172,16 +147,6 @@ public class Module {
 	
 	public void setIsDefault(boolean isDefault) {
 		this.isDefault = isDefault;
-	}
-
-	public List<ConfigFile> getConfigs()
-	{
-		return configs;
-	}
-	
-	public void setConfigs(List<ConfigFile> configs)
-	{
-		this.configs = configs;
 	}
 
 	public boolean getCoreMod() {
@@ -290,18 +255,6 @@ public class Module {
 	public List<PrioritizedURL> getPrioritizedUrls() {
 		return this.urls;
 	}
-	
-	public boolean hasConfigs() {
-		return (this.configs.size() > 0);
-	}
-	
-	public boolean hasSubmodules() {
-		return (this.submodules.size() > 0);
-	}
-	
-	public List<Module> getSubmodules() {
-		return this.submodules;
-	}
 
 	public String getJreArgs() {
 		return jreArgs;
@@ -319,4 +272,3 @@ public class Module {
 		this.litemod = litemod;
 	}
 }
-

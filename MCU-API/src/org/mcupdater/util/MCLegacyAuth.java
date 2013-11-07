@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.logging.Level;
 
 import org.mcupdater.Version;
+import org.mcupdater.model.LoginData;
 import org.mcupdater.util.HTTPSUtils;
 import org.mcupdater.util.MCLoginException;
 import org.mcupdater.util.MCLoginException.ResponseType;

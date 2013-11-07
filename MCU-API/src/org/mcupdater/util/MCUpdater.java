@@ -48,6 +48,11 @@ import org.mcupdater.FMLStyleFormatter;
 import org.mcupdater.MCUApp;
 import org.mcupdater.TaskableExecutor;
 import org.mcupdater.Version;
+import org.mcupdater.model.Backup;
+import org.mcupdater.model.ConfigFile;
+import org.mcupdater.model.GenericModule;
+import org.mcupdater.model.ModSide;
+import org.mcupdater.model.ServerList;
 import org.mcupdater.mojang.Library;
 import org.mcupdater.mojang.MinecraftVersion;
 import org.mcupdater.util.Archive;
@@ -612,7 +617,7 @@ public class MCUpdater {
 		return jar.exists();
 	}
 	
-	public boolean installMods(final ServerList server, List<Module> toInstall, boolean clearExisting, final Properties instData, ModSide side) throws FileNotFoundException {
+	public boolean installMods(final ServerList server, List<GenericModule> toInstall, List<ConfigFile> configs, boolean clearExisting, final Properties instData, ModSide side) throws FileNotFoundException {
 		if (Version.requestedFeatureLevel(server.getMCUVersion(), "2.2")) {
 			// Sort mod list for InJar
 			//Collections.sort(toInstall, new ModuleComparator());
@@ -691,10 +696,10 @@ public class MCUpdater {
 		} else {
 			//TODO:Server jar detection
 		}			
-		Iterator<Module> iMods = toInstall.iterator();
+		Iterator<GenericModule> iMods = toInstall.iterator();
 		int jarModCount = 0;
 		while (iMods.hasNext() && !updateJar) {
-			Module current = iMods.next();
+			GenericModule current = iMods.next();
 			if (current.getInJar()) {
 				if (current.getMD5().isEmpty() || (!current.getMD5().equalsIgnoreCase(instData.getProperty("mod:" + current.getId(), "NoHash")))) {
 					updateJar = true;
@@ -727,7 +732,7 @@ public class MCUpdater {
 				entry.delete();
 			}
 		}
-		Iterator<Module> itMods = toInstall.iterator();
+		Iterator<GenericModule> itMods = toInstall.iterator();
 		final File buildJar = archiveFolder.resolve("build.jar").toFile();		
 		if(buildJar.exists()) {
 			buildJar.delete();
@@ -738,7 +743,7 @@ public class MCUpdater {
 		int errorCount = 0;
 		
 		while(itMods.hasNext()) {
-			Module entry = itMods.next();
+			GenericModule entry = itMods.next();
 			parent.setStatus("Mod: " + entry.getName());
 			parent.log("Mod: "+entry.getName());
 			try {
@@ -765,7 +770,7 @@ public class MCUpdater {
 					}
 				}
 				// 0
-				Iterator<ConfigFile> itConfigs = entry.getConfigs().iterator();
+				Iterator<ConfigFile> itConfigs = configs.iterator();
 				while(itConfigs.hasNext()) {
 					final ConfigFile cfEntry = itConfigs.next();
 					final File confFile = instancePath.resolve(cfEntry.getPath()).toFile();

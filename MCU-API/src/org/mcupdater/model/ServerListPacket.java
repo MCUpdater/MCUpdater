@@ -1,4 +1,6 @@
-package org.mcupdater.util;
+package org.mcupdater.model;
+
+import org.mcupdater.util.MCUpdater;
 
 public class ServerListPacket {
 	private ServerList entry;

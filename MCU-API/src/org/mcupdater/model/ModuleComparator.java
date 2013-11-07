@@ -1,6 +1,7 @@
-package org.mcupdater.util;
+package org.mcupdater.model;
 
 import java.util.Comparator;
+
 
 public class ModuleComparator implements Comparator<Module> {
 

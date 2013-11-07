@@ -5,8 +5,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import org.mcupdater.util.ModSide;
-import org.mcupdater.util.ServerList;
+
+import org.mcupdater.model.ModSide;
+import org.mcupdater.model.ServerList;
 
 public class MCUCLI extends MCUApp {
 	@Override
