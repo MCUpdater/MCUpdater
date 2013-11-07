@@ -45,15 +45,17 @@ import org.eclipse.swt.widgets.Sash;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.mcupdater.MCUConsole.LineStyle;
+import org.mcupdater.model.ConfigFile;
+import org.mcupdater.model.GenericModule;
+import org.mcupdater.model.ModSide;
+import org.mcupdater.model.Module;
+import org.mcupdater.model.ServerList;
 import org.mcupdater.mojang.AssetManager;
 import org.mcupdater.settings.Profile;
 import org.mcupdater.settings.Settings;
 import org.mcupdater.settings.SettingsManager;
 import org.mcupdater.translate.TranslateProxy;
 import org.mcupdater.util.MCUpdater;
-import org.mcupdater.util.ModSide;
-import org.mcupdater.util.Module;
-import org.mcupdater.util.ServerList;
 import org.mcupdater.util.ServerPackParser;
 import org.mcupdater.translate.Languages;
 
@@ -386,13 +388,17 @@ public class MainShell extends MCUApp {
 					btnUpdate.setEnabled(false);
 					MCUpdater.getInstance().getInstanceRoot().resolve(selected.getServerId()).toFile().mkdirs();
 					
-					final List<Module> selectedMods = new ArrayList<Module>();
+					final List<GenericModule> selectedMods = new ArrayList<GenericModule>();
+					final List<ConfigFile> selectedConfigs = new ArrayList<ConfigFile>();
 					Iterator<ModuleCheckbox> it = modules.getModules().iterator();
 					while (it.hasNext()){
 						ModuleCheckbox entry = it.next();
 						System.out.println("Module: " + entry.getModule().getName());
 						if (entry.isSelected()) {
 							selectedMods.add(entry.getModule());
+							if (entry.getModule().hasConfigs()){
+								selectedConfigs.addAll(entry.getModule().getConfigs());
+							}
 							if (entry.getModule().hasSubmodules()){
 								selectedMods.addAll(entry.getModule().getSubmodules());
 							}
@@ -409,7 +415,7 @@ public class MainShell extends MCUApp {
 					}
 
 					try {
-						MCUpdater.getInstance().installMods(selected , selectedMods, false, instData, ModSide.CLIENT);
+						MCUpdater.getInstance().installMods(selected , selectedMods, selectedConfigs, false, instData, ModSide.CLIENT);
 					} catch (FileNotFoundException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

@@ -9,7 +9,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.mcupdater.util.Module;
+import org.mcupdater.model.Module;
 
 public class MCUModules extends Composite {
 

@@ -15,14 +15,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.text.StrSubstitutor;
+import org.mcupdater.model.GenericModule;
+import org.mcupdater.model.ServerList;
 import org.mcupdater.mojang.Library;
 import org.mcupdater.mojang.MinecraftVersion;
 import org.mcupdater.settings.Profile;
 import org.mcupdater.settings.Settings;
 import org.mcupdater.settings.SettingsManager;
 import org.mcupdater.util.MCUpdater;
-import org.mcupdater.util.Module;
-import org.mcupdater.util.ServerList;
 import org.mcupdater.util.ServerPackParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -93,7 +93,7 @@ public class MCULogic {
 					args.addAll(Arrays.asList(entry.getModule().getJreArgs().split(" ")));
 				}
 				if (entry.getModule().hasSubmodules()) {
-					for (Module sm : entry.getModule().getSubmodules()) {
+					for (GenericModule sm : entry.getModule().getSubmodules()) {
 						if (sm.getIsLibrary()) {
 							libs.add(sm.getId() + ".jar");
 						}

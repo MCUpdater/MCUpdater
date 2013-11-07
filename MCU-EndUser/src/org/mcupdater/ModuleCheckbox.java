@@ -4,7 +4,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.mcupdater.util.Module;
+import org.mcupdater.model.Module;
 
 public class ModuleCheckbox extends Composite {
 
