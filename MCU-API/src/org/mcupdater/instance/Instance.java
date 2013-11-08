@@ -6,13 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 public class Instance {
-	private List<FileInfo> instanceFiles;
-	private Map<String, Boolean> optionalMods;
-
-	public Instance(){
-		instanceFiles = new ArrayList<FileInfo>();
-		optionalMods = new HashMap<String, Boolean>();
-	}
+	private String mcversion;
+	private String revision;
+	private List<FileInfo> instanceFiles = new ArrayList<FileInfo>();
+	private List<FileInfo> jarMods = new ArrayList<FileInfo>();
+	private Map<String, Boolean> optionalMods = new HashMap<String, Boolean>();
 	
 	public List<FileInfo> getInstanceFiles() {
 		return instanceFiles;
@@ -30,5 +28,23 @@ public class Instance {
 	
 	public void setModStatus(String key, Boolean value) {
 		this.optionalMods.put(key, value);
+	}
+	public String getMCVersion() {
+		return mcversion;
+	}
+	public void setMCVersion(String mcversion) {
+		this.mcversion = mcversion;
+	}
+	public String getRevision() {
+		return revision;
+	}
+	public void setRevision(String revision) {
+		this.revision = revision;
+	}
+	public List<FileInfo> getJarMods() {
+		return jarMods;
+	}
+	public void setJarMods(List<FileInfo> jarMods) {
+		this.jarMods = jarMods;
 	}
 }
