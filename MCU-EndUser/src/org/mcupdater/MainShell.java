@@ -3,6 +3,7 @@ package org.mcupdater;
 import j7compat.Files;
 import j7compat.Path;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -45,6 +45,7 @@ import org.eclipse.swt.widgets.Sash;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.mcupdater.MCUConsole.LineStyle;
+import org.mcupdater.instance.Instance;
 import org.mcupdater.model.ConfigFile;
 import org.mcupdater.model.GenericModule;
 import org.mcupdater.model.ModSide;
@@ -58,6 +59,9 @@ import org.mcupdater.translate.TranslateProxy;
 import org.mcupdater.util.MCUpdater;
 import org.mcupdater.util.ServerPackParser;
 import org.mcupdater.translate.Languages;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public class MainShell extends MCUApp {
 
@@ -82,6 +86,7 @@ public class MainShell extends MCUApp {
 	private MCUSettings cmpSettings;
 	private boolean playing;
 	private Composite cmpStatus;
+	private Gson gson = new GsonBuilder().setPrettyPrinting().create();	
 
 	/**
 	 * Launch the application.
@@ -387,7 +392,18 @@ public class MainShell extends MCUApp {
 				public void widgetSelected(SelectionEvent arg0) {
 					btnUpdate.setEnabled(false);
 					MCUpdater.getInstance().getInstanceRoot().resolve(selected.getServerId()).toFile().mkdirs();
-					
+
+					Instance instData;
+					final Path instanceFile = MCUpdater.getInstance().getInstanceRoot().resolve(selected.getServerId()).resolve("instance.json");
+					try {
+						BufferedReader reader = Files.newBufferedReader(instanceFile);
+						instData = gson.fromJson(reader, Instance.class);
+						reader.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+						instData = new Instance();
+					}
+
 					final List<GenericModule> selectedMods = new ArrayList<GenericModule>();
 					final List<ConfigFile> selectedConfigs = new ArrayList<ConfigFile>();
 					Iterator<ModuleCheckbox> it = modules.getModules().iterator();
@@ -403,17 +419,20 @@ public class MainShell extends MCUApp {
 								selectedMods.addAll(entry.getModule().getSubmodules());
 							}
 						}
-					}
-					final Properties instData = new Properties();
-					final Path instanceFile = MCUpdater.getInstance().getInstanceRoot().resolve(selected.getServerId()).resolve("instance.dat");
-					try {
-						if (!instanceFile.toFile().exists()) { instanceFile.toFile().createNewFile(); }
-						instData.load(Files.newInputStream(instanceFile));		
-					} catch (IOException e1) {
-						//baseLogger.log(Level.SEVERE, "I/O error", e1);
-						e1.printStackTrace();
+						if (!entry.getModule().getRequired()) {
+							instData.setModStatus(entry.getModule().getId(), entry.isSelected());
+						}
 					}
 
+//					try {
+//						if (!instanceFile.toFile().exists()) { instanceFile.toFile().createNewFile(); }
+//						instData.load(Files.newInputStream(instanceFile));		
+//					} catch (IOException e1) {
+//						//baseLogger.log(Level.SEVERE, "I/O error", e1);
+//						e1.printStackTrace();
+//					}
+					
+					
 					try {
 						MCUpdater.getInstance().installMods(selected , selectedMods, selectedConfigs, false, instData, ModSide.CLIENT);
 					} catch (FileNotFoundException e) {

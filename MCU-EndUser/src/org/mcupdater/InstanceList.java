@@ -1,14 +1,15 @@
 package org.mcupdater;
 
 import j7compat.Files;
+import j7compat.Path;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 
 import org.eclipse.swt.SWT;
@@ -22,8 +23,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
+import org.mcupdater.instance.Instance;
 import org.mcupdater.model.ServerList;
 import org.mcupdater.util.MCUpdater;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public class InstanceList extends ScrolledComposite {
 
@@ -31,6 +36,7 @@ public class InstanceList extends ScrolledComposite {
 	private Composite listBase;
 	private List<ServerList> instances = new ArrayList<ServerList>();
 	private String selected = "";
+	private Gson gson = new GsonBuilder().setPrettyPrinting().create();	
 
 	public InstanceList(Composite parent) {
 		super(parent, SWT.V_SCROLL | SWT.H_SCROLL | SWT.BORDER);
@@ -118,13 +124,17 @@ public class InstanceList extends ScrolledComposite {
 		for (ServerList entry : this.instances ) {
 			if (entry.getServerId().equals(selected)) {
 				MainShell.getInstance().changeSelectedInstance(entry);
-				Properties instData = new Properties();
+				Instance instData = new Instance();
+				final Path instanceFile = MCUpdater.getInstance().getInstanceRoot().resolve(entry.getServerId()).resolve("instance.json");
 				try {
-					instData.load(Files.newInputStream(MCUpdater.getInstance().getInstanceRoot().resolve(entry.getServerId()).resolve("instance.dat")));
-				} catch (IOException e1) {
-					MainShell.getInstance().baseLogger.log(Level.WARNING, "instance.dat file not found.");
+					BufferedReader reader = Files.newBufferedReader(instanceFile);
+					instData = gson.fromJson(reader, Instance.class);
+					reader.close();
+				} catch (IOException e) {
+					MainShell.getInstance().baseLogger.log(Level.WARNING, "instance.json file not found.");
 				}
-				final boolean needUpdate = !entry.getRevision().equals(instData.getProperty("revision"));
+
+				final boolean needUpdate = !(entry.getRevision().equals(instData.getRevision()) && entry.getVersion().equals(instData.getMCVersion()));
 				// check for mcu version update
 				final boolean needMCUUpgrade = Version.isVersionOld(entry.getMCUVersion());
 

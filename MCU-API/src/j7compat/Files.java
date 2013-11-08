@@ -26,13 +26,8 @@ public class Files {
 		return null;
 	}
 
-	public static BufferedReader newBufferedReader(Path path) {
-		try {
-			return new BufferedReader(new FileReader(path.toFile()));
-		} catch (FileNotFoundException e) {
-			MCUpdater.apiLogger.log(Level.SEVERE, "File not found", e);
-		}
-		return null;
+	public static BufferedReader newBufferedReader(Path path) throws FileNotFoundException {
+		return new BufferedReader(new FileReader(path.toFile()));
 	}
 
 	public static void copy(Path source, Path dest) throws IOException {

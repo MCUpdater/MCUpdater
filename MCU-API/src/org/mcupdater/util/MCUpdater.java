@@ -48,6 +48,8 @@ import org.mcupdater.FMLStyleFormatter;
 import org.mcupdater.MCUApp;
 import org.mcupdater.TaskableExecutor;
 import org.mcupdater.Version;
+import org.mcupdater.instance.FileInfo;
+import org.mcupdater.instance.Instance;
 import org.mcupdater.model.Backup;
 import org.mcupdater.model.ConfigFile;
 import org.mcupdater.model.GenericModule;
@@ -57,6 +59,9 @@ import org.mcupdater.mojang.Library;
 import org.mcupdater.mojang.MinecraftVersion;
 import org.mcupdater.util.Archive;
 import org.w3c.dom.*;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public class MCUpdater {
 	//public static final ResourceBundle Customization = ResourceBundle.getBundle("customization");
@@ -73,7 +78,7 @@ public class MCUpdater {
 	public static Logger apiLogger;
 	//private Path lwjglFolder;
 	private int timeoutLength = 5000;
-	
+	private Gson gson = new GsonBuilder().setPrettyPrinting().create();	
 	private static MCUpdater INSTANCE;
 
 	public static File getJarFile() {
@@ -617,7 +622,7 @@ public class MCUpdater {
 		return jar.exists();
 	}
 	
-	public boolean installMods(final ServerList server, List<GenericModule> toInstall, List<ConfigFile> configs, boolean clearExisting, final Properties instData, ModSide side) throws FileNotFoundException {
+	public boolean installMods(final ServerList server, List<GenericModule> toInstall, List<ConfigFile> configs, boolean clearExisting, final Instance instData, ModSide side) throws FileNotFoundException {
 		if (Version.requestedFeatureLevel(server.getMCUVersion(), "2.2")) {
 			// Sort mod list for InJar
 			//Collections.sort(toInstall, new ModuleComparator());
@@ -697,22 +702,37 @@ public class MCUpdater {
 			//TODO:Server jar detection
 		}			
 		Iterator<GenericModule> iMods = toInstall.iterator();
+		List<String> modIds = new ArrayList<String>();
 		int jarModCount = 0;
 		while (iMods.hasNext() && !updateJar) {
 			GenericModule current = iMods.next();
 			if (current.getInJar()) {
-				if (current.getMD5().isEmpty() || (!current.getMD5().equalsIgnoreCase(instData.getProperty("mod:" + current.getId(), "NoHash")))) {
+				FileInfo jarMod = instData.findJarMod(current.getId());
+				if (jarMod == null) {
+					updateJar = true;
+				} else if (current.getMD5().isEmpty() || (!current.getMD5().equalsIgnoreCase(jarMod.getMD5()))) {
 					updateJar = true;
 				}
 				jarModCount++;
+			} else {
+				modIds.add(current.getId());
 			}
 		}
-		if (jarModCount != Integer.parseInt(instData.getProperty("jarModCount","0"))) {
+		if (jarModCount != instData.getJarMods().size()) {
 			updateJar = true;
 		}
 		if (updateJar && baseJar != null) {
 			jarMods.add(baseJar);
 		}
+		Iterator<FileInfo> itExisting = instData.getInstanceFiles().iterator();
+		while (itExisting.hasNext()) {
+			FileInfo entry = itExisting.next();
+			if (!modIds.contains(entry.getModId())) {
+				instancePath.resolve(entry.getFilename()).toFile().delete();
+			}
+		}
+		instData.setJarMods(new ArrayList<FileInfo>());
+		instData.setInstanceFiles(new ArrayList<FileInfo>());
 		jarModCount = 0;
 		apiLogger.info("Instance path: " + instancePath.toString());
 		List<File> contents = recurseFolder(instancePath.toFile(), true);
@@ -751,22 +771,24 @@ public class MCUpdater {
 				if (updateJar) {
 					jarMods.add(new Downloadable(entry.getName(),String.valueOf(entry.getJarOrder()) + "-" + entry.getId() + ".jar",entry.getMD5(),100000,entry.getUrls()));
 					keepMeta.put(String.valueOf(entry.getJarOrder()) + "-" + cleanForFile(entry.getId()) + ".jar", entry.getKeepMeta());
-					instData.setProperty("mod:" + entry.getId(), entry.getMD5());
+					instData.addJarMod(entry.getId(), entry.getMD5());
 					jarModCount++;
 				}
 			} else if (entry.getCoreMod()) {
-				generalFiles.add(new Downloadable(entry.getName(),"coremods/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),100000,entry.getUrls()));
+				String filename = "coremods/" + cleanForFile(entry.getId()) + ".jar";
+				generalFiles.add(new Downloadable(entry.getName(),filename,entry.getMD5(),100000,entry.getUrls()));
+				instData.addMod(entry.getId(), entry.getMD5(), filename);
 			} else if (entry.getIsLibrary()) {
-				generalFiles.add(new Downloadable(entry.getName(),"lib/" + cleanForFile(entry.getId()) + ".jar",entry.getMD5(),100000,entry.getUrls()));
+				String filename = "lib/" + cleanForFile(entry.getId()) + ".jar";
+				generalFiles.add(new Downloadable(entry.getName(),filename,entry.getMD5(),100000,entry.getUrls()));
+				instData.addMod(entry.getId(), entry.getMD5(), filename);
 			} else if (entry.getExtract()) {
 				generalFiles.add(new Downloadable(entry.getName(),cleanForFile(entry.getId()) + ".zip",entry.getMD5(),100000,entry.getUrls()));
 				modExtract.put(cleanForFile(entry.getId()) + ".zip", entry.getInRoot());
 			} else {
-				if (entry.getPath().isEmpty()) {
-					generalFiles.add(new Downloadable(entry.getName(),"mods/" + cleanForFile(entry.getId()) + (entry.isLitemod() ? ".litemod" : ".jar"),entry.getMD5(),100000,entry.getUrls()));
-				} else {
-					generalFiles.add(new Downloadable(entry.getName(),entry.getPath(),entry.getMD5(),100000,entry.getUrls()));
-				}
+				String filename = entry.getPath().isEmpty() ? "mods/" + cleanForFile(entry.getId()) + (entry.isLitemod() ? ".litemod" : ".jar") : entry.getPath();
+				generalFiles.add(new Downloadable(entry.getName(),filename,entry.getMD5(),100000,entry.getUrls()));
+				instData.addMod(entry.getId(), entry.getMD5(), filename);
 			}
 			// 0
 			modsLoaded++;
@@ -796,7 +818,6 @@ public class MCUpdater {
 			//					}
 		}
 
-		instData.setProperty("jarModCount", Integer.toString(jarModCount));
 		generalQueue = parent.submitNewQueue("Instance files", server.getServerId(), generalFiles, instancePath.toFile(), DownloadCache.getDir());
 		jarQueue = parent.submitNewQueue("Jar build files", server.getServerId(), jarMods, tmpFolder, DownloadCache.getDir());
 		TaskableExecutor libExecutor = new TaskableExecutor(2, new Runnable(){
@@ -871,14 +892,16 @@ public class MCUpdater {
 					entry.delete();
 				}
 				if (server.isGenerateList()) { writeMCServerFile(server.getName(), server.getAddress(), server.getServerId()); }
-				instData.setProperty("serverID", server.getServerId());
-				instData.setProperty("revision", server.getRevision());
+				instData.setMCVersion(server.getVersion());
+				instData.setRevision(server.getRevision());
+				String jsonOut = gson.toJson(instData);
 				try {
-					instData.store(Files.newOutputStream(getInstanceRoot().resolve(server.getServerId()).resolve("instance.dat")), "Instance Data");
+					BufferedWriter writer = Files.newBufferedWriter(getInstanceRoot().resolve(server.getServerId()).resolve("instance.json"));
+					writer.append(jsonOut);
+					writer.close();
 				} catch (IOException e) {
 					apiLogger.log(Level.SEVERE, "I/O error", e);
-				}
-
+				}		
 			}
 		});
 		jarQueue.processQueue(jarExecutor);
