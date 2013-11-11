@@ -34,4 +34,8 @@ public class ModuleCheckbox extends Composite {
 	public boolean isSelected() {
 		return this.chk.getSelection();
 	}
+	
+	public void setSelected(boolean state) {
+		this.chk.setSelection(state);
+	}
 }

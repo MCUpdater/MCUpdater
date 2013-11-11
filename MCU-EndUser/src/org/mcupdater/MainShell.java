@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -484,11 +485,20 @@ public class MainShell extends MCUApp {
 		this.selected = entry;
 		browser.setUrl(selected.getNewsUrl());
 		modList = ServerPackParser.loadFromURL(selected.getPackUrl(), selected.getServerId());
-		refreshModList();
+		Instance instData = new Instance();
+		final Path instanceFile = MCUpdater.getInstance().getInstanceRoot().resolve(entry.getServerId()).resolve("instance.json");
+		try {
+			BufferedReader reader = Files.newBufferedReader(instanceFile);
+			instData = gson.fromJson(reader, Instance.class);
+			reader.close();
+		} catch (IOException e) {
+			MainShell.getInstance().baseLogger.log(Level.WARNING, "instance.json file not found.");
+		}
+		refreshModList(instData.getOptionalMods());
 	}
 
-	private void refreshModList() {
-		modules.reload(modList);
+	private void refreshModList(Map<String, Boolean> optionalSelections) {
+		modules.reload(modList, optionalSelections);
 	}
 
 	public static MainShell getInstance() {
