@@ -39,7 +39,6 @@ public class MCUModules extends Composite {
 		for (Module m : modList) {
 			ModuleCheckbox newCheckbox = new ModuleCheckbox(container, m);
 			if (!m.getRequired() && optionalSelections.containsKey(m.getId())) {
-				System.out.println("Optional: " + m.getId() + " " + newCheckbox.isSelected() + " " + optionalSelections.get(m.getId()));
 				newCheckbox.setSelected(optionalSelections.get(m.getId()));
 			}
 			modules.add(newCheckbox);

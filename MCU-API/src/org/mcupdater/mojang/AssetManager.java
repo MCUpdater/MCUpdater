@@ -28,7 +28,7 @@ public class AssetManager {
 	private static Set<Downloadable> getAssets(File baseDirectory){
 		Set<Downloadable> assets = new HashSet<Downloadable>();
 		try {
-			URL resourceUrl = new URL("https://s3.amazonaws.com/Minecraft.Resources/");
+			URL resourceUrl = new URL("http://resources.download.minecraft.net/");
 			URL localUrl = MCUpdater.getInstance().getMCFolder().resolve("assets").toFile().toURI().toURL();
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		    DocumentBuilder db = dbf.newDocumentBuilder();
