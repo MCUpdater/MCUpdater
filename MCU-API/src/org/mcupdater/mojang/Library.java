@@ -20,7 +20,7 @@ public class Library {
 		if (this.url != null) {
 			return this.url;
 		} else {
-			String baseUrl = "https://s3.amazonaws.com/Minecraft.Download/libraries/";
+			String baseUrl = "https://libraries.minecraft.net/";
 			if (this.natives != null) {
 				if (this.natives.containsKey(OperatingSystem.getCurrentPlatform())) {
 					return baseUrl + getLibraryPath(natives.get(OperatingSystem.getCurrentPlatform()));
