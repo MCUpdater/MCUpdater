@@ -843,26 +843,6 @@ public class MCUpdater {
 			
 			@Override
 			public void run() {
-				for (Map.Entry<String,Boolean> entry : keepMeta.entrySet()) {
-					File entryFile = new File(tmpFolder,entry.getKey());
-					Archive.extractZip(entryFile, tmpFolder, entry.getValue());
-					entryFile.delete();
-				}
-				try {
-					buildJar.createNewFile();
-				} catch (IOException e) {
-					apiLogger.log(Level.SEVERE, "I/O Error", e);
-				}
-				boolean doManifest = true;
-				List<File> buildList = recurseFolder(tmpFolder,true);
-				Iterator<File> blIt = new ArrayList<File>(buildList).iterator();
-				while(blIt.hasNext()) {
-					File entry = blIt.next();
-					if(entry.getPath().contains("META-INF")) {
-						doManifest = false;
-					}
-				}
-
 				if (!doJarUpdate) {
 					try {
 						Archive.updateArchive(productionJar.toFile(), new File[]{ branding });
@@ -870,6 +850,25 @@ public class MCUpdater {
 						apiLogger.log(Level.SEVERE, "I/O Error", e1);
 					}
 				} else {
+					for (Map.Entry<String,Boolean> entry : keepMeta.entrySet()) {
+						File entryFile = new File(tmpFolder,entry.getKey());
+						Archive.extractZip(entryFile, tmpFolder, entry.getValue());
+						entryFile.delete();
+					}
+					try {
+						buildJar.createNewFile();
+					} catch (IOException e) {
+						apiLogger.log(Level.SEVERE, "I/O Error", e);
+					}
+					boolean doManifest = true;
+					List<File> buildList = recurseFolder(tmpFolder,true);
+					Iterator<File> blIt = new ArrayList<File>(buildList).iterator();
+					while(blIt.hasNext()) {
+						File entry = blIt.next();
+						if(entry.getPath().contains("META-INF")) {
+							doManifest = false;
+						}
+					}
 					parent.log("Packaging updated jar...");
 					try {
 						Archive.createJar(buildJar, buildList, tmpFolder.getPath() + sep, doManifest);
