@@ -2,7 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MCU-API"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.osgi_3.8.2.v20130124-134944.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.osgi_3.8.2.v20130124-134944.jar"/>
 	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.core.commands_3.6.2.v20130123-162658.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.core.commands_3.6.2.v20130123-162658.jar"/>
 	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.equinox.common_3.6.100.v20120522-1841.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.equinox.common_3.6.100.v20120522-1841.jar"/>
@@ -20,5 +20,6 @@
 	<classpathentry kind="lib" path="gson-2.2.4.jar"/>
 	<classpathentry kind="lib" path="/home/sbarbour/workspace-mcu/dist/MCU-DownloadLib.jar"/>
 	<classpathentry kind="lib" path="/home/sbarbour/workspace-mcu/dist/MCU-Yggdrasil.jar"/>
+	<classpathentry kind="lib" path="/home/sbarbour/workspace-mcu/dist/MCU3-beta_lib/commons-io-2.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -2,13 +2,13 @@ package org.mcupdater.util;
 
 import java.net.*;
 
-import j7compat.Files;
-//import java.nio.charset.StandardCharsets;
-//import java.nio.file.Files;
-//import java.nio.file.Path;
+//import j7compat.Files;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 //import java.nio.file.StandardCopyOption;
 //import java.nio.file.StandardOpenOption;
-import j7compat.Path;
+//import j7compat.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -42,6 +42,8 @@ import javax.swing.ImageIcon;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.mcupdater.DownloadQueue;
 import org.mcupdater.Downloadable;
 import org.mcupdater.FMLStyleFormatter;
@@ -55,6 +57,9 @@ import org.mcupdater.model.ConfigFile;
 import org.mcupdater.model.GenericModule;
 import org.mcupdater.model.ModSide;
 import org.mcupdater.model.ServerList;
+import org.mcupdater.mojang.AssetIndex;
+import org.mcupdater.mojang.AssetIndex.Asset;
+import org.mcupdater.mojang.AssetManager;
 import org.mcupdater.mojang.Library;
 import org.mcupdater.mojang.MinecraftVersion;
 import org.mcupdater.util.Archive;
@@ -121,26 +126,26 @@ public class MCUpdater {
 		//String nativePrefix;
 		if(System.getProperty("os.name").startsWith("Windows"))
 		{
-			MCFolder = new Path(System.getenv("APPDATA")).resolve(".minecraft");
-			archiveFolder = new Path(System.getenv("APPDATA")).resolve(".MCUpdater");
+			MCFolder = new File(System.getenv("APPDATA")).toPath().resolve(".minecraft");
+			archiveFolder = new File(System.getenv("APPDATA")).toPath().resolve(".MCUpdater");
 			//nativePrefix = "lwjgl-2.9.0/native/windows/";
 			//nativeNames = new String[] {"jinput-dx8.dll","jinput-dx8_64.dll","jinput-raw.dll","jinput-raw_64.dll","lwjgl.dll","lwjgl64.dll","OpenAL32.dll","OpenAL64.dll"};
 		} else if(System.getProperty("os.name").startsWith("Mac"))
 		{
-			MCFolder = new Path(System.getProperty("user.home")).resolve("Library").resolve("Application Support").resolve("minecraft");
-			archiveFolder = new Path(System.getProperty("user.home")).resolve("Library").resolve("Application Support").resolve("MCUpdater");
+			MCFolder = new File(System.getProperty("user.home")).toPath().resolve("Library").resolve("Application Support").resolve("minecraft");
+			archiveFolder = new File(System.getProperty("user.home")).toPath().resolve("Library").resolve("Application Support").resolve("MCUpdater");
 			//nativePrefix = "lwjgl-2.9.0/native/macosx/";
 			//nativeNames = new String[] {"libjinput-osx.jnilib","liblwjgl.jnilib","openal.dylib"};
 		}
 		else
 		{
-			MCFolder = new Path(System.getProperty("user.home")).resolve(".minecraft");
-			archiveFolder = new Path(System.getProperty("user.home")).resolve(".MCUpdater");
+			MCFolder = new File(System.getProperty("user.home")).toPath().resolve(".minecraft");
+			archiveFolder = new File(System.getProperty("user.home")).toPath().resolve(".MCUpdater");
 			//nativePrefix = "lwjgl-2.9.0/native/linux/";
 			//nativeNames = new String[] {"libjinput-linux.so","libjinput-linux64.so","liblwjgl.so","liblwjgl64.so","libopenal.so","libopenal64.so"};
 		}
 		if (!(desiredRoot == null)) {
-			archiveFolder = new Path(desiredRoot);
+			archiveFolder = desiredRoot.toPath();
 		}
 		//lwjglFolder = this.archiveFolder.resolve("LWJGL");
 		try {
@@ -269,7 +274,7 @@ public class MCUpdater {
 		try
 		{
 			archiveFolder.toFile().mkdirs();
-			BufferedWriter writer = Files.newBufferedWriter(archiveFolder.resolve("mcuServers.dat"));
+			BufferedWriter writer = Files.newBufferedWriter(archiveFolder.resolve("mcuServers.dat"), StandardCharsets.UTF_8);
 			
 			Iterator<ServerList> it = serverlist.iterator();
 			
@@ -297,7 +302,7 @@ public class MCUpdater {
 	public List<Backup> loadBackupList() {
 		List<Backup> bList = new ArrayList<Backup>();
 		try {
-			BufferedReader reader = Files.newBufferedReader(archiveFolder.resolve("mcuBackups.dat"));
+			BufferedReader reader = Files.newBufferedReader(archiveFolder.resolve("mcuBackups.dat"), StandardCharsets.UTF_8);
 			
 			String entry = reader.readLine();
 			while(entry != null) {
@@ -318,7 +323,7 @@ public class MCUpdater {
 	
 	public void writeBackupList(List<Backup> backupList) {
 		try {
-			BufferedWriter writer = Files.newBufferedWriter(archiveFolder.resolve("mcuBackups.dat"));
+			BufferedWriter writer = Files.newBufferedWriter(archiveFolder.resolve("mcuBackups.dat"), StandardCharsets.UTF_8);
 			
 			Iterator<Backup> it = backupList.iterator();
 			
@@ -341,7 +346,7 @@ public class MCUpdater {
 		{
 			Set<String> urls = new HashSet<String>();
 			urls.add(defaultUrl);
-			BufferedReader reader = Files.newBufferedReader(archiveFolder.resolve("mcuServers.dat"));
+			BufferedReader reader = Files.newBufferedReader(archiveFolder.resolve("mcuServers.dat"), StandardCharsets.UTF_8);
 
 			String entry = reader.readLine();
 			while(entry != null)
@@ -635,6 +640,7 @@ public class MCUpdater {
 		tmpFolder.mkdirs();
 		Set<Downloadable> jarMods = new HashSet<Downloadable>();
 		Set<Downloadable> generalFiles = new HashSet<Downloadable>();
+		DownloadQueue assetsQueue = null;
 		DownloadQueue jarQueue = null;
 		DownloadQueue generalQueue = null;
 		DownloadQueue libraryQueue = null;
@@ -642,9 +648,11 @@ public class MCUpdater {
 		final Map<String,Boolean> modExtract = new HashMap<String,Boolean>();
 		final Map<String,Boolean> keepMeta = new TreeMap<String,Boolean>();
 		Downloadable baseJar = null;
+		final MinecraftVersion version = MinecraftVersion.loadVersion(server.getVersion());
 		switch (side){
 		case CLIENT:
-			MinecraftVersion version = MinecraftVersion.loadVersion(server.getVersion());
+			assetsQueue = parent.submitAssetsQueue("Assets", server.getServerId(), version);
+			//executor = new ThreadPoolExecutor(0, 8, 30000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 //			jar = archiveFolder.resolve("mc-" + server.getVersion() + ".jar").toFile();
 //			if(!jar.exists()) {
 //				parent.log("! Unable to find a backup copy of minecraft.jar for "+server.getVersion());
@@ -879,7 +887,7 @@ public class MCUpdater {
 					//Archive.patchJar(jar, buildJar, new ArrayList<File>(Arrays.asList(tmpFolder.listFiles())));
 					//copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
 					try {
-						Files.copy(new Path(buildJar), productionJar);
+						Files.copy(buildJar.toPath(), productionJar);
 					} catch (IOException e) {
 						apiLogger.log(Level.SEVERE, "Failed to copy new jar to instance!", e);
 					}
@@ -895,7 +903,7 @@ public class MCUpdater {
 				instData.setRevision(server.getRevision());
 				String jsonOut = gson.toJson(instData);
 				try {
-					BufferedWriter writer = Files.newBufferedWriter(getInstanceRoot().resolve(server.getServerId()).resolve("instance.json"));
+					BufferedWriter writer = Files.newBufferedWriter(getInstanceRoot().resolve(server.getServerId()).resolve("instance.json"), StandardCharsets.UTF_8);
 					writer.append(jsonOut);
 					writer.close();
 				} catch (IOException e) {
@@ -920,7 +928,56 @@ public class MCUpdater {
 			
 		});
 		generalQueue.processQueue(genExecutor);
+		TaskableExecutor assetsExecutor = new TaskableExecutor(8, new Runnable(){
+			
+			@Override
+			public void run() {
+				//check virtual
+				Gson gson = new Gson();
+				String indexName = version.getAssets();
+				if (indexName == null) {
+					indexName = "legacy";
+				}
+				File indexesPath = archiveFolder.resolve("assets").resolve("indexes").toFile();
+				File indexFile = new File(indexesPath, indexName + ".json");
+				String json;
+				try {
+					json = FileUtils.readFileToString(indexFile);
+					AssetIndex index = (AssetIndex)gson.fromJson(json, AssetIndex.class);
+					parent.log("Assets virtual: " + index.isVirtual());
+					if (index.isVirtual()) {
+						//Test symlink support
+						boolean doLinks = true;
+						try {
+							java.nio.file.Files.createSymbolicLink(archiveFolder.resolve("linktest"), archiveFolder.resolve("MCUpdater.log.0"));
+							archiveFolder.resolve("linktest").toFile().delete();
+						} catch (Exception e) {
+							doLinks = false;
+						}
+						Path assetsPath = archiveFolder.resolve("assets");
+						Path virtualPath = assetsPath.resolve("virtual");
+						for (Map.Entry<String, Asset> entry : index.getObjects().entrySet()) {
+							Path target = virtualPath.resolve(entry.getKey());
+							Path original = assetsPath.resolve("objects").resolve(entry.getValue().getHash().substring(0,2)).resolve(entry.getValue().getHash());
+							
+							if (!Files.exists(target)) {
+								Files.createDirectories(target.getParent());
+								if (doLinks) {
+									Files.createSymbolicLink(target, original);
+								} else {
+									Files.copy(original, target);
+								}
+							}
+						}
+					}
+				} catch (IOException e) {
+					parent.baseLogger.log(Level.SEVERE, "Assets exception! " + e.getMessage());
+				}
 
+			}
+			
+		});
+		assetsQueue.processQueue(assetsExecutor);
 		if( errorCount > 0 ) {
 			parent.baseLogger.severe("Errors were detected with this update, please verify your files. There may be a problem with the serverpack configuration or one of your download sites.");
 			return false;

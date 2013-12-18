@@ -1,7 +1,5 @@
 package org.mcupdater.util;
 
-import j7compat.Path;
-
 import java.io.BufferedInputStream;
 //import java.io.BufferedOutputStream;
 import java.io.File;
@@ -10,6 +8,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 //import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -36,7 +35,7 @@ public class Archive {
 				String entryName = entry.getName();
 
 				if(entry.isDirectory()) {
-					File newDir = new Path(destination).resolve(entryName).toFile();
+					File newDir = destination.toPath().resolve(entryName).toFile();
 					newDir.mkdirs();
 					MCUpdater.apiLogger.finest("   Directory: " + newDir.getPath());
 				} else {
@@ -48,7 +47,7 @@ public class Archive {
 					if (entryName.contains("aux.class")) {
 						entryName = "mojangDerpyClass1.class";
 					}
-					File outFile = new Path(destination).resolve(entryName).toFile();
+					File outFile = destination.toPath().resolve(entryName).toFile();
 					outFile.getParentFile().mkdirs();
 					MCUpdater.apiLogger.finest("   Extract: " + outFile.getPath());
 					FileOutputStream fos = new FileOutputStream(outFile);

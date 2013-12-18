@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.logging.*;
 
 import org.mcupdater.model.ServerList;
+import org.mcupdater.mojang.MinecraftVersion;
 
 public abstract class MCUApp {
 	
@@ -17,4 +18,5 @@ public abstract class MCUApp {
 	public abstract boolean requestLogin();
 	public abstract void addServer(ServerList entry);
 	public abstract DownloadQueue submitNewQueue(String queueName, String parent, Collection<Downloadable> files, File basePath, File cachePath);
+	public abstract DownloadQueue submitAssetsQueue(String queueName, String parent, MinecraftVersion version);
 }

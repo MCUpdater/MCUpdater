@@ -1,12 +1,12 @@
 package org.mcupdater;
 
-import j7compat.Files;
-import j7compat.Path;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -127,7 +127,7 @@ public class InstanceList extends ScrolledComposite {
 				Instance instData = new Instance();
 				final Path instanceFile = MCUpdater.getInstance().getInstanceRoot().resolve(entry.getServerId()).resolve("instance.json");
 				try {
-					BufferedReader reader = Files.newBufferedReader(instanceFile);
+					BufferedReader reader = Files.newBufferedReader(instanceFile, StandardCharsets.UTF_8);
 					instData = gson.fromJson(reader, Instance.class);
 					reader.close();
 				} catch (IOException e) {

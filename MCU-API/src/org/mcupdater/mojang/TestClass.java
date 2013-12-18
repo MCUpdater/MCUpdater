@@ -46,7 +46,7 @@ public class TestClass {
 		};
 		File base = new File("/home/sbarbour/MCU3-Test");
 		base.mkdirs();
-		DownloadQueue q1 = AssetManager.downloadAssets(new File(base, "assets"), listener);
+		DownloadQueue q1 = null; //= AssetManager.downloadAssets(new File(base, "assets"), listener);
 		HashSet<Downloadable> libSet = new HashSet<Downloadable>();
 		List<String> extract = new ArrayList<String>();
 		for (Library lib : version.getLibraries()) {

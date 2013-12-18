@@ -1,8 +1,7 @@
 package org.mcupdater;
 
-import j7compat.Path;
-
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -14,9 +13,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.text.StrSubstitutor;
 import org.mcupdater.model.GenericModule;
 import org.mcupdater.model.ServerList;
+import org.mcupdater.mojang.AssetIndex;
 import org.mcupdater.mojang.Library;
 import org.mcupdater.mojang.MinecraftVersion;
 import org.mcupdater.settings.Profile;
@@ -28,9 +30,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
+import com.google.gson.Gson;
+
 public class MCULogic {
 	
 	public static void doLaunch(ServerList selected, List<ModuleCheckbox> list, Profile user) throws Exception {
+		Gson gson = new Gson();
 		String playerName;
 		String sessionKey;
 		{ // Do profile validation
@@ -38,11 +43,20 @@ public class MCULogic {
 			sessionKey = user.getSessionKey();
 		}
 		MinecraftVersion mcVersion = MinecraftVersion.loadVersion(selected.getVersion());
+		String indexName = mcVersion.getAssets();
+		if (indexName == null) {
+			indexName = "legacy";
+		}
 		String mainClass;
 		List<String> args = new ArrayList<String>();
 		StringBuilder clArgs = new StringBuilder(mcVersion.getMinecraftArguments());
 		List<String> libs = new ArrayList<String>();
 		MCUpdater mcu = MCUpdater.getInstance();
+		File indexesPath = mcu.getArchiveFolder().resolve("assets").resolve("indexes").toFile();
+		File indexFile = new File(indexesPath, indexName + ".json");
+		String json;
+		json = FileUtils.readFileToString(indexFile);
+		AssetIndex index = (AssetIndex)gson.fromJson(json, AssetIndex.class);
 		Settings settings = SettingsManager.getInstance().getSettings();
 		if (settings.isFullScreen()) {
 			clArgs.append(" --fullscreen");
@@ -63,7 +77,7 @@ public class MCULogic {
 			}
 		}
 		clArgs.append(" --resourcePackDir ${resource_packs}");
-		args.add((new Path(settings.getJrePath()).resolve("bin").resolve("java").toString()));
+		args.add((new File(settings.getJrePath()).toPath().resolve("bin").resolve("java").toString()));
 		args.add("-Xms" + settings.getMinMemory());
 		args.add("-Xmx" + settings.getMaxMemory());
 		args.add("-XX:PermSize=" + settings.getPermGen());
@@ -127,7 +141,11 @@ public class MCULogic {
 		fields.put("auth_session", sessionKey);
 		fields.put("version_name", selected.getVersion());
 		fields.put("game_directory", mcu.getInstanceRoot().resolve(selected.getServerId()).toString());
-		fields.put("game_assets", mcu.getArchiveFolder().resolve("assets").toString());
+		if (index.isVirtual()) {
+			fields.put("game_assets", mcu.getArchiveFolder().resolve("assets").resolve("virtual").toString());
+		} else {
+			fields.put("game_assets", mcu.getArchiveFolder().resolve("assets").toString());
+		}
 		fields.put("resource_packs", mcu.getInstanceRoot().resolve(selected.getServerId()).resolve("resourcepacks").toString());
 		String[] fieldArr = tmpclArgs.split(" ");
 		for (int i = 0; i < fieldArr.length; i++) {

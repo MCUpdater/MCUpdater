@@ -1,14 +1,14 @@
 package org.mcupdater.settings;
 
-import j7compat.Files;
-import j7compat.Path;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
 import org.mcupdater.MCUSettings;
@@ -46,7 +46,7 @@ public class SettingsManager {
 
 	public void loadSettings() {
 		try {
-			BufferedReader reader = Files.newBufferedReader(configFile);
+			BufferedReader reader = Files.newBufferedReader(configFile, StandardCharsets.UTF_8);
 			this.settings = gson.fromJson(reader, Settings.class);
 			reader.close();
 			this.dirty=false;
@@ -87,7 +87,7 @@ public class SettingsManager {
 		Path oldServers = MCUpdater.getInstance().getArchiveFolder().resolve("mcuServers.dat");
 		if (oldServers.toFile().exists()){
 			try {
-				BufferedReader reader = Files.newBufferedReader(oldServers);
+				BufferedReader reader = Files.newBufferedReader(oldServers, StandardCharsets.UTF_8);
 				String entry = reader.readLine();
 				while(entry != null) {
 					newSettings.addPackURL(entry);
@@ -136,7 +136,7 @@ public class SettingsManager {
 	public void saveSettings() {
 		String jsonOut = gson.toJson(this.settings);
 		try {
-			BufferedWriter writer = Files.newBufferedWriter(configFile);
+			BufferedWriter writer = Files.newBufferedWriter(configFile, StandardCharsets.UTF_8);
 			writer.append(jsonOut);
 			writer.close();
 			this.dirty = false;

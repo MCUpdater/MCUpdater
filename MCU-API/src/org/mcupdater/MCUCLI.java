@@ -8,6 +8,7 @@ import java.util.Map;
 
 import org.mcupdater.model.ModSide;
 import org.mcupdater.model.ServerList;
+import org.mcupdater.mojang.MinecraftVersion;
 
 public class MCUCLI extends MCUApp {
 	@Override
@@ -133,6 +134,12 @@ public class MCUCLI extends MCUApp {
 	@Override
 	public DownloadQueue submitNewQueue(String queueName, String parent,
 			Collection<Downloadable> files, File basePath, File cachePath) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+	@Override
+	public DownloadQueue submitAssetsQueue(String queueName, String parent,
+			MinecraftVersion version) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -1,7 +1,5 @@
 package org.mcupdater.util;
 
-import j7compat.Path;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -68,7 +66,7 @@ public class DownloadCache {
 	}
 	
 	public static File getFile(String chksum) {
-		final File file = new Path(getDir()).resolve(chksum + ".bin").toFile();
+		final File file = getDir().toPath().resolve(chksum + ".bin").toFile();
 		return file;
 	}
 }

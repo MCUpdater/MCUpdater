@@ -1,20 +1,17 @@
 package org.mcupdater;
 
-import j7compat.Files;
-import j7compat.Path;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,6 +50,7 @@ import org.mcupdater.model.ModSide;
 import org.mcupdater.model.Module;
 import org.mcupdater.model.ServerList;
 import org.mcupdater.mojang.AssetManager;
+import org.mcupdater.mojang.MinecraftVersion;
 import org.mcupdater.settings.Profile;
 import org.mcupdater.settings.Settings;
 import org.mcupdater.settings.SettingsManager;
@@ -76,7 +74,6 @@ public class MainShell extends MCUApp {
 	private MCUModules modules;
 	public TranslateProxy translate;
 	private Label lblStatus;
-	private ThreadPoolExecutor executor;
 	private InstanceList iList;
 	private MCUClientTracker tracker;
 	private String defaultUrl;
@@ -147,9 +144,6 @@ public class MainShell extends MCUApp {
 		getShell().layout();
 		tracker = new MCUClientTracker(display, progress); 
 				
-		final DownloadQueue assetsQueue = AssetManager.downloadAssets(MCUpdater.getInstance().getArchiveFolder().resolve("assets").toFile(), tracker);
-		progress.addProgressBar(assetsQueue.getName(), "Minecraft");
-		executor = new ThreadPoolExecutor(0, 8, 30000, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
 		int activeJobs = 0;
 		ServerList currentSelection = null;
 		if (SettingsManager.getInstance().getSettings().getProfiles().size() == 0) {
@@ -173,9 +167,6 @@ public class MainShell extends MCUApp {
 		while (!getShell().isDisposed()) {
 			if (!display.readAndDispatch()) {
 				display.sleep();
-			}
-			if (!assetsQueue.isActive()) {
-				assetsQueue.processQueue(executor);			
 			}
 			if (activeJobs != progress.getActiveCount() || currentSelection != selected || playState != isPlaying()) {
 				currentSelection = selected;
@@ -397,7 +388,7 @@ public class MainShell extends MCUApp {
 					Instance instData;
 					final Path instanceFile = MCUpdater.getInstance().getInstanceRoot().resolve(selected.getServerId()).resolve("instance.json");
 					try {
-						BufferedReader reader = Files.newBufferedReader(instanceFile);
+						BufferedReader reader = Files.newBufferedReader(instanceFile, StandardCharsets.UTF_8);
 						instData = gson.fromJson(reader, Instance.class);
 						reader.close();
 					} catch (IOException e) {
@@ -488,7 +479,7 @@ public class MainShell extends MCUApp {
 		Instance instData = new Instance();
 		final Path instanceFile = MCUpdater.getInstance().getInstanceRoot().resolve(entry.getServerId()).resolve("instance.json");
 		try {
-			BufferedReader reader = Files.newBufferedReader(instanceFile);
+			BufferedReader reader = Files.newBufferedReader(instanceFile, StandardCharsets.UTF_8);
 			instData = gson.fromJson(reader, Instance.class);
 			reader.close();
 		} catch (IOException e) {
@@ -545,6 +536,12 @@ public class MainShell extends MCUApp {
 			return new DownloadQueue(queueName, parent, tracker, files, basePath, cachePath);
 		}
 	}
+	
+	@Override
+	public DownloadQueue submitAssetsQueue(String queueName, String parent, MinecraftVersion version) {
+		progress.addProgressBar(queueName, parent);
+		return AssetManager.downloadAssets(queueName, parent, MCUpdater.getInstance().getArchiveFolder().resolve("assets").toFile(), tracker, version);
+	}
 
 	public void refreshProfiles() {
 		login.refreshProfiles(SettingsManager.getInstance().getSettings());
@@ -553,7 +550,7 @@ public class MainShell extends MCUApp {
 
 	public void processSettings() {
 		Settings settings = SettingsManager.getInstance().getSettings();
-		MCUpdater.getInstance().setInstanceRoot(new Path(settings.getInstanceRoot()));
+		MCUpdater.getInstance().setInstanceRoot(new File(settings.getInstanceRoot()).toPath());
 		MCUpdater.getInstance().getInstanceRoot().toFile().mkdirs();
 		refreshProfiles();
 		refreshInstances();

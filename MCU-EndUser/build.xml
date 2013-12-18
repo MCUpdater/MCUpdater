@@ -4,8 +4,8 @@
     <property environment="env"/>
     <property name="MCU-API.location" value="../MCU-API"/>
     <property name="debuglevel" value="source,lines,vars"/>
-    <property name="target" value="1.6"/>
-    <property name="source" value="1.6"/>
+    <property name="target" value="1.7"/>
+    <property name="source" value="1.7"/>
     <path id="MCU-API.classpath">
         <pathelement location="${MCU-API.location}/bin"/>
     </path>

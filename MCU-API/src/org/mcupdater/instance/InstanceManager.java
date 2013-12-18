@@ -1,11 +1,10 @@
 package org.mcupdater.instance;
 
-import j7compat.Files;
-import j7compat.Path;
-
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 import java.util.logging.Level;
 

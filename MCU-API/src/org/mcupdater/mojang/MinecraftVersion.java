@@ -23,6 +23,7 @@ public class MinecraftVersion {
 	private List<Library> libraries;
 	private String mainClass;
 	private String incompatibilityReason;
+	private String assets;
 	private List<Rule> rules;
 	
 	public String getId(){ return id; }
@@ -34,6 +35,7 @@ public class MinecraftVersion {
 	public List<Library> getLibraries(){ return libraries; }
 	public String getMainClass(){ return mainClass; }
 	public String getIncompatibilityReason(){ return incompatibilityReason; }
+	public String getAssets() { return this.assets; }
 	public List<Rule> getRules(){ return rules; }
 	
 	public static MinecraftVersion loadVersion(String version) {
@@ -53,4 +55,5 @@ public class MinecraftVersion {
 		}
 		return null;
 	}
+	
 }
