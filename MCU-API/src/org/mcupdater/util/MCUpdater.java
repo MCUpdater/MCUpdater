@@ -887,6 +887,7 @@ public class MCUpdater {
 					//Archive.patchJar(jar, buildJar, new ArrayList<File>(Arrays.asList(tmpFolder.listFiles())));
 					//copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
 					try {
+						Files.createDirectories(productionJar.getParent());
 						Files.copy(buildJar.toPath(), productionJar);
 					} catch (IOException e) {
 						apiLogger.log(Level.SEVERE, "Failed to copy new jar to instance!", e);
