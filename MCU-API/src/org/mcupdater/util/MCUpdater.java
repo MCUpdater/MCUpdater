@@ -6,6 +6,7 @@ import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 //import java.nio.file.StandardCopyOption;
 //import java.nio.file.StandardOpenOption;
 //import j7compat.Path;
@@ -888,7 +889,7 @@ public class MCUpdater {
 					//copyFile(buildJar, new File(MCFolder + sep + "bin" + sep + "minecraft.jar"));
 					try {
 						Files.createDirectories(productionJar.getParent());
-						Files.copy(buildJar.toPath(), productionJar);
+						Files.copy(buildJar.toPath(), productionJar, StandardCopyOption.REPLACE_EXISTING);
 					} catch (IOException e) {
 						apiLogger.log(Level.SEVERE, "Failed to copy new jar to instance!", e);
 					}
