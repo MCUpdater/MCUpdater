@@ -8,10 +8,11 @@
     <property name="target" value="1.7"/>
     <property name="source" value="1.7"/>
     <path id="MCU-API.classpath">
-        <pathelement location="bin"/>
-        <pathelement location="commons-codec-1.6.jar"/>
-		<pathelement location="commons-io-2.1.jar"/>
-    	<pathelement location="jbeat-1.0.jar"/>
+			<pathelement location="bin"/>
+			<pathelement location="lib/commons-codec-1.6.jar"/>
+			<pathelement location="lib/commons-io-2.1.jar"/>
+			<pathelement location="lib/gson-2.2.4.jar"/>
+			<pathelement location="lib/MCU-DownloadLib.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>

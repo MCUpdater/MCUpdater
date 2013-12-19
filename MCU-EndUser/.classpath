@@ -3,23 +3,12 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/MCU-API"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
-	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.osgi_3.8.2.v20130124-134944.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.osgi_3.8.2.v20130124-134944.jar"/>
-	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.core.commands_3.6.2.v20130123-162658.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.core.commands_3.6.2.v20130123-162658.jar"/>
-	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.equinox.common_3.6.100.v20120522-1841.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.equinox.common_3.6.100.v20120522-1841.jar"/>
-	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.equinox.registry_3.5.200.v20120522-1841.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.equinox.registry_3.5.200.v20120522-1841.jar"/>
-	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.core.runtime_3.8.0.v20120912-155025.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.core.runtime_3.8.0.v20120912-155025.jar"/>
-	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.text_3.5.200.v20120523-1310.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.text_3.5.200.v20120523-1310.jar"/>
-	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.swt.gtk.linux.x86_3.100.1.v4236b.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.swt.gtk.linux.x86_64_3.100.1.v4236b.jar"/>
-	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.jface_3.8.102.v20130123-162658.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.jface_3.8.102.v20130123-162658.jar"/>
-	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.jface.text_3.8.2.v20121126-164145.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.jface.text_3.8.2.v20121126-164145.jar"/>
-	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.ui.workbench_3.104.0.v20130204-164612.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.ui.workbench_3.104.0.v20130204-164612.jar"/>
-	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/com.ibm.icu_4.4.2.v20110823.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/com.ibm.icu_4.4.2.v20110823.jar"/>
-	<classpathentry kind="lib" path="/home/sbarbour/eclipse-mc/plugins/org.eclipse.ui.forms_3.5.200.v20120705-114351.jar" sourcepath="/home/sbarbour/eclipse-mc/plugins/org.eclipse.ui.forms_3.5.200.v20120705-114351.jar"/>
-	<classpathentry kind="lib" path="jopt-simple-4.5.jar"/>
-	<classpathentry kind="lib" path="commons-lang3-3.1.jar"/>
-	<classpathentry kind="lib" path="gson-2.2.4.jar"/>
-	<classpathentry kind="lib" path="/home/sbarbour/workspace-mcu/dist/MCU-DownloadLib.jar"/>
-	<classpathentry kind="lib" path="/home/sbarbour/workspace-mcu/dist/MCU-Yggdrasil.jar"/>
-	<classpathentry kind="lib" path="/home/sbarbour/workspace-mcu/dist/MCU3-beta_lib/commons-io-2.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-io-2.1.jar"/>
+	<classpathentry kind="lib" path="lib/commons-lang3-3.1.jar"/>
+	<classpathentry kind="lib" path="lib/gson-2.2.4.jar"/>
+	<classpathentry kind="lib" path="lib/jopt-simple-4.5.jar"/>
+	<classpathentry kind="lib" path="lib/MCU-DownloadLib.jar"/>
+	<classpathentry kind="lib" path="lib/MCU-Yggdrasil.jar"/>
+	<classpathentry kind="lib" path="lib/swt-linux-x86.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

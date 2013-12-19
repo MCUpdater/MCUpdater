@@ -11,7 +11,14 @@
     </path>
     <path id="MCUpdater.classpath">
         <pathelement location="bin"/>
-        <path refid="MCU-API.classpath"/>
+		  <path refid="MCU-API.classpath"/>
+		  <pathelement location="lib/commons-lang3-3.1.jar"/>
+		  <pathelement location="lib/gson-2.2.4.jar"/>
+		  <pathelement location="lib/jopt-simple-4.5.jar"/>
+		  <pathelement location="lib/swt-linux-x86.jar"/>
+		  <pathelement location="lib/commons-io-2.1.jar"/>
+		  <pathelement location="lib/MCU-DownloadLib.jar"/>
+		  <pathelement location="lib/MCU-Yggdrasil.jar"/>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
