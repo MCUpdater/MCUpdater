@@ -58,7 +58,7 @@
 				<attribute name="Class-Path" value="."/>
 				<!--attribute name="SplashScreen-Image" value="mcu-splash.png"/-->
 			</manifest>
-			<fileset dir="${MCUpdater.location}/bin"/>
+			<fileset excludes="customization.properties" dir="${MCUpdater.location}/bin"/>
 			<fileset excludes="version.properties" dir="${MCU-API.location}/bin"/>
 			<!--
 			<fileset dir="${MCU-Launcher.location}/bin"/>
