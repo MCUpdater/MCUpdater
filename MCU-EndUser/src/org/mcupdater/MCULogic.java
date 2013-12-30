@@ -138,6 +138,8 @@ public class MCULogic {
 		Map<String,String> fields = new HashMap<String,String>();
 		StrSubstitutor fieldReplacer = new StrSubstitutor(fields);
 		fields.put("auth_player_name", playerName);
+		fields.put("auth_uuid", user.getUUID());
+		fields.put("auth_access_token", user.getAccessToken());
 		fields.put("auth_session", sessionKey);
 		fields.put("version_name", selected.getVersion());
 		fields.put("game_directory", mcu.getInstanceRoot().resolve(selected.getServerId()).toString());

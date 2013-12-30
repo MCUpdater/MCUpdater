@@ -65,6 +65,7 @@ public class LoginDialog {
 						newProfile.setAccessToken(authResponse.getAccessToken());
 						newProfile.setClientToken(authResponse.getClientToken());
 						newProfile.setName(authResponse.getSelectedProfile().getName());
+						newProfile.setUUID(authResponse.getSelectedProfile().getId());
 						dialog.close();
 					} else {
 						response.setText(authResponse.getErrorMessage());

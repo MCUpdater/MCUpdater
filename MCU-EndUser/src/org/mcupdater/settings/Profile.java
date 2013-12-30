@@ -13,6 +13,7 @@ public class Profile {
 	private String clientToken;
 	private String accessToken;
 	private String lastInstance;
+	private String uuid;
 
 	public String getStyle() {
 		return style;
@@ -100,5 +101,13 @@ public class Profile {
 
 	public void setLastInstance(String lastInstance) {
 		this.lastInstance = lastInstance;
+	}
+
+	public String getUUID() {
+		return uuid;
+	}
+
+	public void setUUID(String uuid) {
+		this.uuid = uuid;
 	}
 }
