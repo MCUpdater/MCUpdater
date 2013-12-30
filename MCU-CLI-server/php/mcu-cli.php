@@ -157,10 +157,92 @@ if( ($got_version = (string)($base->attributes()->version)) != $cache["version"]
 }
 
 // perform update if necessary
+function download($url) {
+	$fname = tempnam(".", "mcu-download-");
+	$ch = curl_init($url);
+	$fp = fopen($fname, "w");
+
+	curl_setopt($ch, CURLOPT_FILE, $fp);
+	curl_setopt($ch, CURLOPT_HEADER, 0);
+
+	curl_exec($ch);
+	curl_close($ch);
+	fclose($fp);
+	return $fname;
+}
+
 function parse_module($xml, $is_submod = false) {
 	$attrs = $xml->attributes();
 	msg("Parsing ".($is_submod?"Submodule":"Module")." ".$attrs->name);
-	// only check for submods to mods
+	if( (string)$attrs->side == "CLIENT" ) {
+		msg("  - skipping client-only mod");
+		return;
+	}
+
+	$type = (string)$xml->ModType;
+	if( $type != "Regular" && $type != "Extract" ) {
+		msg("  - skipping unsupported ModType $type");
+		return;
+	}
+
+	$id = (string)$attrs->id;
+	$md5 = (string)$xml->MD5;
+	if( $xml->ModPath ) 
+		$path = (string)$xml->ModPath;
+	else
+		$path = "mods/${id}.jar";
+
+	// check md5
+	$cache_file = ($md5?"cache/$md5":"cache/tmp");
+	$need_download = true;
+	switch( $type ) {
+		case "Regular":
+			// check md5 against installed mod
+			if( file_exists($path) ) {
+				$local_md5 = md5_file($path);
+				if( $local_md5 == $md5 )
+					$need_download = false;
+			}
+			break;
+		case "Extract":
+		default:
+			// check md5 against download cache
+			$need_download = file_exists($cache_file);
+	}
+
+	// download & cache
+	if( $need_download ) {
+		$url = (string)$xml->URL;
+		msg("  + Downloading $url...");
+		$tmp = download($url);
+		if( $md5 ) {
+			// validate the checksum
+			$dl_md5 = md5_file($tmp);
+			if( $dl_md5 != $md5 ) {
+				msg("  ! MD5 mismatch on downloaded file", true);
+				unlink($tmp);
+				return;
+			}
+		} else {
+			msg("  - no MD5 specified, trusting download");
+		}
+		rename($tmp, $cache_file);
+
+		msg("  - Installing to $path");
+		switch( $type ) {
+			case "Extract":
+				// TODO: unzip zips
+				break;
+			case "Regular":
+				copy($cache_file, $path);
+		}
+	} else {
+		msg("  - Skipping.");
+	}
+
+	// TODO: parse configfiles
+	
+	// check for submods
 	if( !$is_submod && $xml->Submodule ) {
 		foreach( $xml->Submodule as $key => $val ) {
 			parse_module($val, true);
@@ -170,6 +252,10 @@ function parse_module($xml, $is_submod = false) {
 
 if( $need_update ) {
 	msg("Performing update...");
+	// verify that we have a download cache dir
+	@mkdir("cache");
+	@mkdir("mods");
+	@mkdir("config");
 	// actually update :)
 	if( !$base->Module ) {
 		msg("No modules defined?!", true);
