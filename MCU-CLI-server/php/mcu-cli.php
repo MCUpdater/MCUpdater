@@ -37,11 +37,57 @@ if( file_exists($mcu_cache_filename) ) {
 	$cache = array();
 }
 
-// TODO: fetch updated serverpack
+libxml_use_internal_errors();	// suppress xml error spam
 
-// TODO: update pack if cached version differs
+// fetch updated serverpack
+$pack_xml = file_get_contents($pack_url);
+if( $pack_xml === FALSE ) {
+	msg("Unable to read pack from $pack_url", true);
+	exit 1;
+} else {
+	msg("Read serverpack from $pack_url");
+}
+$pack = simplexml_load_string($pack_xml);
+if( $pack === FALSE ) {
+	msg("Unable to parse malformed XML", true);
+	print_r(libxml_get_errors());
+	exit 1;
+}
+
+// identify our desired server entry
+function identify_server($server, $id) {
+	if( $id == $server->attributes()->id )
+		return $server;
+	return false;
+}
+
+if( !$pack->Server ) {
+	msg("Unable to find any <Server/> directive in xml", true);
+	exit 2;
+}
+if( is_array($pack->Server) ) {
+	foreach ($pack->Server as $key => $val) {
+		$base = identify_server($val, $pack_server_id);
+		if( $base ) 
+			break;
+	}
+} else {
+	$base = identify_server($pack->Server, $pack_server_id);
+}
+if( !$base ) {
+	msg("Unable to find server id $pack_server_id", true);
+	exit 2;
+}
+
+// check if we need to change
+if( ($got_version = $base->attributes()->version) != $cache["version"])
+{
+	msg("Identified new pack version $got_version");
+	// TODO: update pack
+}
 
 // flush cache to disk
+$cache["version"] = $got_version;
 $cache_json = json_encode($cache);
 file_put_contents($mcu_cache_filename, $cache_json);
 
