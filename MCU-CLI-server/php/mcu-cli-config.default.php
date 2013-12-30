@@ -10,6 +10,6 @@ $mcu_cache_filename = "mcu-cache.json";
 $server_autostart = true;
 $server_memory_max = "1G";
 $server_memory_min = $server_memory_max;
-$server_jar = "minecraft-forge-mcu.jar";
+$server_jar = "minecraft_server.jar";
 $server_args = "nogui";
 $java_bin = "/usr/bin/java";

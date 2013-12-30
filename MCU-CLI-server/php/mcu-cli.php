@@ -1,4 +1,20 @@
 <?php
+/**
+ * MCU-CLI v1
+ *
+ * This is a brute force script for performing MCU updates on a forge server.
+ * It's neither pretty nor efficient, but it will get the job done.
+ *
+ * 0) Copy this script and the default config into a folder with the minecraft
+ *    server jar.
+ * 1) Copy the default config to 'mcu-cli-config.php'
+ * 2) Edit your new config, updating at a minimum the pack url, server id,
+ *    server jar, and memory settings.
+ * 3) Execute mcu-cli.php and hope for the best :)
+ *
+ * - allaryin [2013-12-30]
+ */
+
 function msg($str, $error = false) {
 	echo ($error?"[!!] ":"[--] ") . $str . "\n";
 }
@@ -64,15 +80,11 @@ function find_server($pack, $server_id) {
 	if( !$pack->Server ) {
 		msg("Unable to find any <Server/> directive in xml", true);
 		return false;
-	}
-	if( is_array($pack->Server) ) {
-		foreach ($pack->Server as $key => $val) {
-			$base = identify_server($val, $server_id);
-			if( $base ) 
-				break;
-		}
-	} else {
-		$base = identify_server($pack->Server, $server_id);
+	}	
+	foreach ($pack->Server as $key => $val) {
+		$base = identify_server($val, $server_id);
+		if( $base ) 
+			break;
 	}
 	return $base;
 }
@@ -122,15 +134,8 @@ function import_imports($base) {
 	$result = new SimpleXMLElement($base->asXML());
 	$imports = $base->Import;
 	unset($result->Import);
-	if( is_array($imports) ) {
-		foreach($imports as $key => $val) {
-			$import = parse_import($val);
-			if( $import ) {
-				append_children($result, $import);
-			}
-		}
-	} else {
-		$import = parse_import($imports);
+	foreach($imports as $key => $val) {
+		$import = parse_import($val);
 		if( $import ) {
 			append_children($result, $import);
 		}
@@ -140,7 +145,7 @@ function import_imports($base) {
 if( $base->Import ) {
 	msg("Handling imports...");
 	$base = import_imports($base);
-	print_r($base);
+	//print_r($base);
 }
 
 // check if we need to change
@@ -152,9 +157,27 @@ if( ($got_version = (string)($base->attributes()->version)) != $cache["version"]
 }
 
 // perform update if necessary
+function parse_module($xml, $is_submod = false) {
+	$attrs = $xml->attributes();
+	msg("Parsing ".($is_submod?"Submodule":"Module")." ".$attrs->name);
+	// only check for submods to mods
+	if( !$is_submod && $xml->Submodule ) {
+		foreach( $xml->Submodule as $key => $val ) {
+			parse_module($val, true);
+		}
+	}
+}
+
 if( $need_update ) {
 	msg("Performing update...");
-	// TODO: actually update :)
+	// actually update :)
+	if( !$base->Module ) {
+		msg("No modules defined?!", true);
+	} else {
+		foreach( $base->Module as $key => $val ) {
+			parse_module($val);
+		}
+	}
 }
 
 // flush cache to disk
