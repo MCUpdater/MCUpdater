@@ -29,9 +29,9 @@ if( !extension_loaded("curl") ) {
 	exit(1);
 }
 // check for zip on our path
-$zip_bin = exec( "which zip", $tmp, $zip_error );
+$zip_bin = exec( "which unzip", $tmp, $zip_error );
 if( $zip_error ) {
-	msg("unable to find zip command in path.", true);
+	msg("unable to find unzip command in path.", true);
 	exit(1);
 }
 
@@ -186,6 +186,8 @@ function download($url) {
 }
 
 function parse_module($xml, $is_submod = false) {
+	global $zip_bin;
+
 	$attrs = $xml->attributes();
 	msg("Parsing ".($is_submod?"Submodule":"Module")." ".$attrs->name);
 	if( (string)$attrs->side == "CLIENT" ) {
@@ -207,10 +209,6 @@ function parse_module($xml, $is_submod = false) {
 
 	$id = (string)$attrs->id;
 	$md5 = (string)$xml->MD5;
-	if( $xml->ModPath ) 
-		$path = "./".(string)$xml->ModPath;
-	else
-		$path = "mods/${id}.jar";
 
 	// check md5
 	$cache_file = ($md5?"cache/$md5":"cache/tmp");
@@ -218,6 +216,10 @@ function parse_module($xml, $is_submod = false) {
 	switch( $type ) {
 		case "Regular":
 			// check md5 against installed mod
+			if( $xml->ModPath ) 
+				$path = "./".(string)$xml->ModPath;
+			else
+				$path = "mods/${id}.jar";
 			if( file_exists($path) ) {
 				$local_md5 = md5_file($path);
 				if( $local_md5 == $md5 )
@@ -227,7 +229,7 @@ function parse_module($xml, $is_submod = false) {
 		case "Extract":
 		default:
 			// check md5 against download cache
-			$need_download = file_exists($cache_file);
+			$need_download = !file_exists($cache_file);
 	}
 
 	// download & cache
@@ -248,24 +250,29 @@ function parse_module($xml, $is_submod = false) {
 		}
 		rename($tmp, $cache_file);
 
-		// make sure the target dir exists
-		$dir = dirname($path);
-		if( !is_dir($dir) ) {
-			msg("  - Creating directory $dir");
-			if( !@mkdir($dir, 0755, true) ) {
-				msg("  ! mkdir failed", true);
-				print_r(error_get_last());
-				return;
-			}
-		}
 
 		msg("  - Installing to $path");
 		switch( $type ) {
 			case "Extract":
-				// TODO: unzip zips
-				
+				if( (string)($xml->ModType->attributes()->inRoot == "true") )
+					$dir = ".";
+				else
+					$dir = "mods";
+				$cmd = "$zip_bin $cache_file -d $dir";
+				msg("  - \$ $cmd");
+				passthru($cmd);
 				break;
 			case "Regular":
+				// make sure the target dir exists
+				$dir = dirname($path);
+				if( !is_dir($dir) ) {
+					msg("  - Creating directory $dir");
+					if( !@mkdir($dir, 0755, true) ) {
+						msg("  ! mkdir failed", true);
+						print_r(error_get_last());
+						return;
+					}
+				}
 				copy($cache_file, $path);
 		}
 	} else {
