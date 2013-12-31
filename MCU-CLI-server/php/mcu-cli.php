@@ -185,6 +185,44 @@ function download($url) {
 	return $fname;
 }
 
+function parse_config($xml) {
+	$md5 = (string)$xml->MD5;
+	$path = (string)$xml->Path;
+	msg("    Parsing ConfigFile - $path");
+
+	$need_download = true;
+	if( file_exists($path) ) {
+		$local_md5 = md5_file($path);
+		if( $local_md5 == $md5 )
+			$need_download = false;
+	}
+
+	if( $need_download ) {
+		$cache_file = "cache/$md5";
+		if( $md5 && file_exists($cache_file) ) {
+			msg("      - Cached");
+		} else {
+			$url = (string)$xml->URL;
+			msg("      + Downloading $url...");
+			$tmp = download($url);
+			if( $md5 ) {
+				// validate the checksum
+				$dl_md5 = md5_file($tmp);
+				if( $dl_md5 != $md5 ) {
+					msg("      ! MD5 mismatch on downloaded file", true);
+					unlink($tmp);
+					return;
+				}
+			} else {
+				msg("      - no MD5 specified, trusting download");
+			}
+			rename($tmp, $cache_file);
+		}
+		msg("      - Installing");
+		copy( $cache_file, $path );	
+	}
+}
+
 function parse_module($xml, $is_submod = false) {
 	global $zip_bin;
 
@@ -229,27 +267,30 @@ function parse_module($xml, $is_submod = false) {
 		case "Extract":
 		default:
 			// check md5 against download cache
-			$need_download = !file_exists($cache_file);
+			$need_download = !($md5 && file_exists($cache_file));
 	}
 
 	// download & cache
 	if( $need_download ) {
-		$url = (string)$xml->URL;
-		msg("  + Downloading $url...");
-		$tmp = download($url);
-		if( $md5 ) {
-			// validate the checksum
-			$dl_md5 = md5_file($tmp);
-			if( $dl_md5 != $md5 ) {
-				msg("  ! MD5 mismatch on downloaded file", true);
-				unlink($tmp);
-				return;
-			}
+		if( $md5 && file_exists($cache_file) ) {
+			msg("  + Cached");
 		} else {
-			msg("  - no MD5 specified, trusting download");
+			$url = (string)$xml->URL;
+			msg("  + Downloading $url...");
+			$tmp = download($url);
+			if( $md5 ) {
+				// validate the checksum
+				$dl_md5 = md5_file($tmp);
+				if( $dl_md5 != $md5 ) {
+					msg("  ! MD5 mismatch on downloaded file", true);
+					unlink($tmp);
+					return;
+				}
+			} else {
+				msg("  - no MD5 specified, trusting download");
+			}
+			rename($tmp, $cache_file);
 		}
-		rename($tmp, $cache_file);
-
 
 		msg("  - Installing to $path");
 		switch( $type ) {
@@ -279,7 +320,12 @@ function parse_module($xml, $is_submod = false) {
 		msg("  - Skipping, cache hit.");
 	}
 
-	// TODO: parse configfiles
+	// parse configfiles
+	if( $xml->ConfigFile ) {
+		foreach( $xml->ConfigFile as $key => $val ) {
+			parse_config($val);
+		}
+	}
 	
 	// check for submods
 	if( !$is_submod && $xml->Submodule ) {
