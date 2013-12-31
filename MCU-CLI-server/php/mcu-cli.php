@@ -1,3 +1,4 @@
+#!/usr/bin/env php
 <?php
 /**
  * MCU-CLI v1
@@ -21,6 +22,18 @@ function msg($str, $error = false) {
 
 msg("MCU-CLI.php Starting...");
 msg(date("r"));
+
+// verify that we have curl enabled
+if( !extension_loaded("curl") ) {
+	msg("curl extension not found.", true);
+	exit(1);
+}
+// check for zip on our path
+$zip_bin = exec( "which zip", $tmp, $zip_error );
+if( $zip_error ) {
+	msg("unable to find zip command in path.", true);
+	exit(1);
+}
 
 // load config, copying from default if one is not found
 $cfg_default_filename = "mcu-cli-config.default.php";
@@ -106,26 +119,27 @@ function append_children($base, $child) {
 }
 
 function parse_import($xml) {
-	global $cache, $need_update;
+	global $cache, $pack, $need_update;
 	$url = (string)($xml->attributes()->url);
-	if( !$url ) {
-		msg("Unable to parse bogus <Import/> node", true);
-		msg($xml->asXML(), true);
-		return false;
-	}
 	$import_id = (string)$xml;
-	msg("Parsing import of '$import_id' from $url...");
-	$import = new SimpleXMLElement($url, 0, true);
+	msg("Parsing import of '$import_id' from ".($url?$url:"pack")."...");
+	if( $url ) {
+		$import = new SimpleXMLElement($url, 0, true);
+	} else {
+		$import = $pack;
+	}
 	$result = find_server($import, $import_id);
 	if( $result ) {
-		$old_version = $cache["import.".$import_id];
-		$cache["import.".$import_id] = (string)$result->attributes()->version;
-		if( $old_version != $cache["import.".$import_id] ) {
-			msg("Got new version of $import_id, need update...");
+		$old_revision = $cache["import.".$import_id];
+		$cache["import.".$import_id] = (string)$result->attributes()->revision;
+		if( $old_revision != $cache["import.".$import_id] ) {
+			msg("Got new revision of $import_id, need update...");
 			$need_update = true;
 		} else {
 			msg("Version of $import_id matches cache, not updating");
 		}
+	} else {
+		msg("Unable to find requested import.",true);
 	}
 	return $result;
 }
@@ -149,11 +163,11 @@ if( $base->Import ) {
 }
 
 // check if we need to change
-if( ($got_version = (string)($base->attributes()->version)) != $cache["version"]) {
-	msg("Identified new pack version $got_version");
+if( ($got_revision = (string)($base->attributes()->revision)) != $cache["revision"]) {
+	msg("Identified new pack revision $got_revision");
 	$need_update = true;
 } else {
-	msg("Pack version $got_version matches current rev, not updating");
+	msg("Pack revision $got_revision matches current rev, not updating");
 }
 
 // perform update if necessary
@@ -185,10 +199,16 @@ function parse_module($xml, $is_submod = false) {
 		return;
 	}
 
+	$required = (string)$xml->Required == "true";
+	if( !$required ) {
+		msg("  - skipping optional mod");
+		return;
+	}
+
 	$id = (string)$attrs->id;
 	$md5 = (string)$xml->MD5;
 	if( $xml->ModPath ) 
-		$path = (string)$xml->ModPath;
+		$path = "./".(string)$xml->ModPath;
 	else
 		$path = "mods/${id}.jar";
 
@@ -228,16 +248,28 @@ function parse_module($xml, $is_submod = false) {
 		}
 		rename($tmp, $cache_file);
 
+		// make sure the target dir exists
+		$dir = dirname($path);
+		if( !is_dir($dir) ) {
+			msg("  - Creating directory $dir");
+			if( !@mkdir($dir, 0755, true) ) {
+				msg("  ! mkdir failed", true);
+				print_r(error_get_last());
+				return;
+			}
+		}
+
 		msg("  - Installing to $path");
 		switch( $type ) {
 			case "Extract":
 				// TODO: unzip zips
+				
 				break;
 			case "Regular":
 				copy($cache_file, $path);
 		}
 	} else {
-		msg("  - Skipping.");
+		msg("  - Skipping, cache hit.");
 	}
 
 	// TODO: parse configfiles
@@ -253,9 +285,9 @@ function parse_module($xml, $is_submod = false) {
 if( $need_update ) {
 	msg("Performing update...");
 	// verify that we have a download cache dir
-	@mkdir("cache");
-	@mkdir("mods");
-	@mkdir("config");
+	@mkdir("cache", 0755);
+	@mkdir("mods", 0755);
+	@mkdir("config", 0755);
 	// actually update :)
 	if( !$base->Module ) {
 		msg("No modules defined?!", true);
@@ -267,7 +299,7 @@ if( $need_update ) {
 }
 
 // flush cache to disk
-$cache["version"] = $got_version;
+$cache["revision"] = $got_revision;
 $cache_json = json_encode($cache);
 file_put_contents($mcu_cache_filename, $cache_json);
 
@@ -280,7 +312,15 @@ if( file_exists("server.properties") ) {
 if( $server_autostart ) {
 	msg("Starting server...");
 	if( file_exists($server_jar) ) {
-		exec($java_bin . " -Xms".$server_memory_min . " -Xmx".$server_memory_max . " -jar ".$server_jar . " " . $server_args);
+		if( function_exists("pcntl_exec") ) {
+			$args = array(
+				"-Xms".$server_memory_min,
+				"-Xmx".$server_memory_max,
+				"-jar", $server_jar);
+			pcntl_exec( $java_bin, array_merge($args,$server_args) );
+		} else {
+			exec($java_bin . " -Xms".$server_memory_min . " -Xmx".$server_memory_max . " -jar ".$server_jar . " " . $server_args);
+		}
 	} else {
 		msg("Unable to locate $server_jar", true);
 	}
