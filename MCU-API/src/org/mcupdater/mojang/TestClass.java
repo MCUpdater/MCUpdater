@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
 import org.mcupdater.DownloadQueue;
 import org.mcupdater.Downloadable;
 import org.mcupdater.TrackerListener;
@@ -46,7 +47,8 @@ public class TestClass {
 		};
 		File base = new File("/home/sbarbour/MCU3-Test");
 		base.mkdirs();
-		DownloadQueue q1 = null; //= AssetManager.downloadAssets(new File(base, "assets"), listener);
+		// DownloadQueue q1 = null; //= AssetManager.downloadAssets(new
+		// File(base, "assets"), listener);
 		HashSet<Downloadable> libSet = new HashSet<Downloadable>();
 		List<String> extract = new ArrayList<String>();
 		for (Library lib : version.getLibraries()) {
@@ -67,10 +69,10 @@ public class TestClass {
 		jar.add(new Downloadable("Minecraft Jar", "mc-" + versionNum +".jar", "", 0, jarUrl));
 		DownloadQueue q3 = new DownloadQueue("Main", "Test", listener, jar, base, null);
 		ThreadPoolExecutor executor = new ThreadPoolExecutor(0, 8, 500, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
-		q1.processQueue(executor);
+		// q1.processQueue(executor);
 		q2.processQueue(executor);
 		q3.processQueue(executor);
-		while(!(q1.isFinished() && q2.isFinished() && q3.isFinished())){
+		while (!( /* q1.isFinished() && */q2.isFinished() && q3.isFinished() )) {
 			try {
 				Thread.sleep(500);
 				System.out.println("Waiting...");

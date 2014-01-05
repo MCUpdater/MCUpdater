@@ -1,7 +1,21 @@
 package org.mcupdater.util;
 
-import java.net.*;
-
+import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 //import j7compat.Files;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -30,8 +44,6 @@ import java.util.UUID;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.awt.image.BufferedImage;
-import java.io.*;
 
 import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
@@ -44,7 +56,6 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.mcupdater.DownloadQueue;
 import org.mcupdater.Downloadable;
 import org.mcupdater.FMLStyleFormatter;
@@ -60,11 +71,11 @@ import org.mcupdater.model.ModSide;
 import org.mcupdater.model.ServerList;
 import org.mcupdater.mojang.AssetIndex;
 import org.mcupdater.mojang.AssetIndex.Asset;
-import org.mcupdater.mojang.AssetManager;
 import org.mcupdater.mojang.Library;
 import org.mcupdater.mojang.MinecraftVersion;
-import org.mcupdater.util.Archive;
-import org.w3c.dom.*;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -76,15 +87,15 @@ public class MCUpdater {
 	private Path archiveFolder;
 	private Path instanceRoot;
 	private MCUApp parent;
-	private String sep = System.getProperty("file.separator");
+	private final String sep = System.getProperty("file.separator");
 	public MessageDigest md5;
 	public ImageIcon defaultIcon;
 	private String newestMC = "";
-	private Map<String,String> versionMap = new HashMap<String,String>();
+	private final Map<String,String> versionMap = new HashMap<String,String>();
 	public static Logger apiLogger;
 	//private Path lwjglFolder;
 	private int timeoutLength = 5000;
-	private Gson gson = new GsonBuilder().setPrettyPrinting().create();	
+	private final Gson gson = new GsonBuilder().setPrettyPrinting().create();	
 	private static MCUpdater INSTANCE;
 
 	public static File getJarFile() {
@@ -945,7 +956,7 @@ public class MCUpdater {
 				String json;
 				try {
 					json = FileUtils.readFileToString(indexFile);
-					AssetIndex index = (AssetIndex)gson.fromJson(json, AssetIndex.class);
+					AssetIndex index = gson.fromJson(json, AssetIndex.class);
 					parent.log("Assets virtual: " + index.isVirtual());
 					if (index.isVirtual()) {
 						//Test symlink support
